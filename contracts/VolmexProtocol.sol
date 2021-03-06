@@ -73,10 +73,8 @@ contract VolmexProtocol is Ownable {
     }
 
     /// @notice to add collateral to the protocol and mint the ethvl and ethvs tokens
-    /// @dev 
     /// @param collateralCoinAddress Address of the Stable Coin that is being deposited into the protocol
     /// @param collateralQty Qty of the coins being deposited
-    
     function collateralize(address collateralCoinAddress, uint256 collateralQty) onlyActive public  {
         // check that the collateral qty is at least the minium qty required
         require(collateralQty >= minimumCollateralQty, "Volmex: CollateralQty < minimum qty required");
@@ -108,6 +106,11 @@ contract VolmexProtocol is Ownable {
         ETHVLongAddress.mint(msg.sender, ETHVLong_TokensToBeMinted);
         ETHVShortAddress.mint(msg.sender, ETHVShort_TokensToBeMinted);
     }
+
+    /// @notice to redeem the collateral from the protocol
+    /// @param longTokenQty quantity of the long token that the user are surrendering
+    /// @param shortTokenQty quantity of the long token that the user are surrendering
+    /// @param collateralCoinAddress Qty of the coins being deposited
 
     function redeem(uint longTokenQty, uint shortTokenQty, address collateralCoinAddress) onlyActive public  {
         require (longTokenQty == shortTokenQty, "Volmex: Long and Short Tokens have to be in equal");
