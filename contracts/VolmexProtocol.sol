@@ -2,11 +2,15 @@
 
 pragma solidity ^0.8.0;
 
-import "../openzeppeline/token/ERC20/IERC20.sol";
-import "../openzeppeline/token/ERC20/utils/SafeERC20.sol";
-import "../openzeppeline/utils/math/SafeMath.sol";
-import "../openzeppeline/access/Ownable.sol";
-import "../openzeppeline/token/ERC20/presets/ERC20PresetMinterPauser.sol";
+import "./IERC20Modified.sol"
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+// import "../openzeppeline/token/ERC20/IERC20.sol";
+// import "../openzeppeline/token/ERC20/utils/SafeERC20.sol";
+// import "../openzeppeline/utils/math/SafeMath.sol";
+// import "../openzeppeline/access/Ownable.sol";
+// import "../openzeppeline/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 
 
 /**
@@ -16,7 +20,7 @@ import "../openzeppeline/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 
 contract VolmexProtocol is Ownable {
     using SafeMath for uint256;
-    using SafeERC20 for modifiedIERC20;
+    using SafeERC20 for IERC20Modified;
 
     // events
     // need to add
@@ -26,8 +30,8 @@ contract VolmexProtocol is Ownable {
     uint256 public minimumCollateralQty;
     bool public active;
     
-    modifiedIERC20 public ETHVLAddress;
-    modifiedIERC20 public ETHVSAddress;
+    IERC20Modified public ETHVLAddress;
+    IERC20Modified public ETHVSAddress;
     
 
     // contract mappings
@@ -52,8 +56,8 @@ contract VolmexProtocol is Ownable {
         active = true;
         minimumCollateralQty = 25 ether;
         acceptableCollateral = IERC20(daiTokenAddress);
-        ETHVLAddress = modifiedIERC20(_ETHVLAddress);
-        ETHVSAddress = modifiedIERC20(_ETHVSAddress);
+        ETHVLAddress = IERC20Modified(_ETHVLAddress);
+        ETHVSAddress = IERC20Modified(_ETHVSAddress);
     }
 
 
@@ -71,12 +75,12 @@ contract VolmexProtocol is Ownable {
 
     /// @notice to change the ETHV Long Address
     function update_ETHVLAddress(address newETHVLAddress) onlyOwner public {
-        ETHVLAddress = modifiedIERC20(newETHVLAddress);
+        ETHVLAddress = IERC20Modified(newETHVLAddress);
     }
 
     /// @notice to change the ETHV Short Address
     function update_ETHVSAddress(address newETHVSAddress) onlyOwner public {
-        ETHVSAddress = modifiedIERC20(newETHVSAddress);
+        ETHVSAddress = IERC20Modified(newETHVSAddress);
     }
 
     /// @notice to add collateral to the protocol and mint the ethvl and ethvs tokens
@@ -143,7 +147,7 @@ contract VolmexProtocol is Ownable {
 
     /// @notice to recover any tokens wrongly sent to this contract
     function recoverTokens(address token, address toWhom, uint howMuch) onlyOwner public {
-        modifiedIERC20(token).safeTransfer(toWhom,howMuch);
+        IERC20Modified(token).safeTransfer(toWhom,howMuch);
     }
 
 
