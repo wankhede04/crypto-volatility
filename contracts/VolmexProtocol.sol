@@ -2,10 +2,11 @@
 
 pragma solidity ^0.8.0;
 
-import "./modifiedIERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "../openzeppeline/token/ERC20/IERC20.sol";
+import "../openzeppeline/token/ERC20/utils/SafeERC20.sol";
+import "../openzeppeline/utils/math/SafeMath.sol";
+import "../openzeppeline/access/Ownable.sol";
+import "../openzeppeline/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 
 
 /**
@@ -81,7 +82,7 @@ contract VolmexProtocol is Ownable {
     /// @notice to add collateral to the protocol and mint the ethvl and ethvs tokens
     /// @param collateralCoinAddress Address of the Stable Coin that is being deposited into the protocol
     /// @param collateralQty Qty of the coins being deposited
-    function collateralize(address collateralCoinAddress, uint256 collateralQty) onlyActive public  {
+    function collateralize(IERC20 collateralCoinAddress, uint256 collateralQty) onlyActive public  {
         // check that the collateral qty is at least the minium qty required
         require(collateralQty >= minimumCollateralQty, "Volmex: CollateralQty < minimum qty required");
 
@@ -91,18 +92,7 @@ contract VolmexProtocol is Ownable {
             "VOLMEX: invalid collateral coin"
         );
 
-        IERC20 collateral = IERC20(collateralCoinAddress);
-        require(
-            collateral.balanceOf(msg.sender) >= collateralQty,
-            "coll qty > user balance"
-        );
-        uint256 collateralBalanceBefore = collateral.balanceOf(address(this));
         collateral.safeTransferFrom(msg.sender, address(this), collateralQty);
-        uint256 collateralBalanceAfter = collateral.balanceOf(address(this));
-        require(
-            collateralBalanceAfter > collateralBalanceBefore,
-            "collateral transfer failed"
-        );
         // determining the ETHVL and ETHVS tokens to be issued
         // ratio is 1/10 Position Token for every 25 Collateral Coin
         uint qtyToBeMinted = SafeMath.div((SafeMath.div(collateralQty, 25)),10);
