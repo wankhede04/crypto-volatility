@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.7.6;
+pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./modifiedIERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol";
 
 
 /**
@@ -16,18 +15,23 @@ import "@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol";
 
 contract VolmexProtocol is Ownable {
     using SafeMath for uint256;
-    using SafeERC20 for IERC20;
+    using SafeERC20 for modifiedIERC20;
+
+    // events
+    // need to add
+
 
     // contract storage variables
     uint256 public minimumCollateralQty;
     bool public active;
-    ERC20PresetMinterPauser public ETHVLongAddress;
-    ERC20PresetMinterPauser public ETHVShortAddress;
-
+    
+    modifiedIERC20 public ETHVLAddress;
+    modifiedIERC20 public ETHVSAddress;
+    
 
     // contract mappings
     /// @notice collateral => status. 0 never set; 1 active, 2 inactive
-    mapping(address => uint8) public acceptableCollateral;
+    IERC20 public acceptableCollateral;
 
     // contract modifiers
     modifier onlyActive() {
@@ -35,20 +39,20 @@ contract VolmexProtocol is Ownable {
         _;
     }
 
-    constructor(uint256 _minimumCollQty) {
+    /// @dev at deployment making the protocol active
+    /// @dev at deployment locking the minimumQTy at 25*10^18 tokens
+    /// @dev at deployment making the daiToken as an acceptable coin for collateral
+    /// @param _ETHVLAddress and _ETHVSAddress is the address of the Long and Short token
+    constructor(
+        address daiTokenAddress,
+        address _ETHVLAddress,
+        address _ETHVSAddress
+        ) {
         active = true;
-        minimumCollateralQty = _minimumCollQty;
-        ETHVLongAddress = new ERC20PresetMinterPauser("ETHVLong", "ETHVL");
-        ETHVShortAddress = new ERC20PresetMinterPauser("ETHVShort", "ETHVS");
-        bytes32 MINTER_ROLE = keccak256("MINTER_ROLE");
-        bytes32 PAUSER_ROLE = keccak256("PAUSER_ROLE");
-        ETHVLongAddress.grantRole(MINTER_ROLE, msg.sender);
-        ETHVLongAddress.grantRole(PAUSER_ROLE, msg.sender);
-        ETHVShortAddress.grantRole(MINTER_ROLE, msg.sender);
-        ETHVShortAddress.grantRole(PAUSER_ROLE, msg.sender);
-        bytes32 DEFAULT_ADMIN_ROLE = 0x00;
-        ETHVLongAddress.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-
+        minimumCollateralQty = 25 ether;
+        acceptableCollateral = IERC20(daiTokenAddress);
+        ETHVLAddress = modifiedIERC20(_ETHVLAddress);
+        ETHVSAddress = modifiedIERC20(_ETHVSAddress);
     }
 
 
@@ -58,18 +62,20 @@ contract VolmexProtocol is Ownable {
         active = !active;
     }
 
-    /// @notice to update the acceptable status of any collateral coin
-    /// @param _collateralAddress Address of the Collateral Coin for which the status has to be updated
-    /// @param _newStatus either number 1 or number 2, based on the mapping of acceptableCollateral
-    function update_AcceptableCollateral(address _collateralAddress, uint8 _newStatus) onlyOwner public {
-        require (_newStatus == 1 || _newStatus == 2, "Volmex: New Status provided not within the range");
-        acceptableCollateral[_collateralAddress] = _newStatus;
+    /// @notice to change the minimum qty required for collateral
+    /// @param _newMinimumCollQty provide the minimum qty required
+    function update_MinimumCollQTY(uint256 newMinimumCollQty) onlyOwner public {
+        minimumCollateralQty = newMinimumCollQty;
     }
 
-    // @notice to change the minimum qty required for collateral
-    /// @param _newMinimumCollQty provide the minimum qty required
-    function update_MinimumCollQTY(uint256 _newMinimumCollQty) onlyOwner public {
-        minimumCollateralQty = _newMinimumCollQty;
+    /// @notice to change the ETHV Long Address
+    function update_ETHVLAddress(address newETHVLAddress) onlyOwner public {
+        ETHVLAddress = modifiedIERC20(newETHVLAddress);
+    }
+
+    /// @notice to change the ETHV Short Address
+    function update_ETHVSAddress(address newETHVSAddress) onlyOwner public {
+        ETHVSAddress = modifiedIERC20(newETHVSAddress);
     }
 
     /// @notice to add collateral to the protocol and mint the ethvl and ethvs tokens
@@ -98,13 +104,11 @@ contract VolmexProtocol is Ownable {
             "collateral transfer failed"
         );
         // determining the ETHVL and ETHVS tokens to be issued
-        // for draft1 - the ratio is assumed to be 0.5 ETHVL and 0.5 ETHVS token issued for every 1 collateral
-        // hence, the miniumum collateral qty has to be 2 tokens so that at least 1 token can be issued eachof ETHVL and ETHVS
-        uint ETHVLong_TokensToBeMinted = SafeMath.div(collateralQty, 2);
-        uint ETHVShort_TokensToBeMinted = SafeMath.sub(collateralQty, ETHVLong_TokensToBeMinted);
+        // ratio is 1/10 Position Token for every 25 Collateral Coin
+        uint qtyToBeMinted = SafeMath.div((SafeMath.div(collateralQty, 25)),10);
         // mint tokens for the msg.sender
-        ETHVLongAddress.mint(msg.sender, ETHVLong_TokensToBeMinted);
-        ETHVShortAddress.mint(msg.sender, ETHVShort_TokensToBeMinted);
+        ETHVLAddress.mint(msg.sender, qtyToBeMinted);
+        ETHVSAddress.mint(msg.sender, qtyToBeMinted);
     }
 
     /// @notice to redeem the collateral from the protocol
@@ -112,11 +116,16 @@ contract VolmexProtocol is Ownable {
     /// @param shortTokenQty quantity of the long token that the user are surrendering
     /// @param collateralCoinAddress Qty of the coins being deposited
 
-    function redeem(uint longTokenQty, uint shortTokenQty, address collateralCoinAddress) onlyActive public  {
-        require (longTokenQty == shortTokenQty, "Volmex: Long and Short Tokens have to be in equal");
+
+    // TODO: to work on the redeem function
+    function redeem(uint positionTokenQty) onlyActive public  {
+        // checking the user has enough balance of position tokens
+        uint ETHVLongBalance = ETHVLAddress.balanceOf(msg.sender);
+        uint ETHVShortBalance = ETHVLAddress.balanceOf(msg.sender);
+
         // computing the collateralCoins Qty to be redemeed
-        uint totalLongAndShortQty = SafeMath.add(longTokenQty,shortTokenQty);
-        uint collQtyToBeRedmd = SafeMath.div(totalLongAndShortQty, 2);
+        // ratio for every 1/10 PT of both 25 dai has to be redeemed
+
 
         // transfering the tokens to this address
         ETHVLongAddress.burnFrom(msg.sender, longTokenQty);
@@ -137,5 +146,15 @@ contract VolmexProtocol is Ownable {
         );
     }
 
-    
+    /// @notice to change the ownership of the PT Token Address, should it ever be required
+    function changePTOwnership(address newOwner, address PTTokenAddress) onlyOwner public {
+        PTTokenAddress.transferOwnership(newOwner);
+    }
+
+    /// @notice to recover any tokens wrongly sent to this contract
+    function recoverTokens(address token, address toWhom, uint howMuch) onlyOwner public {
+        modifiedIERC20(token).safeTransfer(toWhom,howMuch);
+    }
+
+
 }
