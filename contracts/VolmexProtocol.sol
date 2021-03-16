@@ -18,7 +18,7 @@ contract VolmexProtocol is Ownable {
     using SafeERC20 for IERC20Modified;
     using SafeERC20 for IERC20;
 
-    event ToggleActivated(bool value);
+    event ToggleActivated(bool isActive);
     event UpdatedPositionToken(address indexed positionToken, bool isLong);
     event Collateralized(
         address indexed sender,
@@ -26,7 +26,8 @@ contract VolmexProtocol is Ownable {
         uint256 positionTokensMinted
     );
     event Redeemed(address indexed sender, uint256 collateralReleased, uint256 positionTokenBurned);
-    event PositionOwnershipTransfered(address indexed owner, address indexed newOwner, address positionToken);
+    event PositionOwnershipTransfered(address indexed newOwner, address positionToken);
+    event UpdatedMinimumCollateral(uint256 minimumCollateralQty);
 
     uint256 public minimumCollateralQty;
     bool public active;
@@ -82,6 +83,7 @@ contract VolmexProtocol is Ownable {
      */
     function updateMinimumCollQTY(uint256 _newMinimumCollQty) public onlyOwner {
         minimumCollateralQty = _newMinimumCollQty;
+        emit UpdatedMinimumCollateral(_newMinimumCollQty);
     }
 
     /**
@@ -176,7 +178,7 @@ contract VolmexProtocol is Ownable {
         IERC20Modified(_positionTokenAddress).grantRole(DEFAULT_ADMIN_ROLE, _newOwner);
         IERC20Modified(_positionTokenAddress).renounceRole(DEFAULT_ADMIN_ROLE, _msgSender());
 
-        emit PositionOwnershipTransfered(_msgSender(), _newOwner, _positionTokenAddress);
+        emit PositionOwnershipTransfered(_newOwner, _positionTokenAddress);
     }
 
     /**
@@ -187,7 +189,7 @@ contract VolmexProtocol is Ownable {
         address toWhom,
         uint256 howMuch
     ) public onlyOwner {
-        require(token != acceptableCollateral, "Volmex: Collateral token not allowed");
+        require(token != address(acceptableCollateral), "Volmex: Collateral token not allowed");
         IERC20Modified(token).safeTransfer(toWhom, howMuch);
     }
 }
