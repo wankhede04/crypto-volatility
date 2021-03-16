@@ -2,15 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-import "./IERC20Modified.sol"
+import "./IERC20Modified.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-// import "../openzeppeline/token/ERC20/IERC20.sol";
-// import "../openzeppeline/token/ERC20/utils/SafeERC20.sol";
-// import "../openzeppeline/utils/math/SafeMath.sol";
-// import "../openzeppeline/access/Ownable.sol";
-// import "../openzeppeline/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 
 
 /**
@@ -24,14 +19,19 @@ contract VolmexProtocol is Ownable {
 
     // events
     // need to add
+    event ToggleActive(address indexed owner, bool value);
+    event UpdatePositionToken(address indexed positionToken, string name);
+    event Collateralized(address indexed collateralAddress, uint256 collateralQty);
+    event Redeem(address indexed collateralAddress, uint positionTokenQty);
+    event PTOwnershipTransfer(address indexed owner, address indexed newOwner);
 
 
     // contract storage variables
     uint256 public minimumCollateralQty;
     bool public active;
     
-    IERC20Modified public ETHVLAddress;
-    IERC20Modified public ETHVSAddress;
+    IERC20Modified public longPosition;
+    IERC20Modified public shortPosition;
     
 
     // contract mappings
@@ -49,50 +49,53 @@ contract VolmexProtocol is Ownable {
     /// @dev at deployment making the daiToken as an acceptable coin for collateral
     /// @param _ETHVLAddress and _ETHVSAddress is the address of the Long and Short token
     constructor(
-        address daiTokenAddress,
-        address _ETHVLAddress,
-        address _ETHVSAddress
+        address collateralTokenAddress,
+        address _longPosition,
+        address _shortPosition
         ) {
         active = true;
         minimumCollateralQty = 25 ether;
-        acceptableCollateral = IERC20(daiTokenAddress);
-        ETHVLAddress = IERC20Modified(_ETHVLAddress);
-        ETHVSAddress = IERC20Modified(_ETHVSAddress);
+        acceptableCollateral = IERC20(collateralTokenAddress);
+        longPosition = IERC20Modified(_longPosition);
+        shortPosition = IERC20Modified(_shortPosition);
     }
 
 
     // updating the modifiers
     /// @notice toggle the active variable; restricted to only the owner of the contract
-    function toggle_Active() onlyOwner public {
+    function toggle_Active() public onlyOwner {
         active = !active;
+        emit ToggleActive(_msgSender(), active);
     }
 
     /// @notice to change the minimum qty required for collateral
     /// @param _newMinimumCollQty provide the minimum qty required
-    function update_MinimumCollQTY(uint256 newMinimumCollQty) onlyOwner public {
+    function update_MinimumCollQTY(uint256 newMinimumCollQty) public onlyOwner {
         minimumCollateralQty = newMinimumCollQty;
+        // add event
     }
 
-    /// @notice to change the ETHV Long Address
-    function update_ETHVLAddress(address newETHVLAddress) onlyOwner public {
-        ETHVLAddress = IERC20Modified(newETHVLAddress);
-    }
-
-    /// @notice to change the ETHV Short Address
-    function update_ETHVSAddress(address newETHVSAddress) onlyOwner public {
-        ETHVSAddress = IERC20Modified(newETHVSAddress);
+    /// @notice Update the {Position Token}
+    function updatePositionToken(address positionToken, bool isLong) public onlyOwner {
+        if (isLong) {
+            longPosition = IERC20Modified(positionToken);
+            emit UpdatePositionToken(positionToken, 'LONG_POSITION');
+        } else {
+            shortPosition = IERC20Modified(positionToken);
+            emit UpdatePositionToken(positionToken, 'SHORT_POSITION');
+        }
     }
 
     /// @notice to add collateral to the protocol and mint the ethvl and ethvs tokens
     /// @param collateralCoinAddress Address of the Stable Coin that is being deposited into the protocol
     /// @param collateralQty Qty of the coins being deposited
-    function collateralize(IERC20 collateralCoinAddress, uint256 collateralQty) onlyActive public  {
+    function collateralize(IERC20 collateralCoinAddress, uint256 collateralQty) public onlyActive  {
         // check that the collateral qty is at least the minium qty required
         require(collateralQty >= minimumCollateralQty, "Volmex: CollateralQty < minimum qty required");
 
         // check that the collateral is being accepted 
         require(
-            acceptableCollateral[collateralCoinAddress] == 1,
+            acceptableCollateral == collateralCoinAddress,
             "VOLMEX: invalid collateral coin"
         );
 
@@ -101,8 +104,10 @@ contract VolmexProtocol is Ownable {
         // ratio is 1/10 Position Token for every 25 Collateral Coin
         uint qtyToBeMinted = SafeMath.div((SafeMath.div(collateralQty, 25)),10);
         // mint tokens for the msg.sender
-        ETHVLAddress.mint(msg.sender, qtyToBeMinted);
-        ETHVSAddress.mint(msg.sender, qtyToBeMinted);
+        longPosition.mint(msg.sender, qtyToBeMinted);
+        shortPosition.mint(msg.sender, qtyToBeMinted);
+
+        emit Collateralized(collateralCoinAddress, collateralQty);
     }
 
     /// @notice to redeem the collateral from the protocol
@@ -112,41 +117,51 @@ contract VolmexProtocol is Ownable {
 
 
     // TODO: to work on the redeem function
-    function redeem(uint positionTokenQty) onlyActive public  {
-        // checking the user has enough balance of position tokens
-        uint ETHVLongBalance = ETHVLAddress.balanceOf(msg.sender);
-        uint ETHVShortBalance = ETHVLAddress.balanceOf(msg.sender);
+    function redeem(IERC20 collateralCoinAddress, uint positionTokenQty) public onlyActive  {
+        require(
+            acceptableCollateral == collateralCoinAddress,
+            "VOLMEX: invalid collateral coin"
+        );
 
         // computing the collateralCoins Qty to be redemeed
         // ratio for every 1/10 PT of both 25 dai has to be redeemed
 
+        uint qtyToBeBurned = SafeMath.div(positionTokenQty, 2);
+        uint collQtyToBeRedmd = SafeMath.mul(positionTokenQty, 250);
 
         // transfering the tokens to this address
-        ETHVLongAddress.burnFrom(msg.sender, longTokenQty);
-        ETHVShortAddress.burnFrom(msg.sender, shortTokenQty);
+        longPosition.burnFrom(msg.sender, qtyToBeBurned);
+        shortPosition.burnFrom(msg.sender, qtyToBeBurned);
         
         // transferring the collateralOut to the msg.sender
         IERC20 collateral = IERC20(collateralCoinAddress);
-        require(
-            collateral.balanceOf(address(this)) >= collQtyToBeRedmd,
-            "coll qty > available balance"
-        );
-        uint256 collateralBalanceBefore = collateral.balanceOf(address(this));
+
         collateral.safeTransfer(msg.sender, collQtyToBeRedmd);
-        uint256 collateralBalanceAfter = collateral.balanceOf(address(this));
-        require(
-            collateralBalanceAfter < collateralBalanceBefore,
-            "collateral transfer failed"
-        );
+
+        emit Redeem(collateralCoinAddress, positionTokenQty);
     }
 
     /// @notice to change the ownership of the PT Token Address, should it ever be required
-    function changePTOwnership(address newOwner, address PTTokenAddress) onlyOwner public {
-        PTTokenAddress.transferOwnership(newOwner);
+    function changePTOwnership(address newOwner, address PTTokenAddress) public onlyOwner {
+        // PTTokenAddress.transferOwnership(newOwner);
+        // Change the all the roles to new owner, sequentially
+
+        PTTokenAddress.grantRole(MINTER_ROLE, newOwner);
+        PTTokenAddress.grantRole(PAUSER_ROLE, newOwner);
+        PTTokenAddress.grantRole(BURNER_ROLE, newOwner);
+
+        PTTokenAddress.revokeRole(MINTER_ROLE, _msgSender());
+        PTTokenAddress.revokeRole(PAUSER_ROLE, _msgSender());
+        PTTokenAddress.revokeRole(BURNER_ROLE, _msgSender());
+
+        PTTokenAddress.grantRole(DEFAULT_ADMIN_ROLE, newOwner);
+        PTTokenAddress.revokeRole(DEFAULT_ADMIN_ROLE, _msgSender());
+
+        emit PTOwnershipTransfer(_msgSender(), newOwner);
     }
 
     /// @notice to recover any tokens wrongly sent to this contract
-    function recoverTokens(address token, address toWhom, uint howMuch) onlyOwner public {
+    function recoverTokens(address token, address toWhom, uint howMuch) public onlyOwner {
         IERC20Modified(token).safeTransfer(toWhom,howMuch);
     }
 
