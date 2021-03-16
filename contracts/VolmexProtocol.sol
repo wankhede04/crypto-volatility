@@ -34,8 +34,7 @@ contract VolmexProtocol is Ownable {
     IERC20Modified public longPosition;
     IERC20Modified public shortPosition;
 
-    // contract mappings
-    /// @notice collateral => status. 0 never set; 1 active, 2 inactive
+    // Address of the acceptable collateral token
     IERC20 public acceptableCollateral;
 
     /**
@@ -188,6 +187,7 @@ contract VolmexProtocol is Ownable {
         address toWhom,
         uint256 howMuch
     ) public onlyOwner {
+        require(token != acceptableCollateral, "Volmex: Collateral token not allowed");
         IERC20Modified(token).safeTransfer(toWhom, howMuch);
     }
 }
