@@ -13,20 +13,19 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  * @author dipeshsukhani [https://github.com/amateur-dev]
  * @author ayush-volmex [https://github.com/ayush-volmex]
  */
-
 contract VolmexProtocol is Ownable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20Modified;
     using SafeERC20 for IERC20;
 
     event ToggleActivated(bool value);
-    event UpdatedPositionToken(address indexed positionToken, bool tokenType); // {long: true, short: false}
+    event UpdatedPositionToken(address indexed positionToken, bool isLong);
     event Collateralized(
-        address indexed collateralAddress,
+        address indexed sender,
         uint256 collateralLock,
         uint256 positionTokensMinted
     );
-    event Redeemed(address indexed collateralAddress, uint256 collateralRelease, uint256 positionTokenBurned);
+    event Redeemed(address indexed sender, uint256 collateralReleased, uint256 positionTokenBurned);
     event PositionOwnershipTransfered(address indexed owner, address indexed newOwner, address positionToken);
 
     uint256 public minimumCollateralQty;
@@ -125,7 +124,7 @@ contract VolmexProtocol is Ownable {
         longPosition.mint(msg.sender, qtyToBeMinted);
         shortPosition.mint(msg.sender, qtyToBeMinted);
 
-        emit Collateralized(address(acceptableCollateral), _collateralQty, qtyToBeMinted);
+        emit Collateralized(msg.sender, _collateralQty, qtyToBeMinted);
     }
 
     /**
@@ -142,14 +141,14 @@ contract VolmexProtocol is Ownable {
         public
         onlyActive
     {
-        uint256 collQtyToBeRedmd = SafeMath.mul(_positionTokenQty, 250);
+        uint256 collQtyToBeRedeemed = SafeMath.mul(_positionTokenQty, 250);
 
         longPosition.burn(msg.sender, _positionTokenQty);
         shortPosition.burn(msg.sender, _positionTokenQty);
 
-        acceptableCollateral.safeTransfer(msg.sender, collQtyToBeRedmd);
+        acceptableCollateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
 
-        emit Redeemed(address(acceptableCollateral), collQtyToBeRedmd, _positionTokenQty);
+        emit Redeemed(msg.sender, collQtyToBeRedeemed, _positionTokenQty);
     }
 
     /**
@@ -167,11 +166,12 @@ contract VolmexProtocol is Ownable {
         bytes32 BURNER_ROLE = keccak256("BURNER_ROLE");
 
         IERC20Modified(_positionTokenAddress).grantRole(MINTER_ROLE, _newOwner);
-        IERC20Modified(_positionTokenAddress).grantRole(PAUSER_ROLE, _newOwner);
-        IERC20Modified(_positionTokenAddress).grantRole(BURNER_ROLE, _newOwner);
-
         IERC20Modified(_positionTokenAddress).renounceRole(MINTER_ROLE, _msgSender());
+
+        IERC20Modified(_positionTokenAddress).grantRole(PAUSER_ROLE, _newOwner);
         IERC20Modified(_positionTokenAddress).renounceRole(PAUSER_ROLE, _msgSender());
+
+        IERC20Modified(_positionTokenAddress).grantRole(BURNER_ROLE, _newOwner);
         IERC20Modified(_positionTokenAddress).renounceRole(BURNER_ROLE, _msgSender());
 
         IERC20Modified(_positionTokenAddress).grantRole(DEFAULT_ADMIN_ROLE, _newOwner);
