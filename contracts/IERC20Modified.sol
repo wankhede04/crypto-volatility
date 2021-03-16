@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/utils/EnumerableSet.sol";
-
 pragma solidity 0.7.6;
+
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
  * @dev Modified Interface of the OpenZeppelin's IERC20 to add the mint and burn function .
