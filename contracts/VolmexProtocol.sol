@@ -41,6 +41,10 @@ contract VolmexProtocol is Ownable {
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
 
+    uint256 private issuanceFees;
+    uint256 private redeemFees;
+    uint256 private accumulatedFees;
+
     /**
      * @notice Used to check calling address is active
      */
@@ -67,6 +71,9 @@ contract VolmexProtocol is Ownable {
     ) {
         active = true;
         minimumCollateralQty = 25 ether;
+        issuanceFees = 0;
+        redeemFees = 0;
+        accumulatedFees = 0;
         acceptableCollateral = IERC20Modified(_collateralTokenAddress);
         longPosition = IERC20Modified(_longPosition);
         shortPosition = IERC20Modified(_shortPosition);
@@ -121,6 +128,10 @@ contract VolmexProtocol is Ownable {
             "Volmex: CollateralQty < minimum qty required"
         );
 
+        uint256 feeToCollateralize = _collateralQty.mul(issuanceFees.div(100));
+        _collateralQty = _collateralQty.sub(feeToCollateralize);
+        accumulatedFees = accumulatedFees.add(feeToCollateralize);
+
         acceptableCollateral.safeTransferFrom(msg.sender, address(this), _collateralQty);
 
         uint256 qtyToBeMinted = _collateralQty.div(250);
@@ -149,6 +160,10 @@ contract VolmexProtocol is Ownable {
 
         longPosition.burn(msg.sender, _positionTokenQty);
         shortPosition.burn(msg.sender, _positionTokenQty);
+
+        uint256 feeToRedeem = collQtyToBeRedeemed.mul(redeemFees.div(100));
+        collQtyToBeRedeemed = collQtyToBeRedeemed.sub(feeToRedeem);
+        accumulatedFees = accumulatedFees.add(feeToRedeem);
 
         acceptableCollateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
 
@@ -183,11 +198,11 @@ contract VolmexProtocol is Ownable {
      * @notice Recover tokens accidentally sent to this contract
      */
     function recoverTokens(
-        address token,
-        address toWhom,
-        uint256 howMuch
+        address _token,
+        address _toWhom,
+        uint256 _howMuch
     ) public onlyOwner {
-        require(token != address(acceptableCollateral), "Volmex: Collateral token not allowed");
-        IERC20Modified(token).safeTransfer(toWhom, howMuch);
+        require(_token != address(acceptableCollateral), "Volmex: Collateral token not allowed");
+        IERC20Modified(_token).safeTransfer(_toWhom, _howMuch);
     }
 }
