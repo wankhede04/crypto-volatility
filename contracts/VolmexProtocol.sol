@@ -205,4 +205,15 @@ contract VolmexProtocol is Ownable {
         require(_token != address(acceptableCollateral), "Volmex: Collateral token not allowed");
         IERC20Modified(_token).safeTransfer(_toWhom, _howMuch);
     }
+
+    /**
+     * @notice Update the percentage of `issuanceFees` and `redeemFees`
+     * 
+     * @param _issuanceFees Percentage of fees required to collateralize the collateral
+     * @param _redeemFees Percentage of fees reuired to redeem the collateral
+     */
+    function updateFees(uint256 _issuanceFees, uint256 _redeemFees) public onlyOwner {
+        issuanceFees = _issuanceFees;
+        redeemFees = _redeemFees;
+    }
 }
