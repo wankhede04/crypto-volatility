@@ -26,6 +26,7 @@ contract VolmexProtocol is Ownable {
     event Redeemed(address indexed sender, uint256 collateralReleased, uint256 positionTokenBurned);
     event PositionOwnershipTransfered(address indexed newOwner, address positionToken);
     event UpdatedMinimumCollateral(uint256 newMinimumCollateralQty);
+    event ClaimedAccumulatedFees(address owner, uint256 fees);
 
     uint256 public minimumCollateralQty;
     bool public active;
@@ -215,5 +216,15 @@ contract VolmexProtocol is Ownable {
     function updateFees(uint256 _issuanceFees, uint256 _redeemFees) public onlyOwner {
         issuanceFees = _issuanceFees;
         redeemFees = _redeemFees;
+    }
+
+    /**
+     * @notice Safely transfer the accumulated fees to owner
+     */
+    function claimAccumulatedFees() public onlyOwner {
+        acceptableCollateral.safeTransfer(owner(), accumulatedFees);
+        accumulatedFees = 0;
+
+        emit ClaimedAccumulatedFees(owner(), accumulatedFees);
     }
 }
