@@ -6,7 +6,10 @@ import "hardhat-typechain";
 import 'hardhat-deploy';
 import * as dotenv from "dotenv";
 import "@nomiclabs/hardhat-etherscan";
+
+// Optimism support modules
 import '@eth-optimism/plugins/hardhat/compiler'
+import '@eth-optimism/plugins/hardhat/ethers'
 
 dotenv.config({ path: '.' + '/.env' });
 
