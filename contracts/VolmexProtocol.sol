@@ -6,7 +6,6 @@ import "./IERC20Modified.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
  * @title Protocol contract
@@ -16,7 +15,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract VolmexProtocol is Ownable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20Modified;
-    using SafeERC20 for IERC20;
 
     event ToggleActivated(bool isActive);
     event UpdatedPositionToken(address indexed positionToken, bool isLong);
@@ -27,7 +25,7 @@ contract VolmexProtocol is Ownable {
     );
     event Redeemed(address indexed sender, uint256 collateralReleased, uint256 positionTokenBurned);
     event PositionOwnershipTransfered(address indexed newOwner, address positionToken);
-    event UpdatedMinimumCollateral(uint256 minimumCollateralQty);
+    event UpdatedMinimumCollateral(uint256 newMinimumCollateralQty);
 
     uint256 public minimumCollateralQty;
     bool public active;
@@ -36,7 +34,12 @@ contract VolmexProtocol is Ownable {
     IERC20Modified public shortPosition;
 
     // Address of the acceptable collateral token
-    IERC20 public acceptableCollateral;
+    IERC20Modified public acceptableCollateral;
+
+    bytes32 public constant DEFAULT_ADMIN_ROLE = keccak256("DEFAULT_ADMIN_ROLE");
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+    bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
 
     /**
      * @notice Used to check calling address is active
@@ -64,7 +67,7 @@ contract VolmexProtocol is Ownable {
     ) {
         active = true;
         minimumCollateralQty = 25 ether;
-        acceptableCollateral = IERC20(_collateralTokenAddress);
+        acceptableCollateral = IERC20Modified(_collateralTokenAddress);
         longPosition = IERC20Modified(_longPosition);
         shortPosition = IERC20Modified(_shortPosition);
     }
@@ -161,11 +164,6 @@ contract VolmexProtocol is Ownable {
     function changePositionTokenOwnership(address _newOwner, address _positionTokenAddress)
         public onlyOwner
     {
-        bytes32 DEFAULT_ADMIN_ROLE = keccak256("DEFAULT_ADMIN_ROLE");
-        bytes32 MINTER_ROLE = keccak256("MINTER_ROLE");
-        bytes32 PAUSER_ROLE = keccak256("PAUSER_ROLE");
-        bytes32 BURNER_ROLE = keccak256("BURNER_ROLE");
-
         IERC20Modified(_positionTokenAddress).grantRole(MINTER_ROLE, _newOwner);
         IERC20Modified(_positionTokenAddress).renounceRole(MINTER_ROLE, _msgSender());
 

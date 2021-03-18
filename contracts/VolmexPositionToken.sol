@@ -2,12 +2,11 @@
 
 pragma solidity 0.7.6;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Pausable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 
-contract VolmexPositionToken is Context, AccessControl, ERC20, ERC20Pausable {
+contract VolmexPositionToken is Context, AccessControl, ERC20Pausable {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
@@ -94,7 +93,7 @@ contract VolmexPositionToken is Context, AccessControl, ERC20, ERC20Pausable {
         address from,
         address to,
         uint256 amount
-    ) internal virtual override(ERC20, ERC20Pausable) {
+    ) internal virtual override {
         super._beforeTokenTransfer(from, to, amount);
     }
 }
