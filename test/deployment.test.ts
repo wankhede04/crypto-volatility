@@ -1,5 +1,5 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+import { expect } from "chai";
+import { l2ethers as ethers } from 'hardhat'
 
 describe("Token contract", function() {
   it("Deployment should assign the total supply of tokens to the owner", async function() {
