@@ -1,4 +1,6 @@
 require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-truffle5");
+
 import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
 import 'hardhat-contract-sizer';
@@ -20,11 +22,11 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
 });
 
 export default {
-  contractSizer: {
-    alphaSort: true,
-    runOnCompile: true,
-    disambiguatePaths: false,
-  },
+  // contractSizer: {
+  //   alphaSort: true,
+  //   runOnCompile: true,
+  //   disambiguatePaths: false,
+  // },
   optimizer: {
     enabled: true,
     runs: 200,
@@ -32,8 +34,8 @@ export default {
   // defaultNetwork: "hardhat",
   networks: {
     hardhat: {
-      allowUnlimitedContractSize: true,
-      loggingEnabled: true,
+      allowUnlimitedContractSize: true
+      // loggingEnabled: true,
     },
     localhost: {
       url: "http://127.0.0.1:8545", // same address and port for both Buidler and Ganache node
@@ -53,7 +55,7 @@ export default {
     apiKey: process.env.ETHERSCAN_API_KEY
   },
   solidity: {
-    version: "0.8.0",
+    version: "0.7.6",
     settings: {
       optimizer: {
         enabled: true
