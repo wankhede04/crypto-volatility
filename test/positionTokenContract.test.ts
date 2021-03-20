@@ -34,15 +34,15 @@ const checkEvent = async (r: any, ...args: string[]) => {
 describe("Position Token contract", function () {
   /**
    * SCOPE OF THE TEST FOR THE POSITION TOKEN CONTRACT
-   * contract is successfully deployed: DONE
-   * deployed contract with the name and symbol as per the constructor: DONE
-   * deployed with no totalSupply: DONE
-   * only the owner of the contract is able to mint tokens: DONE
-   * only the owner of the contract is able to burn tokens: DONE
-   * only the owner of the contract is able to pause the contract: DONE
-   * once the contract is paused no token can be transferred
-   * once the contract is paused no token can be minted
-   * once the contract is paused no token can be burned
+   * 1. contract is successfully deployed: DONE
+   * 2. deployed contract with the name and symbol as per the constructor: DONE
+   * 3. deployed with no totalSupply: DONE
+   * 4. only the owner of the contract is able to mint tokens: DONE
+   * 5. only the owner of the contract is able to burn tokens: DONE
+   * 6. only the owner of the contract is able to pause the contract: DONE
+   * 7. once the contract is paused no token can be transferred: DONE
+   * 8. once the contract is paused no token can be minted: DONE
+   * 9. once the contract is paused no token can be burned
    */
 
   before(async function () {
@@ -63,43 +63,106 @@ describe("Position Token contract", function () {
     expect(address).to.not.equal(null);
   });
 
-  it("name and symbol of the contract is as per the arguments", async function () {
+  it("deployed contract with the name and symbol as per the constructor", async function () {
     const ptTokenName = await this.ptc.name();
     expect(ptTokenName).to.be.equal(this.tokenName);
   });
 
-  it("on deployment the totalSupply is zero", async function () {
+  it("deployed with no totalSupply", async function () {
     const ptTotalSupply = await this.ptc.totalSupply();
     expect(ptTotalSupply).to.be.equal(0);
   });
 
-  it("minting tokens from any other account fails", async function () {
-    const value = await ethers.BigNumber.from("42");
+  it("only the owner of the contract is able to mint tokens", async function () {
+    // minting tokens from non-owner account, expecting revert
+    const value = await ethers.BigNumber.from("100");
     const toWhom = this.account2.address;
     await expectRevert(
       this.ptc.connect(this.account2).mint(toWhom, value),
       'VolmexPositionToken: must have minter role to mint'
     );
-  });
-
-  it("minting tokens from the owner account is successful", async function () {
-    const value = await ethers.BigNumber.from("100");
-    const toWhom = this.account2.address;
-    const receipt = await this.ptc.connect(this.owner).mint(toWhom, value);
+    // minting tokens from owner account, expecting success
+    const receipt = await this.ptc.mint(toWhom, value);
     expect((await checkEvent(receipt, "Transfer", "from", "to", "value"))).to.be.true;
+    /// double confirming on the basis of the balance
     const account2Balance = await this.ptc.balanceOf(toWhom);
     const totalSupply = await this.ptc.totalSupply();
     expect(account2Balance).to.be.equal(value);
     expect(totalSupply).to.be.equal(value);
   });
 
-  it("pausing token only from the owner account is successful", async function () {
+  it("only the owner of the contract is able to burn tokens", async function () {
+    // minting tokens to account2
+    const value = await ethers.BigNumber.from("100");
+    const toWhom = this.account2.address;
+    const mintReceipt = await this.ptc.mint(toWhom, value);
+    expect((await checkEvent(mintReceipt, "Transfer", "from", "to", "value"))).to.be.true;
+    // burning tokens from non-owner account, expecting revert
+    await expectRevert(
+      this.ptc.connect(this.account2).burn(toWhom, value),
+      'VolmexPositionToken: must have burner role to burn'
+    );
+    // burning tokens from owner account, expecting success
+    const burnReceipt = await this.ptc.burn(toWhom, value);
+    expect((await checkEvent(burnReceipt, "Transfer", "from", "to", "value"))).to.be.true;
+  });
+
+
+  it("only the owner of the contract is able to pause the contract", async function () {
     await expectRevert(
       this.ptc.connect(this.account2).pause(),
       'VolmexPositionToken: must have pauser role to pause'
     );
     const receipt = await this.ptc.pause();
     expect((await checkEvent(receipt, "Paused", "account"))).to.be.true;
+  });
+
+  it("once the contract is paused no token can be transferred", async function () {
+    //mint token
+    /// setting up variables
+    const mintValue = await ethers.BigNumber.from("100");
+    const transferValue = await ethers.BigNumber.from("50");
+    const toWhom = this.account2.address;
+    const transferee = this.account3.address;
+
+    /// minting tokens
+    const mintTeceipt = await this.ptc.connect(this.owner).mint(toWhom, mintValue);
+    expect((await checkEvent(mintTeceipt, "Transfer", "from", "to", "value"))).to.be.true;
+    
+    //Transfer token to confirm that transfer fx is working fine
+    const transferReceipt = await this.ptc.connect(this.account2).transfer(transferee, transferValue);
+    expect((await checkEvent(transferReceipt, "Transfer", "from", "to", "value"))).to.be.true;
+    
+    //pause contract
+    const pauseReceipt = await this.ptc.pause();
+    expect((await checkEvent(pauseReceipt, "Paused", "account"))).to.be.true;
+    
+    //Transfer token to confirm it is failing
+    await expectRevert(
+      this.ptc.connect(this.account2).transfer(transferee, transferValue),
+      "ERC20Pausable: token transfer while paused"
+    );
+  });
+
+  it("once the contract is paused no token can be minted", async function () {
+    //mint token
+    /// setting up variables
+    const mintValue = await ethers.BigNumber.from("100");
+    const toWhom = this.account2.address;
+
+    /// minting tokens
+    const mintTeceipt = await this.ptc.connect(this.owner).mint(toWhom, mintValue);
+    expect((await checkEvent(mintTeceipt, "Transfer", "from", "to", "value"))).to.be.true;
+    
+    //pause contract
+    const pauseReceipt = await this.ptc.pause();
+    expect((await checkEvent(pauseReceipt, "Paused", "account"))).to.be.true;
+    
+    //minting again
+    await expectRevert(
+      this.ptc.mint(toWhom, mintValue),
+      "ERC20Pausable: token transfer while paused"
+    );
   });
 
 });
