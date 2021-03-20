@@ -42,7 +42,7 @@ describe("Position Token contract", function () {
    * 6. only the owner of the contract is able to pause the contract: DONE
    * 7. once the contract is paused no token can be transferred: DONE
    * 8. once the contract is paused no token can be minted: DONE
-   * 9. once the contract is paused no token can be burned
+   * 9. once the contract is paused no token can be burned: DONE
    */
 
   before(async function () {
@@ -165,6 +165,26 @@ describe("Position Token contract", function () {
     );
   });
 
+  it("once the contract is paused no token can be burned", async function () {
+    //mint token
+    /// setting up variables
+    const mintValue = await ethers.BigNumber.from("100");
+    const toWhom = this.account2.address;
+
+    /// minting tokens
+    const mintTeceipt = await this.ptc.mint(toWhom, mintValue);
+    expect((await checkEvent(mintTeceipt, "Transfer", "from", "to", "value"))).to.be.true;
+    
+    //pause contract
+    const pauseReceipt = await this.ptc.pause();
+    expect((await checkEvent(pauseReceipt, "Paused", "account"))).to.be.true;
+    
+    //burning tokens, expecting revert
+    await expectRevert(
+      this.ptc.burn(toWhom, mintValue),
+      "ERC20Pausable: token transfer while paused"
+    );
+  });
 });
 
 
