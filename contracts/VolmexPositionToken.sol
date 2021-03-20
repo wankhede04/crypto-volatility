@@ -47,12 +47,12 @@ contract VolmexPositionToken is Context, AccessControl, ERC20Pausable {
      *
      * See {ERC20-_burn}.
      */
-    function burn(address to, uint256 amount) public virtual {
+    function burn(address from, uint256 amount) public virtual {
         require(
             hasRole(BURNER_ROLE, _msgSender()),
             "VolmexPositionToken: must have burner role to burn"
         );
-        _burn(to, amount);
+        _burn(from, amount);
     }
 
     /**
