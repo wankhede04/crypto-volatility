@@ -1,5 +1,5 @@
 const { expect } = require("chai");
-const { expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
+const { expectEvent , expectRevert } = require('@openzeppelin/test-helpers');
 const { ethers } = require("hardhat");
 
 describe("Position Token contract", function () {
@@ -9,7 +9,7 @@ describe("Position Token contract", function () {
    * deployed contract with the name and symbol as per the constructor: DONE
    * deployed with no totalSupply: DONE
    * only the owner of the contract is able to mint tokens: DONE
-   * only the owner of the contract is able to burn tokens
+   * only the owner of the contract is able to burn tokens: DONE
    * only the owner of the contract is able to pause the contract
    * once the contract is paused no token can be transferred
    * once the contract is paused no token can be minted
@@ -50,6 +50,16 @@ describe("Position Token contract", function () {
       this.ptc.connect(this.account2).mint(toWhom, value),
       'VolmexPositionToken: must have minter role to mint'
     );
+  });
+
+  it("minting tokens from any the owner account is successful", async function () {
+    const value = await ethers.BigNumber.from("100");
+    const toWhom = this.account2.address;
+    await this.ptc.connect(this.owner).mint(toWhom, value);
+    const account2Balance = await this.ptc.balanceOf(toWhom);
+    const totalSupply = await this.ptc.totalSupply();
+    expect(account2Balance).to.be.equal(value);
+    expect(totalSupply).to.be.equal(value);
   });
 });
 
