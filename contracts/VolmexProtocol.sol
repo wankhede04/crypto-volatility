@@ -3,9 +3,9 @@
 pragma solidity 0.7.6;
 
 import "./IERC20Modified.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "../../@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "../../@openzeppelin/contracts/math/SafeMath.sol";
+import "../../@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title Protocol contract
@@ -145,10 +145,12 @@ contract VolmexProtocol is Ownable {
             "Volmex: CollateralQty < minimum qty required"
         );
 
-        // correct calc
-        uint256 fee = (_collateralQty.mul(issuanceFees)).div(1000);
-        _collateralQty = _collateralQty.sub(fee);
-        accumulatedFees = accumulatedFees.add(fee);
+        uint256 fee;
+        if (issuanceFees > 0) {
+            uint256 fee = _collateralQty.mul(issuanceFees).div(1000);
+            _collateralQty = _collateralQty.sub(fee);
+            accumulatedFees = accumulatedFees.add(fee);
+        }
 
         collateral.safeTransferFrom(
             msg.sender,
@@ -180,9 +182,12 @@ contract VolmexProtocol is Ownable {
         longPosition.burn(msg.sender, _positionTokenQty);
         shortPosition.burn(msg.sender, _positionTokenQty);
 
-        uint256 fee = (collQtyToBeRedeemed.mul(redeemFees)).div(1000);
-        collQtyToBeRedeemed = collQtyToBeRedeemed.sub(fee);
-        accumulatedFees = accumulatedFees.add(fee);
+        uint256 fee;
+        if (redeemFees > 0) {
+            fee = collQtyToBeRedeemed.mul(redeemFees).div(1000);
+            collQtyToBeRedeemed = collQtyToBeRedeemed.sub(fee);
+            accumulatedFees = accumulatedFees.add(fee);
+        }
 
         collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
 
