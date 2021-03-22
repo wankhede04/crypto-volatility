@@ -78,10 +78,16 @@ contract VolmexProtocol is Ownable {
     constructor(
         address _collateralTokenAddress,
         address _longPosition,
-        address _shortPosition
+        address _shortPosition,
+        uint256 _minimumCollateralQty
     ) {
+        require(
+            _minimumCollateralQty > 0,
+            "Volmex: Minimum collateral quantity should be greater than 0"
+        );
+
         active = true;
-        minimumCollateralQty = 25 ether;
+        minimumCollateralQty = _minimumCollateralQty;
         collateral = IERC20Modified(_collateralTokenAddress);
         longPosition = IERC20Modified(_longPosition);
         shortPosition = IERC20Modified(_shortPosition);
@@ -99,7 +105,11 @@ contract VolmexProtocol is Ownable {
      * @notice Update the `minimumCollateralQty`
      * @param _newMinimumCollQty Provides the new minimum collateral quantity
      */
-    function updateMinimumCollQTY(uint256 _newMinimumCollQty) external onlyOwner {
+    function updateMinimumCollQty(uint256 _newMinimumCollQty) external onlyOwner {
+        require(
+            _newMinimumCollQty > 0,
+            "Volmex: Minimum collateral quantity should be greater than 0"
+        );
         minimumCollateralQty = _newMinimumCollQty;
         emit UpdatedMinimumCollateral(_newMinimumCollQty);
     }
