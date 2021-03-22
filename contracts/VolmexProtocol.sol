@@ -156,7 +156,7 @@ contract VolmexProtocol is Ownable {
             _collateralQty
         );
 
-        uint256 qtyToBeMinted = _collateralQty.div(250);
+        uint256 qtyToBeMinted = _collateralQty / 250;
 
         longPosition.mint(msg.sender, qtyToBeMinted);
         shortPosition.mint(msg.sender, qtyToBeMinted);
