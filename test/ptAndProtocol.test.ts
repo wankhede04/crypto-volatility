@@ -194,7 +194,7 @@ describe("Protocol Token contract", function () {
    * 2. on deployment the contract is active: DONE
    * 3. on deployment the constructor arguments are successfully stored: DONE
    * 4. only the owner can toggle the contract's active status: DONE
-   * 5. only the owner can change the minimum collateral qty
+   * 5. only the owner can change the minimum collateral qty: DONE
    * 6. only the owner can change the positionTokenContractAddress
    * 7. anyone can collateral to the protocol
    * 8. collateralize function can only be called when the contract is active
@@ -257,6 +257,15 @@ describe("Protocol Token contract", function () {
     );
     const receipt = await this.protcolInstance.toggleActive();
     expect((await checkEvent(receipt, "ToggleActivated", "isActive"))).to.be.true;
+  });
+
+  it("only the owner can change the minimum collateral qty", async function () {
+    await expectRevert(
+      this.protcolInstance.connect(this.account2).updateMinimumCollQty("25000000000000000001"),
+      'Ownable: caller is not the owner'
+    );
+    const receipt = await this.protcolInstance.updateMinimumCollQty("25000000000000000001");
+    expect((await checkEvent(receipt, "UpdatedMinimumCollateral", "newMinimumCollateralQty"))).to.be.true;
   });
 
 
