@@ -180,15 +180,15 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
     function redeem(uint256 _positionTokenQty) external onlyActive {
         uint256 collQtyToBeRedeemed = SafeMath.mul(_positionTokenQty, 250);
 
-        longPosition.burn(msg.sender, _positionTokenQty);
-        shortPosition.burn(msg.sender, _positionTokenQty);
-
         uint256 fee;
         if (redeemFees > 0) {
             fee = collQtyToBeRedeemed.mul(redeemFees).div(1000);
             collQtyToBeRedeemed = collQtyToBeRedeemed.sub(fee);
             accumulatedFees = accumulatedFees.add(fee);
         }
+
+        longPosition.burn(msg.sender, _positionTokenQty);
+        shortPosition.burn(msg.sender, _positionTokenQty);
 
         collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
 
