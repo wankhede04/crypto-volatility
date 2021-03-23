@@ -193,7 +193,7 @@ describe("Protocol Token contract", function () {
    * 1. contract is successfully deployed: DONE
    * 2. on deployment the contract is active: DONE
    * 3. on deployment the constructor arguments are successfully stored: DONE
-   * 4. only the owner can toggle the contract's active status
+   * 4. only the owner can toggle the contract's active status: DONE
    * 5. only the owner can change the minimum collateral qty
    * 6. only the owner can change the positionTokenContractAddress
    * 7. anyone can collateral to the protocol
@@ -248,6 +248,15 @@ describe("Protocol Token contract", function () {
     expect(collateralAddress).to.be.equal(this.DummyERC20Instance.address);
     expect(longPositionAddress).to.be.equal(this.ethVLongInstance.address);
     expect(shortPositionAddress).to.be.equal(this.ethVShortInstance.address);
+  });
+
+  it("only the owner can toggle the contract's active status", async function () {
+    await expectRevert(
+      this.protcolInstance.connect(this.account2).toggleActive(),
+      'Ownable: caller is not the owner'
+    );
+    const receipt = await this.protcolInstance.toggleActive();
+    expect((await checkEvent(receipt, "ToggleActivated", "isActive"))).to.be.true;
   });
 
 
