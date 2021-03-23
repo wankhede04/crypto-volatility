@@ -5,8 +5,6 @@
 // Runtime Environment's members available in the global scope.
 const hre = require("hardhat");
 
-let etherscanAPI = process.env.ETHERSCAN_API_KEY;
-
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
   // line interface.
