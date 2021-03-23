@@ -5,6 +5,8 @@
 // Runtime Environment's members available in the global scope.
 const hre = require("hardhat");
 
+let etherscanAPI = process.env.ETHERSCAN_API_KEY;
+
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
   // line interface.
@@ -13,20 +15,59 @@ async function main() {
   // manually to make sure everything is compiled
   // await hre.run('compile');
 
+  const [deployer] = await ethers.getSigners();
+
+  console.log(
+    "Deploying contracts with the account:",
+    deployer.address
+  );
+  
+  console.log("Account balance:", (await deployer.getBalance()).toString());
+
   // We get the contract to deploy
-  const VolmexProtocol = await hre.ethers.getContractFactory("VolmexProtocol");
-  const vp = await VolmexProtocol.deploy(0);
+  const VolmexProtocolFactory = await hre.ethers.getContractFactory("VolmexProtocol");
+  const VolmexPositionTokenFactory = await hre.ethers.getContractFactory("VolmexPositionToken");
+  const DummyERC20Factory = await hre.ethers.getContractFactory("DummyERC20");
 
-  await vp.deployed();
+  // deploying the dummyERC20
+  const dummyERC20Instance = await DummyERC20Factory.deploy();
+  await dummyERC20Instance.deployed();
 
-  console.log("VP deployed to:", vp.address);
+  // deploying the PositionTokenContracts
+  const ethvLongToken  = await VolmexPositionTokenFactory.deploy("ETHVLong", "ETHVL");
+  await ethvLongToken.deployed();
+  const ethvShortToken  = await VolmexPositionTokenFactory.deploy("ETHVShort", "ETHVS");
+  await ethvShortToken.deployed();
 
-  // const VolmexETHVL = await hre.ethers.getContractFactory("VolmexETHLong");
-  // const vpl = await VolmexETHVL.deploy();
+  const VolmexProtocolFactoryInstance = await VolmexProtocolFactory.deploy(
+    dummyERC20Instance.address,
+    ethvLongToken.address,
+    ethvShortToken.address,
+    "25000000000000000000"
+  );
 
-  // await vpl.deployed();
+  await VolmexProtocolFactoryInstance.deployed();
 
-  // console.log("VPL deployed to:", vpl.address);
+  console.log("DummyERC20 deployed to:", dummyERC20Instance.address);
+  console.log("ethvLongToken deployed to:", ethvLongToken.address);
+  console.log("ethvShortToken deployed to:", ethvShortToken.address);
+  console.log("VP deployed to:", VolmexProtocolFactoryInstance.address);
+
+  await hre.run("verify:verify", {
+    address: dummyERC20Instance.address,
+    constructorArguments: []
+  })
+
+  await hre.run("verify:verify", {
+    address: VolmexProtocolFactoryInstance.address,
+    constructorArguments: [
+      dummyERC20Instance.address,
+      ethvLongToken.address,
+      ethvShortToken.address,
+      "25000000000000000000"
+    ]
+  })
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere

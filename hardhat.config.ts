@@ -1,3 +1,4 @@
+require('dotenv').config();
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-truffle5");
 
@@ -6,10 +7,10 @@ import "@nomiclabs/hardhat-waffle";
 import 'hardhat-contract-sizer';
 import "hardhat-typechain";
 import 'hardhat-deploy';
-import * as dotenv from "dotenv";
+// import * as dotenv from "dotenv";
 import "@nomiclabs/hardhat-etherscan";
 
-dotenv.config({ path: '.' + '/.env' });
+// dotenv.config({ path: '.' + '/.env' });
 
 // This is a sample Buidler task. To learn how to create your own go to
 // https://buidler.dev/guides/create-task.html
@@ -34,8 +35,8 @@ export default {
   // defaultNetwork: "hardhat",
   networks: {
     hardhat: {
-      allowUnlimitedContractSize: true
-      // loggingEnabled: true,
+      allowUnlimitedContractSize: true,
+      loggingEnabled: false,
     },
     localhost: {
       url: "http://127.0.0.1:8545", // same address and port for both Buidler and Ganache node
@@ -44,9 +45,8 @@ export default {
       gasPrice: 1,
     },
     kovan: {
-      url: "https://kovan.infura.io/v3/e2a0f0db1ef34ac69c77250c55f0b6fd", // same address and port for both Buidler and Ganache node
-      gas: 'auto',
-      gasPrice: 'auto'
+      url: `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
+      accounts: [`0x${process.env.PRIVATE_KEY}`]
     }
   },
   etherscan: {
