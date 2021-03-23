@@ -6,13 +6,14 @@ import "./IERC20Modified.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title Protocol contract
  * @author dipeshsukhani [https://github.com/amateur-dev]
  * @author ayush-volmex [https://github.com/ayush-volmex]
  */
-contract VolmexProtocol is Ownable {
+contract VolmexProtocol is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20Modified;
 
@@ -21,11 +22,21 @@ contract VolmexProtocol is Ownable {
     event Collateralized(
         address indexed sender,
         uint256 collateralLock,
-        uint256 positionTokensMinted
+        uint256 positionTokensMinted,
+        uint256 fees
     );
-    event Redeemed(address indexed sender, uint256 collateralReleased, uint256 positionTokenBurned);
-    event PositionOwnershipTransfered(address indexed newOwner, address positionToken);
+    event Redeemed(
+        address indexed sender,
+        uint256 collateralReleased,
+        uint256 positionTokenBurned,
+        uint256 fees
+    );
+    event PositionOwnershipTransfered(
+        address indexed newOwner,
+        address positionToken
+    );
     event UpdatedMinimumCollateral(uint256 newMinimumCollateralQty);
+    event ClaimedFees(uint256 fees);
 
     uint256 public minimumCollateralQty;
     bool public active;
@@ -34,12 +45,17 @@ contract VolmexProtocol is Ownable {
     IERC20Modified public shortPosition;
 
     // Address of the acceptable collateral token
-    IERC20Modified public acceptableCollateral;
+    IERC20Modified public collateral;
 
-    bytes32 public constant DEFAULT_ADMIN_ROLE = keccak256("DEFAULT_ADMIN_ROLE");
+    bytes32 public constant DEFAULT_ADMIN_ROLE =
+        keccak256("DEFAULT_ADMIN_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
+
+    uint256 public issuanceFees;
+    uint256 public redeemFees;
+    uint256 public accumulatedFees;
 
     /**
      * @notice Used to check calling address is active
@@ -54,8 +70,8 @@ contract VolmexProtocol is Ownable {
      *
      * @dev Makes the protocol `active` at deployment
      * @dev Locks the `minimumCollateralQty` at 25*10^18 tokens
-     * @dev Makes the collateral token as `acceptableCollateral`
-     * 
+     * @dev Makes the collateral token as `collateral`
+     *
      * @param _collateralTokenAddress is address of collateral token
      * @param _longPosition is address of long position token
      * @param _shortPosition is address of short position token
@@ -63,11 +79,17 @@ contract VolmexProtocol is Ownable {
     constructor(
         address _collateralTokenAddress,
         address _longPosition,
-        address _shortPosition
+        address _shortPosition,
+        uint256 _minimumCollateralQty
     ) {
+        require(
+            _minimumCollateralQty > 0,
+            "Volmex: Minimum collateral quantity should be greater than 0"
+        );
+
         active = true;
-        minimumCollateralQty = 25 ether;
-        acceptableCollateral = IERC20Modified(_collateralTokenAddress);
+        minimumCollateralQty = _minimumCollateralQty;
+        collateral = IERC20Modified(_collateralTokenAddress);
         longPosition = IERC20Modified(_longPosition);
         shortPosition = IERC20Modified(_shortPosition);
     }
@@ -75,7 +97,7 @@ contract VolmexProtocol is Ownable {
     /**
      * @notice Toggles the active variable. Restricted to only the owner of the contract.
      */
-    function toggleActive() public onlyOwner {
+    function toggleActive() external onlyOwner {
         active = !active;
         emit ToggleActivated(active);
     }
@@ -84,7 +106,11 @@ contract VolmexProtocol is Ownable {
      * @notice Update the `minimumCollateralQty`
      * @param _newMinimumCollQty Provides the new minimum collateral quantity
      */
-    function updateMinimumCollQTY(uint256 _newMinimumCollQty) public onlyOwner {
+    function updateMinimumCollQty(uint256 _newMinimumCollQty) external onlyOwner {
+        require(
+            _newMinimumCollQty > 0,
+            "Volmex: Minimum collateral quantity should be greater than 0"
+        );
         minimumCollateralQty = _newMinimumCollQty;
         emit UpdatedMinimumCollateral(_newMinimumCollQty);
     }
@@ -95,40 +121,50 @@ contract VolmexProtocol is Ownable {
      * @param _isLong Type of the postion token, { Long: true, Short: false }
      */
     function updatePositionToken(address _positionToken, bool _isLong)
-        public
+        external
         onlyOwner
     {
-        _isLong ? longPosition = IERC20Modified(_positionToken) : shortPosition = IERC20Modified(_positionToken);
+        _isLong
+            ? longPosition = IERC20Modified(_positionToken)
+            : shortPosition = IERC20Modified(_positionToken);
         emit UpdatedPositionToken(_positionToken, _isLong);
     }
 
     /**
      * @notice Add collateral to the protocol and mint the position tokens
      * @param _collateralQty Quantity of the collateral being deposited
-     * 
+     *
      * NOTE: Collateral quantity should be at least required minimum collateral quantity
      *
      * Calculation: Get the quantity for position token
      * Mint the position token for `_msgSender`
-     * 
+     *
      */
-    function collateralize(uint256 _collateralQty)
-        public
-        onlyActive
-    {
+    function collateralize(uint256 _collateralQty) external onlyActive {
         require(
             _collateralQty >= minimumCollateralQty,
             "Volmex: CollateralQty < minimum qty required"
         );
 
-        acceptableCollateral.safeTransferFrom(msg.sender, address(this), _collateralQty);
+        uint256 fee;
+        if (issuanceFees > 0) {
+            fee = _collateralQty.mul(issuanceFees).div(1000);
+            _collateralQty = _collateralQty.sub(fee);
+            accumulatedFees = accumulatedFees.add(fee);
+        }
 
-        uint256 qtyToBeMinted = _collateralQty.div(250);
+        collateral.safeTransferFrom(
+            msg.sender,
+            address(this),
+            _collateralQty
+        );
+
+        uint256 qtyToBeMinted = _collateralQty / 250;
 
         longPosition.mint(msg.sender, qtyToBeMinted);
         shortPosition.mint(msg.sender, qtyToBeMinted);
 
-        emit Collateralized(msg.sender, _collateralQty, qtyToBeMinted);
+        emit Collateralized(msg.sender, _collateralQty, qtyToBeMinted, fee);
     }
 
     /**
@@ -141,18 +177,22 @@ contract VolmexProtocol is Ownable {
      *
      * Safely transfer the collateral to `_msgSender`
      */
-    function redeem(uint256 _positionTokenQty)
-        public
-        onlyActive
-    {
+    function redeem(uint256 _positionTokenQty) external onlyActive {
         uint256 collQtyToBeRedeemed = SafeMath.mul(_positionTokenQty, 250);
+
+        uint256 fee;
+        if (redeemFees > 0) {
+            fee = collQtyToBeRedeemed.mul(redeemFees).div(1000);
+            collQtyToBeRedeemed = collQtyToBeRedeemed.sub(fee);
+            accumulatedFees = accumulatedFees.add(fee);
+        }
 
         longPosition.burn(msg.sender, _positionTokenQty);
         shortPosition.burn(msg.sender, _positionTokenQty);
 
-        acceptableCollateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
+        collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
 
-        emit Redeemed(msg.sender, collQtyToBeRedeemed, _positionTokenQty);
+        emit Redeemed(msg.sender, collQtyToBeRedeemed, _positionTokenQty, fee);
     }
 
     /**
@@ -161,20 +201,36 @@ contract VolmexProtocol is Ownable {
      * @param _newOwner Address of the new owner
      * @param _positionTokenAddress Address of the new owner
      */
-    function changePositionTokenOwnership(address _newOwner, address _positionTokenAddress)
-        public onlyOwner
-    {
+    function changePositionTokenOwnership(
+        address _newOwner,
+        address _positionTokenAddress
+    ) external onlyOwner {
         IERC20Modified(_positionTokenAddress).grantRole(MINTER_ROLE, _newOwner);
-        IERC20Modified(_positionTokenAddress).renounceRole(MINTER_ROLE, _msgSender());
+        IERC20Modified(_positionTokenAddress).renounceRole(
+            MINTER_ROLE,
+            _msgSender()
+        );
 
         IERC20Modified(_positionTokenAddress).grantRole(PAUSER_ROLE, _newOwner);
-        IERC20Modified(_positionTokenAddress).renounceRole(PAUSER_ROLE, _msgSender());
+        IERC20Modified(_positionTokenAddress).renounceRole(
+            PAUSER_ROLE,
+            _msgSender()
+        );
 
         IERC20Modified(_positionTokenAddress).grantRole(BURNER_ROLE, _newOwner);
-        IERC20Modified(_positionTokenAddress).renounceRole(BURNER_ROLE, _msgSender());
+        IERC20Modified(_positionTokenAddress).renounceRole(
+            BURNER_ROLE,
+            _msgSender()
+        );
 
-        IERC20Modified(_positionTokenAddress).grantRole(DEFAULT_ADMIN_ROLE, _newOwner);
-        IERC20Modified(_positionTokenAddress).renounceRole(DEFAULT_ADMIN_ROLE, _msgSender());
+        IERC20Modified(_positionTokenAddress).grantRole(
+            DEFAULT_ADMIN_ROLE,
+            _newOwner
+        );
+        IERC20Modified(_positionTokenAddress).renounceRole(
+            DEFAULT_ADMIN_ROLE,
+            _msgSender()
+        );
 
         emit PositionOwnershipTransfered(_newOwner, _positionTokenAddress);
     }
@@ -183,11 +239,38 @@ contract VolmexProtocol is Ownable {
      * @notice Recover tokens accidentally sent to this contract
      */
     function recoverTokens(
-        address token,
-        address toWhom,
-        uint256 howMuch
-    ) public onlyOwner {
-        require(token != address(acceptableCollateral), "Volmex: Collateral token not allowed");
-        IERC20Modified(token).safeTransfer(toWhom, howMuch);
+        address _token,
+        address _toWhom,
+        uint256 _howMuch
+    ) external nonReentrant onlyOwner {
+        require(
+            _token != address(collateral),
+            "Volmex: Collateral token not allowed"
+        );
+        IERC20Modified(_token).safeTransfer(_toWhom, _howMuch);
+    }
+
+    /**
+     * @notice Update the percentage of `issuanceFees` and `redeemFees`
+     *
+     * @param _issuanceFees Percentage of fees required to collateralize the collateral
+     * @param _redeemFees Percentage of fees reuired to redeem the collateral
+     */
+    function updateFees(uint256 _issuanceFees, uint256 _redeemFees)
+        external
+        onlyOwner
+    {
+        issuanceFees = _issuanceFees;
+        redeemFees = _redeemFees;
+    }
+
+    /**
+     * @notice Safely transfer the accumulated fees to owner
+     */
+    function claimAccumulatedFees() external onlyOwner {
+        collateral.safeTransfer(owner(), accumulatedFees);
+        delete accumulatedFees;
+
+        emit ClaimedFees(accumulatedFees);
     }
 }
