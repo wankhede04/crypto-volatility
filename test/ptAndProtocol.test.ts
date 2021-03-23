@@ -192,7 +192,7 @@ describe("Protocol Token contract", function () {
    * SCOPE OF THE TEST FOR THE POSITION TOKEN CONTRACT
    * 1. contract is successfully deployed: DONE
    * 2. on deployment the contract is active: DONE
-   * 3. on deployment the constructor arguments are successfully stored
+   * 3. on deployment the constructor arguments are successfully stored: DONE
    * 4. only the owner can toggle the contract's active status
    * 5. only the owner can change the minimum collateral qty
    * 6. only the owner can change the positionTokenContractAddress
@@ -241,9 +241,13 @@ describe("Protocol Token contract", function () {
     expect(activeStatus).to.be.true;
   });
 
-  it("on deployment the contract is active", async function () {
-    const activeStatus = await this.protcolInstance.active();
-    expect(activeStatus).to.be.true;
+  it("on deployment the constructor arguments are successfully stored", async function () {
+    const collateralAddress = await this.protcolInstance.collateral();
+    const longPositionAddress = await this.protcolInstance.longPosition();
+    const shortPositionAddress = await this.protcolInstance.shortPosition();
+    expect(collateralAddress).to.be.equal(this.DummyERC20Instance.address);
+    expect(longPositionAddress).to.be.equal(this.ethVLongInstance.address);
+    expect(shortPositionAddress).to.be.equal(this.ethVShortInstance.address);
   });
 
 
