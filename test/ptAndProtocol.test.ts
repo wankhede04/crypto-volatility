@@ -195,7 +195,7 @@ describe("Protocol Token contract", function () {
    * 3. on deployment the constructor arguments are successfully stored: DONE
    * 4. only the owner can toggle the contract's active status: DONE
    * 5. only the owner can change the minimum collateral qty: DONE
-   * 6. only the owner can change the positionTokenContractAddress
+   * 6. only the owner can change the positionTokenContractAddress: DONE
    * 7. anyone can collateral to the protocol
    * 8. collateralize function can only be called when the contract is active
    * 9. for calling the collateral function the minimum collateral quantity is required
@@ -266,6 +266,16 @@ describe("Protocol Token contract", function () {
     );
     const receipt = await this.protcolInstance.updateMinimumCollQty("25000000000000000001");
     expect((await checkEvent(receipt, "UpdatedMinimumCollateral", "newMinimumCollateralQty"))).to.be.true;
+  });
+
+  it("only the owner can change the positionTokenContractAddress", async function () {
+    let wallet = ethers.Wallet.createRandom();
+    await expectRevert(
+      this.protcolInstance.connect(this.account2).updatePositionToken(wallet.address, true),
+      'Ownable: caller is not the owner'
+    );
+    const receipt = await this.protcolInstance.updatePositionToken(wallet.address, true);
+    expect((await checkEvent(receipt, "UpdatedPositionToken", "positionToken", "isLong"))).to.be.true;
   });
 
 
