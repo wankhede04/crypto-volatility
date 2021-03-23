@@ -190,8 +190,8 @@ const checkEvent = async (r: any, ...args: string[]) => {
 describe("Protocol Token contract", function () {
   /**
    * SCOPE OF THE TEST FOR THE POSITION TOKEN CONTRACT
-   * 1. contract is successfully deployed
-   * 2. on deployment the contract is active
+   * 1. contract is successfully deployed: DONE
+   * 2. on deployment the contract is active: DONE
    * 3. on deployment the constructor arguments are successfully stored
    * 4. only the owner can toggle the contract's active status
    * 5. only the owner can change the minimum collateral qty
@@ -236,7 +236,16 @@ describe("Protocol Token contract", function () {
     expect(this.protcolInstance.address).to.not.equal(null);
   });
 
-  
+  it("on deployment the contract is active", async function () {
+    const activeStatus = await this.protcolInstance.active();
+    expect(activeStatus).to.be.true;
+  });
+
+  it("on deployment the contract is active", async function () {
+    const activeStatus = await this.protcolInstance.active();
+    expect(activeStatus).to.be.true;
+  });
+
 
 });
 
