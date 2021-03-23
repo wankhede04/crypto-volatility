@@ -278,6 +278,25 @@ describe("Protocol Token contract", function () {
     expect((await checkEvent(receipt, "UpdatedPositionToken", "positionToken", "isLong"))).to.be.true;
   });
 
+  it("anyone can collateral to the protocol", async function () {
+    // minting dummryERC20 token to account 2
+    await this.DummyERC20Instance.mint(this.account2.address,"250000000000000000000");
+    // approving the protocol contract to use the dummry erc20 token held by account 2
+    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "250000000000000000000");
+    // granting the MINTER_ROLE to the protocol contract
+    await this.ethVLongInstance.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")), this.protcolInstance.address);
+    await this.ethVShortInstance.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")), this.protcolInstance.address);
+    // checking the minter_role to the protocol contract
+    const response = await this.ethVLongInstance.hasRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+      this.protcolInstance.address
+      );
+    expect(response).to.be.true;
+    // collaterilzing the position
+    const receipt = await this.protcolInstance.connect(this.account2).collateralize("25000000000000000000");
+    expect(receipt.confirmations).to.be.above(0);
+  });
+
 
 });
 
