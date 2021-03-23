@@ -6,13 +6,14 @@ import "./IERC20Modified.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title Protocol contract
  * @author dipeshsukhani [https://github.com/amateur-dev]
  * @author ayush-volmex [https://github.com/ayush-volmex]
  */
-contract VolmexProtocol is Ownable {
+contract VolmexProtocol is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20Modified;
 
@@ -147,7 +148,7 @@ contract VolmexProtocol is Ownable {
 
         uint256 fee;
         if (issuanceFees > 0) {
-            uint256 fee = _collateralQty.mul(issuanceFees).div(1000);
+            fee = _collateralQty.mul(issuanceFees).div(1000);
             _collateralQty = _collateralQty.sub(fee);
             accumulatedFees = accumulatedFees.add(fee);
         }
@@ -241,7 +242,7 @@ contract VolmexProtocol is Ownable {
         address _token,
         address _toWhom,
         uint256 _howMuch
-    ) external onlyOwner {
+    ) external nonReentrant onlyOwner {
         require(
             _token != address(collateral),
             "Volmex: Collateral token not allowed"
