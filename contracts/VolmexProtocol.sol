@@ -208,19 +208,19 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
         IERC20Modified(_positionTokenAddress).grantRole(MINTER_ROLE, _newOwner);
         IERC20Modified(_positionTokenAddress).renounceRole(
             MINTER_ROLE,
-            _msgSender()
+            address(this);
         );
 
         IERC20Modified(_positionTokenAddress).grantRole(PAUSER_ROLE, _newOwner);
         IERC20Modified(_positionTokenAddress).renounceRole(
             PAUSER_ROLE,
-            _msgSender()
+            address(this);
         );
 
         IERC20Modified(_positionTokenAddress).grantRole(BURNER_ROLE, _newOwner);
         IERC20Modified(_positionTokenAddress).renounceRole(
             BURNER_ROLE,
-            _msgSender()
+            address(this);
         );
 
         IERC20Modified(_positionTokenAddress).grantRole(
@@ -229,7 +229,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
         );
         IERC20Modified(_positionTokenAddress).renounceRole(
             DEFAULT_ADMIN_ROLE,
-            _msgSender()
+            address(this)
         );
 
         emit PositionOwnershipTransfered(_newOwner, _positionTokenAddress);
