@@ -19,7 +19,7 @@ async function main() {
     "Deploying contracts with the account:",
     deployer.address
   );
-  
+
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
   // We get the contract to deploy
@@ -32,11 +32,12 @@ async function main() {
   await dummyERC20Instance.deployed();
 
   // deploying the PositionTokenContracts
-  const ethvLongToken  = await VolmexPositionTokenFactory.deploy("ETHVLong", "ETHVL");
+  const ethvLongToken = await VolmexPositionTokenFactory.deploy("ETHVLong", "ETHVL");
   await ethvLongToken.deployed();
-  const ethvShortToken  = await VolmexPositionTokenFactory.deploy("ETHVShort", "ETHVS");
+  const ethvShortToken = await VolmexPositionTokenFactory.deploy("ETHVShort", "ETHVS");
   await ethvShortToken.deployed();
 
+  // deploying the Protocol Contract
   const VolmexProtocolFactoryInstance = await VolmexProtocolFactory.deploy(
     dummyERC20Instance.address,
     ethvLongToken.address,
@@ -46,25 +47,45 @@ async function main() {
 
   await VolmexProtocolFactoryInstance.deployed();
 
+  // logging the addresses of the contracts
   console.log("DummyERC20 deployed to:", dummyERC20Instance.address);
   console.log("ethvLongToken deployed to:", ethvLongToken.address);
   console.log("ethvShortToken deployed to:", ethvShortToken.address);
   console.log("VP deployed to:", VolmexProtocolFactoryInstance.address);
 
-  await hre.run("verify:verify", {
-    address: dummyERC20Instance.address,
-    constructorArguments: []
-  })
+  // granting MINTER_ROLE to the protocol contract
+  await ethvLongToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")), VolmexProtocolFactoryInstance.address);
+  await ethvShortToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")), VolmexProtocolFactoryInstance.address);
 
-  await hre.run("verify:verify", {
-    address: VolmexProtocolFactoryInstance.address,
-    constructorArguments: [
-      dummyERC20Instance.address,
-      ethvLongToken.address,
-      ethvShortToken.address,
-      "25000000000000000000"
-    ]
-  })
+  // granding BURNER_ROLE to the protocol contract
+  await ethvLongToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("BURNER_ROLE")), VolmexProtocolFactoryInstance.address);
+  await ethvShortToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("BURNER_ROLE")), VolmexProtocolFactoryInstance.address);
+
+  // granting PAUSER_ROLE to the protocol contract
+  await ethvLongToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("PAUSER_ROLE")), VolmexProtocolFactoryInstance.address);
+  await ethvShortToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("PAUSER_ROLE")), VolmexProtocolFactoryInstance.address);
+
+  if (["kovan","rinkeby","ropsten","mainnet"].includes(network.name)) {
+    // verifying the dummryERC20 contract
+    await hre.run("verify:verify", {
+      address: dummyERC20Instance.address,
+      constructorArguments: []
+    });
+
+
+    // verifying the protocol contract
+    await hre.run("verify:verify", {
+      address: VolmexProtocolFactoryInstance.address,
+      constructorArguments: [
+        dummyERC20Instance.address,
+        ethvLongToken.address,
+        ethvShortToken.address,
+        "25000000000000000000"
+      ]
+    })
+  }
+
+
 
 }
 
