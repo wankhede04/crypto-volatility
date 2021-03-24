@@ -310,6 +310,18 @@ describe("Protocol Token contract", function () {
       'Volmex: Protocol not active'
     );
   });
+  
+  it("for calling the collateral function the minimum collateral quantity is required", async function () {
+    // minting dummryERC20 token to account 2
+    await this.DummyERC20Instance.mint(this.account2.address,"250000000000000000000");
+    // approving the protocol contract to use the dummry erc20 token held by account 2
+    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "250000000000000000000");
+    // collaterilzing the position with less than minimum qty and expeciting revert
+    await expectRevert(
+      this.protcolInstance.connect(this.account2).collateralize("250000000000000"),
+      'Volmex: CollateralQty < minimum qty required'
+    );
+  });
 
 });
 
