@@ -197,7 +197,7 @@ describe("Protocol Token contract", function () {
    * 5. only the owner can change the minimum collateral qty: DONE
    * 6. only the owner can change the positionTokenContractAddress: DONE
    * 7. anyone can collateral to the protocol: DONE
-   * 8. collateralize function can only be called when the contract is active
+   * 8. collateralize function can only be called when the contract is active: DONE
    * 9. for calling the collateral function the minimum collateral quantity is required
    * 10. only the acceptableCollateralCoin is used in the collateralize function
    */
@@ -226,7 +226,16 @@ describe("Protocol Token contract", function () {
       this.ethVLongInstance.address,
       this.ethVShortInstance.address,
       "25000000000000000000"
-    )
+    );
+    // granting the MINTER_ROLE to the protocol contract
+    await this.ethVLongInstance.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")), this.protcolInstance.address);
+    await this.ethVShortInstance.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")), this.protcolInstance.address);
+    // granting the BURNER_ROLE to the protocol contract
+    await this.ethVLongInstance.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("BURNER_ROLE")), this.protcolInstance.address);
+    await this.ethVShortInstance.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("BURNER_ROLE")), this.protcolInstance.address);
+    // granting the PAUSER_ROLE to the protocol contract
+    await this.ethVLongInstance.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("PAUSER_ROLE")), this.protcolInstance.address);
+    await this.ethVShortInstance.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("PAUSER_ROLE")), this.protcolInstance.address);
   });
 
   it("alll contracts are successfully deployed", async function () {
@@ -283,20 +292,24 @@ describe("Protocol Token contract", function () {
     await this.DummyERC20Instance.mint(this.account2.address,"250000000000000000000");
     // approving the protocol contract to use the dummry erc20 token held by account 2
     await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "250000000000000000000");
-    // granting the MINTER_ROLE to the protocol contract
-    await this.ethVLongInstance.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")), this.protcolInstance.address);
-    await this.ethVShortInstance.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")), this.protcolInstance.address);
-    // checking the minter_role to the protocol contract
-    const response = await this.ethVLongInstance.hasRole(
-      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
-      this.protcolInstance.address
-      );
-    expect(response).to.be.true;
     // collaterilzing the position
     const receipt = await this.protcolInstance.connect(this.account2).collateralize("25000000000000000000");
     expect(receipt.confirmations).to.be.above(0);
   });
 
+  it("collateralize function can only be called when the contract is active", async function () {
+    // minting dummryERC20 token to account 2
+    await this.DummyERC20Instance.mint(this.account2.address,"250000000000000000000");
+    // approving the protocol contract to use the dummry erc20 token held by account 2
+    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "250000000000000000000");
+    // toggling the active status of the contract
+    await this.protcolInstance.toggleActive();
+    // collaterilzing the position and expective revert
+    await expectRevert(
+      this.protcolInstance.connect(this.account2).collateralize("25000000000000000000"),
+      'Volmex: Protocol not active'
+    );
+  });
 
 });
 
