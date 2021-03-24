@@ -200,6 +200,14 @@ describe("Protocol Token contract", function () {
    * 8. collateralize function can only be called when the contract is active: DONE
    * 9. for calling the collateral function the minimum collateral quantity is required: DONE
    * 10. only the acceptableCollateralCoin is used in the collateralize function: DONE
+   * 11. on collateralization, msg.sender is issued both ETHVL and ETHVS tokens
+   * 12. after collateralization, msg.sender is able to burn the ETHVL and ETHVS and gets back collateral coin
+   * 13. no minimum qty required for burning
+   * 14. checking the math of the number of ETHVL and ETHVS minted when "x" qty of collateralCoin is collateralized
+   * 15. if issuanceFee > 0, fee is computed, reduced from the collateralQTY and only for the balance collateralQTY, the ETHVL and ETHVS tokens are minted
+   * 16. if issuanceFee > 0, accumulatedFee can be withdrawan through the claimAccumulatedFees fx
+   * 17. if redeemFees > 0, fee is computed, reduced from the refundable collateralQTY and only the balance is returned back to the msg.sender
+   * 18. if redeemFees > 0, accumulatedFee can be withdrawan through the claimAccumulatedFees fx
    */
 
   before(async function () {
