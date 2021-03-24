@@ -198,8 +198,8 @@ describe("Protocol Token contract", function () {
    * 6. only the owner can change the positionTokenContractAddress: DONE
    * 7. anyone can collateral to the protocol: DONE
    * 8. collateralize function can only be called when the contract is active: DONE
-   * 9. for calling the collateral function the minimum collateral quantity is required
-   * 10. only the acceptableCollateralCoin is used in the collateralize function
+   * 9. for calling the collateral function the minimum collateral quantity is required: DONE
+   * 10. only the acceptableCollateralCoin is used in the collateralize function: DONE
    */
 
   before(async function () {
@@ -320,6 +320,20 @@ describe("Protocol Token contract", function () {
     await expectRevert(
       this.protcolInstance.connect(this.account2).collateralize("250000000000000"),
       'Volmex: CollateralQty < minimum qty required'
+    );
+  });
+
+  it("only the acceptableCollateralCoin is used in the collateralize function", async function () {
+    // deploying another version of the DummyERC20 for this test
+    this.DummyERC20InstanceV2 = await this.DummyERC20Contract.deploy();
+    await this.DummyERC20InstanceV2.deployed();
+    // minting dummryERC20 token to account 2
+    await this.DummyERC20InstanceV2.mint(this.account2.address,"250000000000000000000");
+    // approving the protocol contract to use the dummry erc20 token held by account 2
+    await this.DummyERC20InstanceV2.connect(this.account2).approve(this.protcolInstance.address, "250000000000000000000");
+    // collaterilzing the position with less than minimum qty and expeciting revert
+    await expectRevert.unspecified(
+      this.protcolInstance.connect(this.account2).collateralize("250000000000000000000")
     );
   });
 
