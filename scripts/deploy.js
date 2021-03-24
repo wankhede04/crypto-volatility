@@ -64,7 +64,8 @@ async function main() {
   // granting PAUSER_ROLE to the protocol contract
   await ethvLongToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("PAUSER_ROLE")), VolmexProtocolFactoryInstance.address);
   await ethvShortToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("PAUSER_ROLE")), VolmexProtocolFactoryInstance.address);
-
+  
+  // verifying the contracts only if deployed to etherscan compatible network
   if (["kovan","rinkeby","ropsten","mainnet"].includes(network.name)) {
     // verifying the dummryERC20 contract
     await hre.run("verify:verify", {
