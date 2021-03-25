@@ -10,7 +10,11 @@ import 'hardhat-deploy';
 // import * as dotenv from "dotenv";
 import "@nomiclabs/hardhat-etherscan";
 
-// dotenv.config({ path: '.' + '/.env' });
+// Optimism support modules
+import '@eth-optimism/plugins/hardhat/compiler'
+import '@eth-optimism/plugins/hardhat/ethers'
+
+dotenv.config({ path: '.' + '/.env' });
 
 // This is a sample Buidler task. To learn how to create your own go to
 // https://buidler.dev/guides/create-task.html

@@ -140,7 +140,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
      * Mint the position token for `_msgSender`
      *
      */
-    function collateralize(uint256 _collateralQty) external onlyActive {
+    function collateralize(uint256 _collateralQty) external nonReentrant onlyActive {
         require(
             _collateralQty >= minimumCollateralQty,
             "Volmex: CollateralQty < minimum qty required"
@@ -177,7 +177,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
      *
      * Safely transfer the collateral to `_msgSender`
      */
-    function redeem(uint256 _positionTokenQty) external onlyActive {
+    function redeem(uint256 _positionTokenQty) external nonReentrant onlyActive {
         uint256 collQtyToBeRedeemed = SafeMath.mul(_positionTokenQty, 250);
 
         uint256 fee;
@@ -242,7 +242,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
         address _token,
         address _toWhom,
         uint256 _howMuch
-    ) external nonReentrant onlyOwner {
+    ) external onlyOwner {
         require(
             _token != address(collateral),
             "Volmex: Collateral token not allowed"
