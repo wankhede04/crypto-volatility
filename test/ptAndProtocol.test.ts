@@ -201,13 +201,12 @@ describe("Protocol Token contract", function () {
    * 9. for calling the collateral function the minimum collateral quantity is required: DONE
    * 10. only the acceptableCollateralCoin is used in the collateralize function: DONE
    * 11. on collateralization, msg.sender is issued both ETHVL and ETHVS tokens: DONE
-   * 12. after collateralization, msg.sender is able to burn the ETHVL and ETHVS and gets back collateral coin
-   * 13. no minimum qty required for burning
-   * 14. checking the math of the number of ETHVL and ETHVS minted when "x" qty of collateralCoin is collateralized
-   * 15. if issuanceFee > 0, fee is computed, reduced from the collateralQTY and only for the balance collateralQTY, the ETHVL and ETHVS tokens are minted
-   * 16. if issuanceFee > 0, accumulatedFee can be withdrawan through the claimAccumulatedFees fx
-   * 17. if redeemFees > 0, fee is computed, reduced from the refundable collateralQTY and only the balance is returned back to the msg.sender
-   * 18. if redeemFees > 0, accumulatedFee can be withdrawan through the claimAccumulatedFees fx
+   * 12. after collateralization, msg.sender is able to redeem the ETHVL and ETHVS and gets back collateral coin
+   * 13. checking the math of the number of ETHVL and ETHVS minted when "x" qty of collateralCoin is collateralized
+   * 14. if issuanceFee > 0, fee is computed, reduced from the collateralQTY and only for the balance collateralQTY, the ETHVL and ETHVS tokens are minted
+   * 15. if issuanceFee > 0, accumulatedFee can be withdrawan through the claimAccumulatedFees fx
+   * 16. if redeemFees > 0, fee is computed, reduced from the refundable collateralQTY and only the balance is returned back to the msg.sender
+   * 17. if redeemFees > 0, accumulatedFee can be withdrawan through the claimAccumulatedFees fx
    */
 
   before(async function () {
@@ -360,6 +359,31 @@ describe("Protocol Token contract", function () {
     const ethvsBalance = await this.ethVShortInstance.balanceOf(this.account2.address);
     expect(ethvlBalance).to.be.above(0);
     expect(ethvsBalance).to.be.above(0);
+  });
+
+  it("after collateralization, msg.sender is able to redeem the ETHVL and ETHVS and gets back collateral coin", async function () {
+    //
+    assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvl");
+    assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
+    // minting dummryERC20 token to account 2
+    await this.DummyERC20Instance.mint(this.account2.address,"250000000000000000000");
+    // approving the protocol contract to use the dummry erc20 token held by account 2
+    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "250000000000000000000");
+    // collaterilzing the position
+    const receipt = await this.protcolInstance.connect(this.account2).collateralize("25000000000000000000");
+    expect(receipt.confirmations).to.be.above(0);
+    const ethvlBalance = await this.ethVLongInstance.balanceOf(this.account2.address);
+    const ethvsBalance = await this.ethVShortInstance.balanceOf(this.account2.address);
+    expect(ethvlBalance).to.be.above(0);
+    expect(ethvsBalance).to.be.above(0);
+    // redeeming the ethvl and ethvs
+    /// approving the protocol contract
+    await this.ethVLongInstance.connect(this.account2).approve(this.protcolInstance.address, ethvlBalance);
+    await this.ethVShortInstance.connect(this.account2).approve(this.protcolInstance.address, ethvsBalance);
+    /// calling the redeem function
+    const receipt2 = await this.protcolInstance.connect(this.account2).redeem(ethvlBalance);
+    expect(receipt2.confirmations).to.be.above(0);
+
   });
 
 });
