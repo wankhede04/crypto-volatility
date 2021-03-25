@@ -44,14 +44,8 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
     IERC20Modified public longPosition;
     IERC20Modified public shortPosition;
 
-    // Address of the acceptable collateral token
-    IERC20Modified public collateral;
-
-    bytes32 public constant DEFAULT_ADMIN_ROLE =
-        keccak256("DEFAULT_ADMIN_ROLE");
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-    bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
+    // Only ERC20 standard functions are used.
+    IERC20Modified immutable collateral;
 
     uint256 public issuanceFees;
     uint256 public redeemFees;
@@ -193,46 +187,6 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
         collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
 
         emit Redeemed(msg.sender, collQtyToBeRedeemed, _positionTokenQty, fee);
-    }
-
-    /**
-     * @notice change the ownership of the Position Token Address
-     *
-     * @param _newOwner Address of the new owner
-     * @param _positionTokenAddress Address of the new owner
-     */
-    function changePositionTokenOwnership(
-        address _newOwner,
-        address _positionTokenAddress
-    ) external onlyOwner {
-        IERC20Modified(_positionTokenAddress).grantRole(MINTER_ROLE, _newOwner);
-        IERC20Modified(_positionTokenAddress).renounceRole(
-            MINTER_ROLE,
-            _msgSender()
-        );
-
-        IERC20Modified(_positionTokenAddress).grantRole(PAUSER_ROLE, _newOwner);
-        IERC20Modified(_positionTokenAddress).renounceRole(
-            PAUSER_ROLE,
-            _msgSender()
-        );
-
-        IERC20Modified(_positionTokenAddress).grantRole(BURNER_ROLE, _newOwner);
-        IERC20Modified(_positionTokenAddress).renounceRole(
-            BURNER_ROLE,
-            _msgSender()
-        );
-
-        IERC20Modified(_positionTokenAddress).grantRole(
-            DEFAULT_ADMIN_ROLE,
-            _newOwner
-        );
-        IERC20Modified(_positionTokenAddress).renounceRole(
-            DEFAULT_ADMIN_ROLE,
-            _msgSender()
-        );
-
-        emit PositionOwnershipTransfered(_newOwner, _positionTokenAddress);
     }
 
     /**
