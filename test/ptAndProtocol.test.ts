@@ -400,8 +400,8 @@ describe("Protocol Token contract", function () {
     expect(receipt.confirmations).to.be.above(0);
     const ethvlBalance = await this.ethVLongInstance.balanceOf(this.account2.address);
     const ethvsBalance = await this.ethVShortInstance.balanceOf(this.account2.address);
-    expect(ethvlBalance).to.be.equal(1000000000000000000);
-    expect(ethvsBalance).to.be.equal(1000000000000000000);
+    expect(ethvlBalance.toString()).to.be.equal("1000000000000000000");
+    expect(ethvsBalance.toString()).to.be.equal("1000000000000000000");
   });
 
 });
