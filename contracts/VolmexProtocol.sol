@@ -31,10 +31,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
         uint256 positionTokenBurned,
         uint256 fees
     );
-    event PositionOwnershipTransfered(
-        address indexed newOwner,
-        address positionToken
-    );
+    event UpdatedFees(uint256 issuanceFees, uint256 redeemFees);
     event UpdatedMinimumCollateral(uint256 newMinimumCollateralQty);
     event ClaimedFees(uint256 fees);
     event ToggledPositionTokenPause(bool isPause);
@@ -46,7 +43,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
     IERC20Modified public shortPosition;
 
     // Only ERC20 standard functions are used by the collateral defined here.
-    // Address of the acceptable collateral token
+    // Address of the acceptable collateral token.
     IERC20Modified immutable collateral;
 
     uint256 public issuanceFees;
@@ -218,6 +215,8 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
     {
         issuanceFees = _issuanceFees;
         redeemFees = _redeemFees;
+
+        emit UpdatedFees(_issuanceFees, _redeemFees);
     }
 
     /**
