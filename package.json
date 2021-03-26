@@ -8,8 +8,8 @@
   },
   "scripts": {
     "compile": "hardhat compile",
-    "postinstall": "patch-package",
-    "test": "mocha"
+    "test": "mocha",
+    "postinstall": "patch-package --patch-dir node_modules/@thesatoshicompany/optimism-openzeppelin-compat/patches"
   },
   "devDependencies": {
     "@eth-optimism/plugins": "^0.0.20",
@@ -19,6 +19,7 @@
     "@openzeppelin/buidler-upgrades": "^1.1.0",
     "@openzeppelin/contracts": "^3.4.1",
     "@openzeppelin/test-helpers": "^0.5.6",
+    "@thesatoshicompany/optimism-openzeppelin-compat": "^1.0.3",
     "@typechain/ethers-v5": "^5.0.0",
     "@typechain/truffle-v5": "^4.0.1",
     "@typechain/web3-v1": "^2.0.0",
@@ -32,7 +33,6 @@
     "hardhat-deploy": "^0.7.0-beta.44",
     "hardhat-deploy-ethers": "^0.3.0-beta.7",
     "hardhat-typechain": "^0.3.4",
-    "patch-package": "^6.4.7",
     "ts-generator": "^0.1.1",
     "ts-node": "^9.1.1",
     "typechain": "^4.0.1",
