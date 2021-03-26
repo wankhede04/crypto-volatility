@@ -65,14 +65,14 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
      * @dev Locks the `minimumCollateralQty` at 25*10^18 tokens
      * @dev Makes the collateral token as `collateral`
      *
-     * @param _collateralTokenAddress is address of collateral token
-     * @param _longPosition is address of long position token
-     * @param _shortPosition is address of short position token
+     * @param _collateralTokenAddress is address of collateral token typecasted to IERC20Modified
+     * @param _longPosition is address of long position token typecasted to IERC20Modified
+     * @param _shortPosition is address of short position token typecasted to IERC20Modified
      */
     constructor(
-        address _collateralTokenAddress,
-        address _longPosition,
-        address _shortPosition,
+        IERC20Modified _collateralTokenAddress,
+        IERC20Modified _longPosition,
+        IERC20Modified _shortPosition,
         uint256 _minimumCollateralQty
     ) {
         require(
@@ -82,9 +82,9 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
 
         active = true;
         minimumCollateralQty = _minimumCollateralQty;
-        collateral = IERC20Modified(_collateralTokenAddress);
-        longPosition = IERC20Modified(_longPosition);
-        shortPosition = IERC20Modified(_shortPosition);
+        collateral = _collateralTokenAddress;
+        longPosition = _longPosition;
+        shortPosition = _shortPosition;
     }
 
     /**
@@ -243,6 +243,6 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
             shortPosition.unpause();
         }
 
-        event ToggledPositionTokenPause(_isPause);
+        emit ToggledPositionTokenPause(_isPause);
     }
 }
