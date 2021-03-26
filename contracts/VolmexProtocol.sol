@@ -44,7 +44,8 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
     IERC20Modified public longPosition;
     IERC20Modified public shortPosition;
 
-    // Only ERC20 standard functions are used.
+    // Only ERC20 standard functions are used by the collateral defined here.
+    // Address of the acceptable collateral token
     IERC20Modified immutable collateral;
 
     uint256 public issuanceFees;
