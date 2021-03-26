@@ -37,6 +37,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
     );
     event UpdatedMinimumCollateral(uint256 newMinimumCollateralQty);
     event ClaimedFees(uint256 fees);
+    event ToggledPositionTokenPause(bool isPause);
 
     uint256 public minimumCollateralQty;
     bool public active;
@@ -227,5 +228,22 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
         delete accumulatedFees;
 
         emit ClaimedFees(accumulatedFees);
+    }
+
+    /**
+     * @notice Pause/unpause volmex position token.
+     *
+     * @param _isPause Boolean value to pause or unpause the position token { true = pause, false = unpause }
+     */
+    function togglePause(bool _isPause) external onlyOwner {
+        if (_isPause) {
+            longPosition.pause();
+            shortPosition.pause();
+        } else {
+            longPosition.unpause();
+            shortPosition.unpause();
+        }
+
+        event ToggledPositionTokenPause(_isPause);
     }
 }
