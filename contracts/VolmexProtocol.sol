@@ -31,12 +31,10 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
         uint256 positionTokenBurned,
         uint256 fees
     );
-    event PositionOwnershipTransfered(
-        address indexed newOwner,
-        address positionToken
-    );
+    event UpdatedFees(uint256 issuanceFees, uint256 redeemFees);
     event UpdatedMinimumCollateral(uint256 newMinimumCollateralQty);
     event ClaimedFees(uint256 fees);
+    event ToggledPositionTokenPause(bool isPause);
 
     uint256 public minimumCollateralQty;
     bool public active;
@@ -44,7 +42,8 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
     IERC20Modified public longPosition;
     IERC20Modified public shortPosition;
 
-    // Only ERC20 standard functions are used.
+    // Only ERC20 standard functions are used by the collateral defined here.
+    // Address of the acceptable collateral token.
     IERC20Modified immutable collateral;
 
     uint256 public issuanceFees;
@@ -66,14 +65,14 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
      * @dev Locks the `minimumCollateralQty` at 25*10^18 tokens
      * @dev Makes the collateral token as `collateral`
      *
-     * @param _collateralTokenAddress is address of collateral token
-     * @param _longPosition is address of long position token
-     * @param _shortPosition is address of short position token
+     * @param _collateralTokenAddress is address of collateral token typecasted to IERC20Modified
+     * @param _longPosition is address of long position token typecasted to IERC20Modified
+     * @param _shortPosition is address of short position token typecasted to IERC20Modified
      */
     constructor(
-        address _collateralTokenAddress,
-        address _longPosition,
-        address _shortPosition,
+        IERC20Modified _collateralTokenAddress,
+        IERC20Modified _longPosition,
+        IERC20Modified _shortPosition,
         uint256 _minimumCollateralQty
     ) {
         require(
@@ -83,9 +82,9 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
 
         active = true;
         minimumCollateralQty = _minimumCollateralQty;
-        collateral = IERC20Modified(_collateralTokenAddress);
-        longPosition = IERC20Modified(_longPosition);
-        shortPosition = IERC20Modified(_shortPosition);
+        collateral = _collateralTokenAddress;
+        longPosition = _longPosition;
+        shortPosition = _shortPosition;
     }
 
     /**
@@ -216,6 +215,8 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
     {
         issuanceFees = _issuanceFees;
         redeemFees = _redeemFees;
+
+        emit UpdatedFees(_issuanceFees, _redeemFees);
     }
 
     /**
@@ -226,5 +227,22 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
         delete accumulatedFees;
 
         emit ClaimedFees(accumulatedFees);
+    }
+
+    /**
+     * @notice Pause/unpause volmex position token.
+     *
+     * @param _isPause Boolean value to pause or unpause the position token { true = pause, false = unpause }
+     */
+    function togglePause(bool _isPause) external onlyOwner {
+        if (_isPause) {
+            longPosition.pause();
+            shortPosition.pause();
+        } else {
+            longPosition.unpause();
+            shortPosition.unpause();
+        }
+
+        emit ToggledPositionTokenPause(_isPause);
     }
 }
