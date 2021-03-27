@@ -31,12 +31,10 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
         uint256 positionTokenBurned,
         uint256 fees
     );
-    event PositionOwnershipTransfered(
-        address indexed newOwner,
-        address positionToken
-    );
+    event UpdatedFees(uint256 issuanceFees, uint256 redeemFees);
     event UpdatedMinimumCollateral(uint256 newMinimumCollateralQty);
     event ClaimedFees(uint256 fees);
+    event ToggledPositionTokenPause(bool isPause);
 
     uint256 public minimumCollateralQty;
     bool public active;
@@ -44,14 +42,9 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
     IERC20Modified public longPosition;
     IERC20Modified public shortPosition;
 
-    // Address of the acceptable collateral token
-    IERC20Modified public collateral;
-
-    bytes32 public constant DEFAULT_ADMIN_ROLE =
-        keccak256("DEFAULT_ADMIN_ROLE");
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-    bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
+    // Only ERC20 standard functions are used by the collateral defined here.
+    // Address of the acceptable collateral token.
+    IERC20Modified immutable collateral;
 
     uint256 public issuanceFees;
     uint256 public redeemFees;
@@ -72,14 +65,14 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
      * @dev Locks the `minimumCollateralQty` at 25*10^18 tokens
      * @dev Makes the collateral token as `collateral`
      *
-     * @param _collateralTokenAddress is address of collateral token
-     * @param _longPosition is address of long position token
-     * @param _shortPosition is address of short position token
+     * @param _collateralTokenAddress is address of collateral token typecasted to IERC20Modified
+     * @param _longPosition is address of long position token typecasted to IERC20Modified
+     * @param _shortPosition is address of short position token typecasted to IERC20Modified
      */
     constructor(
-        address _collateralTokenAddress,
-        address _longPosition,
-        address _shortPosition,
+        IERC20Modified _collateralTokenAddress,
+        IERC20Modified _longPosition,
+        IERC20Modified _shortPosition,
         uint256 _minimumCollateralQty
     ) {
         require(
@@ -89,9 +82,9 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
 
         active = true;
         minimumCollateralQty = _minimumCollateralQty;
-        collateral = IERC20Modified(_collateralTokenAddress);
-        longPosition = IERC20Modified(_longPosition);
-        shortPosition = IERC20Modified(_shortPosition);
+        collateral = _collateralTokenAddress;
+        longPosition = _longPosition;
+        shortPosition = _shortPosition;
     }
 
     /**
@@ -196,46 +189,6 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice change the ownership of the Position Token Address
-     *
-     * @param _newOwner Address of the new owner
-     * @param _positionTokenAddress Address of the new owner
-     */
-    function changePositionTokenOwnership(
-        address _newOwner,
-        address _positionTokenAddress
-    ) external onlyOwner {
-        IERC20Modified(_positionTokenAddress).grantRole(MINTER_ROLE, _newOwner);
-        IERC20Modified(_positionTokenAddress).renounceRole(
-            MINTER_ROLE,
-            address(this)
-        );
-
-        IERC20Modified(_positionTokenAddress).grantRole(PAUSER_ROLE, _newOwner);
-        IERC20Modified(_positionTokenAddress).renounceRole(
-            PAUSER_ROLE,
-            address(this)
-        );
-
-        IERC20Modified(_positionTokenAddress).grantRole(BURNER_ROLE, _newOwner);
-        IERC20Modified(_positionTokenAddress).renounceRole(
-            BURNER_ROLE,
-            address(this)
-        );
-
-        IERC20Modified(_positionTokenAddress).grantRole(
-            DEFAULT_ADMIN_ROLE,
-            _newOwner
-        );
-        IERC20Modified(_positionTokenAddress).renounceRole(
-            DEFAULT_ADMIN_ROLE,
-            address(this)
-        );
-
-        emit PositionOwnershipTransfered(_newOwner, _positionTokenAddress);
-    }
-
-    /**
      * @notice Recover tokens accidentally sent to this contract
      */
     function recoverTokens(
@@ -262,6 +215,8 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
     {
         issuanceFees = _issuanceFees;
         redeemFees = _redeemFees;
+
+        emit UpdatedFees(_issuanceFees, _redeemFees);
     }
 
     /**
@@ -272,5 +227,22 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
         delete accumulatedFees;
 
         emit ClaimedFees(accumulatedFees);
+    }
+
+    /**
+     * @notice Pause/unpause volmex position token.
+     *
+     * @param _isPause Boolean value to pause or unpause the position token { true = pause, false = unpause }
+     */
+    function togglePause(bool _isPause) external onlyOwner {
+        if (_isPause) {
+            longPosition.pause();
+            shortPosition.pause();
+        } else {
+            longPosition.unpause();
+            shortPosition.unpause();
+        }
+
+        emit ToggledPositionTokenPause(_isPause);
     }
 }

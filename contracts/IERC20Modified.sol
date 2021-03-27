@@ -13,4 +13,7 @@ interface IERC20Modified is IERC20 {
 
     function grantRole(bytes32 role, address account) external;
     function renounceRole(bytes32 role, address account) external;
+
+    function pause() external;
+    function unpause() external;
 }

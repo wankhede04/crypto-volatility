@@ -7,9 +7,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 
 contract VolmexPositionToken is Context, AccessControl, ERC20Pausable {
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-    bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
+    bytes32 public constant VOLMEX_PROTOCOL_ROLE = keccak256("VOLMEX_PROTOCOL_ROLE");
 
     /**
      * @dev Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE`, `PAUSER_ROLE` and `BURNER_ROLE` to the
@@ -19,10 +17,7 @@ contract VolmexPositionToken is Context, AccessControl, ERC20Pausable {
      */
     constructor(string memory name, string memory symbol) ERC20(name, symbol) {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-
-        _setupRole(MINTER_ROLE, _msgSender());
-        _setupRole(PAUSER_ROLE, _msgSender());
-        _setupRole(BURNER_ROLE, _msgSender());
+        _setupRole(VOLMEX_PROTOCOL_ROLE, _msgSender());
     }
 
     /**
@@ -36,8 +31,8 @@ contract VolmexPositionToken is Context, AccessControl, ERC20Pausable {
      */
     function mint(address to, uint256 amount) public virtual {
         require(
-            hasRole(MINTER_ROLE, _msgSender()),
-            "VolmexPositionToken: must have minter role to mint"
+            hasRole(VOLMEX_PROTOCOL_ROLE, _msgSender()),
+            "VolmexPositionToken: must have volmex protocol role to mint"
         );
         _mint(to, amount);
     }
@@ -49,8 +44,8 @@ contract VolmexPositionToken is Context, AccessControl, ERC20Pausable {
      */
     function burn(address from, uint256 amount) public virtual {
         require(
-            hasRole(BURNER_ROLE, _msgSender()),
-            "VolmexPositionToken: must have burner role to burn"
+            hasRole(VOLMEX_PROTOCOL_ROLE, _msgSender()),
+            "VolmexPositionToken: must have volmex protocol role to burn"
         );
         _burn(from, amount);
     }
@@ -66,8 +61,8 @@ contract VolmexPositionToken is Context, AccessControl, ERC20Pausable {
      */
     function pause() public virtual {
         require(
-            hasRole(PAUSER_ROLE, _msgSender()),
-            "VolmexPositionToken: must have pauser role to pause"
+            hasRole(VOLMEX_PROTOCOL_ROLE, _msgSender()),
+            "VolmexPositionToken: must have volmex protocol role to pause"
         );
         _pause();
     }
@@ -83,8 +78,8 @@ contract VolmexPositionToken is Context, AccessControl, ERC20Pausable {
      */
     function unpause() public virtual {
         require(
-            hasRole(PAUSER_ROLE, _msgSender()),
-            "VolmexPositionToken: must have pauser role to unpause"
+            hasRole(VOLMEX_PROTOCOL_ROLE, _msgSender()),
+            "VolmexPositionToken: must have volmex protocol role to unpause"
         );
         _unpause();
     }
