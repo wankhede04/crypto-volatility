@@ -31,7 +31,7 @@ const checkEvent = async (r: any, ...args: string[]) => {
   return true;
 }
 
-// describe("Position Token contract", function () {
+describe("Position Token contract", function () {
 //   /**
 //    * SCOPE OF THE TEST FOR THE POSITION TOKEN CONTRACT
 //    * 1. contract is successfully deployed: DONE
@@ -45,147 +45,147 @@ const checkEvent = async (r: any, ...args: string[]) => {
 //    * 9. once the contract is paused no token can be burned: DONE
 //    */
 
-//   before(async function () {
-//     [this.owner, this.account2, this.account3] = await ethers.getSigners();
-//     this.PositionTokenContract = await ethers.getContractFactory("VolmexPositionToken");
-//     this.tokenName = "ETHVLong";
-//     this.tokenSymbol = "ETHVL"
-//   });
+  before(async function () {
+    [this.owner, this.account2, this.account3] = await ethers.getSigners();
+    this.PositionTokenContract = await ethers.getContractFactory("VolmexPositionToken");
+    this.tokenName = "ETHVLong";
+    this.tokenSymbol = "ETHVL"
+  });
 
-//   // deploying a fresh PTContract before each test
-//   beforeEach(async function () {
-//     this.ptc = await this.PositionTokenContract.deploy(this.tokenName, this.tokenSymbol);
-//     await this.ptc.deployed();
-//   });
+  // deploying a fresh PTContract before each test
+  beforeEach(async function () {
+    this.ptc = await this.PositionTokenContract.deploy(this.tokenName, this.tokenSymbol);
+    await this.ptc.deployed();
+  });
 
-//   it("contract is successfully deployed", async function () {
-//     const address = this.ptc.address;
-//     expect(address).to.not.equal(null);
-//   });
+  it("contract is successfully deployed", async function () {
+    const address = this.ptc.address;
+    expect(address).to.not.equal(null);
+  });
 
-//   it("deployed contract with the name and symbol as per the constructor", async function () {
-//     const ptTokenName = await this.ptc.name();
-//     expect(ptTokenName).to.be.equal(this.tokenName);
-//   });
+  it("deployed contract with the name and symbol as per the constructor", async function () {
+    const ptTokenName = await this.ptc.name();
+    expect(ptTokenName).to.be.equal(this.tokenName);
+  });
 
-//   it("deployed with no totalSupply", async function () {
-//     const ptTotalSupply = await this.ptc.totalSupply();
-//     expect(ptTotalSupply).to.be.equal(0);
-//   });
+  it("deployed with no totalSupply", async function () {
+    const ptTotalSupply = await this.ptc.totalSupply();
+    expect(ptTotalSupply).to.be.equal(0);
+  });
 
-//   it("only the owner of the contract is able to mint tokens", async function () {
-//     // minting tokens from non-owner account, expecting revert
-//     const value = await ethers.BigNumber.from("100");
-//     const toWhom = this.account2.address;
-//     await expectRevert(
-//       this.ptc.connect(this.account2).mint(toWhom, value),
-//       'VolmexPositionToken: must have volmex protocol role to mint'
-//     );
-//     // minting tokens from owner account, expecting success
-//     const receipt = await this.ptc.mint(toWhom, value);
-//     expect((await checkEvent(receipt, "Transfer", "from", "to", "value"))).to.be.true;
-//     /// double confirming on the basis of the balance
-//     const account2Balance = await this.ptc.balanceOf(toWhom);
-//     const totalSupply = await this.ptc.totalSupply();
-//     expect(account2Balance).to.be.equal(value);
-//     expect(totalSupply).to.be.equal(value);
-//   });
+  it("only the owner of the contract is able to mint tokens", async function () {
+    // minting tokens from non-owner account, expecting revert
+    const value = await ethers.BigNumber.from("100");
+    const toWhom = this.account2.address;
+    await expectRevert(
+      this.ptc.connect(this.account2).mint(toWhom, value),
+      'VolmexPositionToken: must have volmex protocol role to mint'
+    );
+    // minting tokens from owner account, expecting success
+    const receipt = await this.ptc.mint(toWhom, value);
+    expect((await checkEvent(receipt, "Transfer", "from", "to", "value"))).to.be.true;
+    /// double confirming on the basis of the balance
+    const account2Balance = await this.ptc.balanceOf(toWhom);
+    const totalSupply = await this.ptc.totalSupply();
+    expect(account2Balance).to.be.equal(value);
+    expect(totalSupply).to.be.equal(value);
+  });
 
-//   it("only the owner of the contract is able to burn tokens", async function () {
-//     // minting tokens to account2
-//     const value = await ethers.BigNumber.from("100");
-//     const toWhom = this.account2.address;
-//     const mintReceipt = await this.ptc.mint(toWhom, value);
-//     expect((await checkEvent(mintReceipt, "Transfer", "from", "to", "value"))).to.be.true;
-//     // burning tokens from non-owner account, expecting revert
-//     await expectRevert(
-//       this.ptc.connect(this.account2).burn(toWhom, value),
-//       'VolmexPositionToken: must have volmex protocol role to burn'
-//     );
-//     // burning tokens from owner account, expecting success
-//     const burnReceipt = await this.ptc.burn(toWhom, value);
-//     expect((await checkEvent(burnReceipt, "Transfer", "from", "to", "value"))).to.be.true;
-//   });
+  it("only the owner of the contract is able to burn tokens", async function () {
+    // minting tokens to account2
+    const value = await ethers.BigNumber.from("100");
+    const toWhom = this.account2.address;
+    const mintReceipt = await this.ptc.mint(toWhom, value);
+    expect((await checkEvent(mintReceipt, "Transfer", "from", "to", "value"))).to.be.true;
+    // burning tokens from non-owner account, expecting revert
+    await expectRevert(
+      this.ptc.connect(this.account2).burn(toWhom, value),
+      'VolmexPositionToken: must have volmex protocol role to burn'
+    );
+    // burning tokens from owner account, expecting success
+    const burnReceipt = await this.ptc.burn(toWhom, value);
+    expect((await checkEvent(burnReceipt, "Transfer", "from", "to", "value"))).to.be.true;
+  });
 
 
-//   it("only the owner of the contract is able to pause the contract", async function () {
-//     await expectRevert(
-//       this.ptc.connect(this.account2).pause(),
-//       'VolmexPositionToken: must have volmex protocol role to pause'
-//     );
-//     const receipt = await this.ptc.pause();
-//     expect((await checkEvent(receipt, "Paused", "account"))).to.be.true;
-//   });
+  it("only the owner of the contract is able to pause the contract", async function () {
+    await expectRevert(
+      this.ptc.connect(this.account2).pause(),
+      'VolmexPositionToken: must have volmex protocol role to pause'
+    );
+    const receipt = await this.ptc.pause();
+    expect((await checkEvent(receipt, "Paused", "account"))).to.be.true;
+  });
 
-//   it("once the contract is paused no token can be transferred", async function () {
-//     //mint token
-//     /// setting up variables
-//     const mintValue = await ethers.BigNumber.from("100");
-//     const transferValue = await ethers.BigNumber.from("50");
-//     const toWhom = this.account2.address;
-//     const transferee = this.account3.address;
+  it("once the contract is paused no token can be transferred", async function () {
+    //mint token
+    /// setting up variables
+    const mintValue = await ethers.BigNumber.from("100");
+    const transferValue = await ethers.BigNumber.from("50");
+    const toWhom = this.account2.address;
+    const transferee = this.account3.address;
 
-//     /// minting tokens
-//     const mintTeceipt = await this.ptc.connect(this.owner).mint(toWhom, mintValue);
-//     expect((await checkEvent(mintTeceipt, "Transfer", "from", "to", "value"))).to.be.true;
+    /// minting tokens
+    const mintTeceipt = await this.ptc.connect(this.owner).mint(toWhom, mintValue);
+    expect((await checkEvent(mintTeceipt, "Transfer", "from", "to", "value"))).to.be.true;
 
-//     //Transfer token to confirm that transfer fx is working fine
-//     const transferReceipt = await this.ptc.connect(this.account2).transfer(transferee, transferValue);
-//     expect((await checkEvent(transferReceipt, "Transfer", "from", "to", "value"))).to.be.true;
+    //Transfer token to confirm that transfer fx is working fine
+    const transferReceipt = await this.ptc.connect(this.account2).transfer(transferee, transferValue);
+    expect((await checkEvent(transferReceipt, "Transfer", "from", "to", "value"))).to.be.true;
 
-//     //pause contract
-//     const pauseReceipt = await this.ptc.pause();
-//     expect((await checkEvent(pauseReceipt, "Paused", "account"))).to.be.true;
+    //pause contract
+    const pauseReceipt = await this.ptc.pause();
+    expect((await checkEvent(pauseReceipt, "Paused", "account"))).to.be.true;
 
-//     //Transfer token to confirm it is failing
-//     await expectRevert(
-//       this.ptc.connect(this.account2).transfer(transferee, transferValue),
-//       "ERC20Pausable: token transfer while paused"
-//     );
-//   });
+    //Transfer token to confirm it is failing
+    await expectRevert(
+      this.ptc.connect(this.account2).transfer(transferee, transferValue),
+      "ERC20Pausable: token transfer while paused"
+    );
+  });
 
-//   it("once the contract is paused no token can be minted", async function () {
-//     //mint token
-//     /// setting up variables
-//     const mintValue = await ethers.BigNumber.from("100");
-//     const toWhom = this.account2.address;
+  it("once the contract is paused no token can be minted", async function () {
+    //mint token
+    /// setting up variables
+    const mintValue = await ethers.BigNumber.from("100");
+    const toWhom = this.account2.address;
 
-//     /// minting tokens
-//     const mintTeceipt = await this.ptc.connect(this.owner).mint(toWhom, mintValue);
-//     expect((await checkEvent(mintTeceipt, "Transfer", "from", "to", "value"))).to.be.true;
+    /// minting tokens
+    const mintTeceipt = await this.ptc.connect(this.owner).mint(toWhom, mintValue);
+    expect((await checkEvent(mintTeceipt, "Transfer", "from", "to", "value"))).to.be.true;
 
-//     //pause contract
-//     const pauseReceipt = await this.ptc.pause();
-//     expect((await checkEvent(pauseReceipt, "Paused", "account"))).to.be.true;
+    //pause contract
+    const pauseReceipt = await this.ptc.pause();
+    expect((await checkEvent(pauseReceipt, "Paused", "account"))).to.be.true;
 
-//     //minting again
-//     await expectRevert(
-//       this.ptc.mint(toWhom, mintValue),
-//       "ERC20Pausable: token transfer while paused"
-//     );
-//   });
+    //minting again
+    await expectRevert(
+      this.ptc.mint(toWhom, mintValue),
+      "ERC20Pausable: token transfer while paused"
+    );
+  });
 
-//   it("once the contract is paused no token can be burned", async function () {
-//     //mint token
-//     /// setting up variables
-//     const mintValue = await ethers.BigNumber.from("100");
-//     const toWhom = this.account2.address;
+  it("once the contract is paused no token can be burned", async function () {
+    //mint token
+    /// setting up variables
+    const mintValue = await ethers.BigNumber.from("100");
+    const toWhom = this.account2.address;
 
-//     /// minting tokens
-//     const mintTeceipt = await this.ptc.mint(toWhom, mintValue);
-//     expect((await checkEvent(mintTeceipt, "Transfer", "from", "to", "value"))).to.be.true;
+    /// minting tokens
+    const mintTeceipt = await this.ptc.mint(toWhom, mintValue);
+    expect((await checkEvent(mintTeceipt, "Transfer", "from", "to", "value"))).to.be.true;
 
-//     //pause contract
-//     const pauseReceipt = await this.ptc.pause();
-//     expect((await checkEvent(pauseReceipt, "Paused", "account"))).to.be.true;
+    //pause contract
+    const pauseReceipt = await this.ptc.pause();
+    expect((await checkEvent(pauseReceipt, "Paused", "account"))).to.be.true;
 
-//     //burning tokens, expecting revert
-//     await expectRevert(
-//       this.ptc.burn(toWhom, mintValue),
-//       "ERC20Pausable: token transfer while paused"
-//     );
-//   });
-// });
+    //burning tokens, expecting revert
+    await expectRevert(
+      this.ptc.burn(toWhom, mintValue),
+      "ERC20Pausable: token transfer while paused"
+    );
+  });
+});
 
 describe("Protocol Token contract", function () {
   /**
@@ -205,8 +205,8 @@ describe("Protocol Token contract", function () {
    * 13. if issuanceFee > 0, fee is computed, reduced from the collateralQTY and only for the balance collateralQTY, the ETHVL and ETHVS tokens are minted: DONE
    * 14. if issuanceFee > 0, accumulatedFee can be withdrawan through the claimAccumulatedFees fx: DONE 
    * 15. if redeemFees > 0, fee is computed, reduced from the refundable collateralQTY and only the balance is returned back to the msg.sender: DONE
-   * 16. if redeemFees > 0, accumulatedFee can be withdrawan through the claimAccumulatedFees fx
-   * 17. checking the math of the number of ETHVL and ETHVS minted when "x" qty of collateralCoin is collateralized
+   * 16. if redeemFees > 0, accumulatedFee can be withdrawan through the claimAccumulatedFees fx: DONE
+   * 17. checking the math of the number of ETHVL and ETHVS minted when "x" qty of collateralCoin is collateralized: DONE
    */
 
   before(async function () {
@@ -444,6 +444,56 @@ describe("Protocol Token contract", function () {
     expect(newDummyERC20Balance).to.be.equal("125000000000000000000");
   });
 
+  it("if redeemFees > 0, accumulatedFee can be withdrawan through the claimAccumulatedFees fx", async function () {
+    const previousDummybalance = (await this.DummyERC20Instance.balanceOf(this.owner.address)).toString();
+    assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvl");
+    assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
+    assert.equal((await this.DummyERC20Instance.balanceOf(this.account2.address)), 0, "Account2 already holds some DummyERC20 Tokens");
+    // minting dummryERC20 token to account 2
+    await this.DummyERC20Instance.mint(this.account2.address,"250000000000000000000");
+    // approving the protocol contract to use the dummry erc20 token held by account 2
+    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "250000000000000000000");
+    // collaterilzing the position
+    const receipt = await this.protcolInstance.connect(this.account2).collateralize("250000000000000000000");
+    expect(receipt.confirmations).to.be.above(0);
+    const ethvlBalance = await this.ethVLongInstance.balanceOf(this.account2.address);
+    const ethvsBalance = await this.ethVShortInstance.balanceOf(this.account2.address);
+    expect(ethvlBalance).to.be.equal("1000000000000000000");
+    expect(ethvsBalance).to.be.equal("1000000000000000000");
+    // redeeming the ethvl and ethvs
+    /// approving the protocol contract
+    await this.ethVLongInstance.connect(this.account2).approve(this.protcolInstance.address, ethvlBalance);
+    await this.ethVShortInstance.connect(this.account2).approve(this.protcolInstance.address, ethvsBalance);
+    // setting up the redemption fee
+    await this.protcolInstance.updateFees(0,500);
+    /// calling the redeem function
+    await this.protcolInstance.connect(this.account2).redeem(ethvlBalance);
+    const newDummyERC20Balance = (await this.DummyERC20Instance.balanceOf(this.account2.address)).toString();
+    expect(newDummyERC20Balance).to.be.equal("125000000000000000000");
+    const feeWithdrawalReceipt = await this.protcolInstance.claimAccumulatedFees();
+    expect(feeWithdrawalReceipt.confirmations).to.be.above(0);
+    const newDummybalance = (await this.DummyERC20Instance.balanceOf(this.owner.address)).toString();
+    let diff = newDummybalance - previousDummybalance;
+    expect((diff).toString()).to.be.equal("125000000000000000000")
+  });
+
+  it("checking the math of the number of ETHVL and ETHVS minted when \"x\" qty of collateralCoin is collateralized", async function () {
+    const previousDummybalance = (await this.DummyERC20Instance.balanceOf(this.owner.address)).toString();
+    assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvl");
+    assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
+    assert.equal((await this.DummyERC20Instance.balanceOf(this.account2.address)), 0, "Account2 already holds some DummyERC20 Tokens");
+    // minting dummryERC20 token to account 2
+    await this.DummyERC20Instance.mint(this.account2.address,"250000000000000000000");
+    // approving the protocol contract to use the dummry erc20 token held by account 2
+    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "250000000000000000000");
+    // collaterilzing the position
+    const receipt = await this.protcolInstance.connect(this.account2).collateralize("250000000000000000000");
+    expect(receipt.confirmations).to.be.above(0);
+    const ethvlBalance = await this.ethVLongInstance.balanceOf(this.account2.address);
+    const ethvsBalance = await this.ethVShortInstance.balanceOf(this.account2.address);
+    expect(ethvlBalance).to.be.equal("1000000000000000000");
+    expect(ethvsBalance).to.be.equal("1000000000000000000");
+  });
 });
 
 
