@@ -54,16 +54,9 @@ async function main() {
   console.log("VP deployed to:", VolmexProtocolFactoryInstance.address);
 
   // granting MINTER_ROLE to the protocol contract
-  await ethvLongToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")), VolmexProtocolFactoryInstance.address);
-  await ethvShortToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")), VolmexProtocolFactoryInstance.address);
+  await ethvLongToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("VOLMEX_PROTOCOL_ROLE")), VolmexProtocolFactoryInstance.address);
+  await ethvShortToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("VOLMEX_PROTOCOL_ROLE")), VolmexProtocolFactoryInstance.address);
 
-  // granding BURNER_ROLE to the protocol contract
-  await ethvLongToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("BURNER_ROLE")), VolmexProtocolFactoryInstance.address);
-  await ethvShortToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("BURNER_ROLE")), VolmexProtocolFactoryInstance.address);
-
-  // granting PAUSER_ROLE to the protocol contract
-  await ethvLongToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("PAUSER_ROLE")), VolmexProtocolFactoryInstance.address);
-  await ethvShortToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("PAUSER_ROLE")), VolmexProtocolFactoryInstance.address);
   
   // verifying the contracts only if deployed to etherscan compatible network
   if (["kovan","rinkeby","ropsten","mainnet"].includes(network.name)) {
