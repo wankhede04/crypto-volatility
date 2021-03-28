@@ -183,7 +183,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
         longPosition.burn(msg.sender, _positionTokenQty);
         shortPosition.burn(msg.sender, _positionTokenQty);
 
-        collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
+        collateral.transfer(msg.sender, collQtyToBeRedeemed);
 
         emit Redeemed(msg.sender, collQtyToBeRedeemed, _positionTokenQty, fee);
     }
@@ -200,7 +200,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
             _token != address(collateral),
             "Volmex: Collateral token not allowed"
         );
-        IERC20Modified(_token).safeTransfer(_toWhom, _howMuch);
+        IERC20Modified(_token).transfer(_toWhom, _howMuch);
     }
 
     /**
@@ -223,7 +223,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
      * @notice Safely transfer the accumulated fees to owner
      */
     function claimAccumulatedFees() external onlyOwner {
-        collateral.safeTransfer(owner(), accumulatedFees);
+        collateral.transfer(owner(), accumulatedFees);
         delete accumulatedFees;
 
         emit ClaimedFees(accumulatedFees);
