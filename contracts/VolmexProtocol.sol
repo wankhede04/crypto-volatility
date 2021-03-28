@@ -44,7 +44,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
 
     // Only ERC20 standard functions are used by the collateral defined here.
     // Address of the acceptable collateral token.
-    IERC20Modified immutable collateral;
+    IERC20Modified immutable public collateral;
 
     uint256 public issuanceFees;
     uint256 public redeemFees;
@@ -146,7 +146,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
             accumulatedFees = accumulatedFees.add(fee);
         }
 
-        collateral.safeTransferFrom(
+        collateral.transferFrom(
             msg.sender,
             address(this),
             _collateralQty
