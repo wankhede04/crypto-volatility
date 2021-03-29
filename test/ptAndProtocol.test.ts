@@ -232,7 +232,7 @@ describe("Protocol Token contract", function () {
       this.DummyERC20Instance.address,
       this.ethVLongInstance.address,
       this.ethVShortInstance.address,
-      "25000000000000000000"
+      "20000000000000000000"
     );
     // granting the MINTER_ROLE to the protocol contract
     await this.ethVLongInstance.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("VOLMEX_PROTOCOL_ROLE")), this.protcolInstance.address);
@@ -271,10 +271,10 @@ describe("Protocol Token contract", function () {
 
   it("only the owner can change the minimum collateral qty", async function () {
     await expectRevert(
-      this.protcolInstance.connect(this.account2).updateMinimumCollQty("25000000000000000001"),
+      this.protcolInstance.connect(this.account2).updateMinimumCollQty("20000000000000000000"),
       'Ownable: caller is not the owner'
     );
-    const receipt = await this.protcolInstance.updateMinimumCollQty("25000000000000000001");
+    const receipt = await this.protcolInstance.updateMinimumCollQty("20000000000000000001");
     expect((await checkEvent(receipt, "UpdatedMinimumCollateral", "newMinimumCollateralQty"))).to.be.true;
   });
 
@@ -290,36 +290,36 @@ describe("Protocol Token contract", function () {
 
   it("anyone can collateral to the protocol", async function () {
     // minting dummryERC20 token to account 2
-    await this.DummyERC20Instance.mint(this.account2.address,"250000000000000000000");
+    await this.DummyERC20Instance.mint(this.account2.address,"200000000000000000000");
     // approving the protocol contract to use the dummry erc20 token held by account 2
-    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "250000000000000000000");
+    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "200000000000000000000");
     // collaterilzing the position
-    await this.protcolInstance.connect(this.account2).collateralize("25000000000000000000");
+    await this.protcolInstance.connect(this.account2).collateralize("20000000000000000000");
     // expect(receipt.confirmations).to.be.above(0);
   });
 
   it("collateralize function can only be called when the contract is active", async function () {
     // minting dummryERC20 token to account 2
-    await this.DummyERC20Instance.mint(this.account2.address,"250000000000000000000");
+    await this.DummyERC20Instance.mint(this.account2.address,"200000000000000000000");
     // approving the protocol contract to use the dummry erc20 token held by account 2
-    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "250000000000000000000");
+    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "200000000000000000000");
     // toggling the active status of the contract
     await this.protcolInstance.toggleActive();
     // collaterilzing the position and expective revert
     await expectRevert(
-      this.protcolInstance.connect(this.account2).collateralize("25000000000000000000"),
+      this.protcolInstance.connect(this.account2).collateralize("20000000000000000000"),
       'Volmex: Protocol not active'
     );
   });
   
   it("for calling the collateral function the minimum collateral quantity is required", async function () {
     // minting dummryERC20 token to account 2
-    await this.DummyERC20Instance.mint(this.account2.address,"250000000000000000000");
+    await this.DummyERC20Instance.mint(this.account2.address,"200000000000000000000");
     // approving the protocol contract to use the dummry erc20 token held by account 2
-    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "250000000000000000000");
+    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "200000000000000000000");
     // collaterilzing the position with less than minimum qty and expeciting revert
     await expectRevert(
-      this.protcolInstance.connect(this.account2).collateralize("250000000000000"),
+      this.protcolInstance.connect(this.account2).collateralize("200000000000000"),
       'Volmex: CollateralQty < minimum qty required'
     );
   });
@@ -329,12 +329,12 @@ describe("Protocol Token contract", function () {
     this.DummyERC20InstanceV2 = await this.DummyERC20Contract.deploy();
     await this.DummyERC20InstanceV2.deployed();
     // minting dummryERC20 token to account 2
-    await this.DummyERC20InstanceV2.mint(this.account2.address,"250000000000000000000");
+    await this.DummyERC20InstanceV2.mint(this.account2.address,"200000000000000000000");
     // approving the protocol contract to use the dummry erc20 token held by account 2
-    await this.DummyERC20InstanceV2.connect(this.account2).approve(this.protcolInstance.address, "250000000000000000000");
+    await this.DummyERC20InstanceV2.connect(this.account2).approve(this.protcolInstance.address, "200000000000000000000");
     // collaterilzing the position with less than minimum qty and expeciting revert
     await expectRevert.unspecified(
-      this.protcolInstance.connect(this.account2).collateralize("250000000000000000000")
+      this.protcolInstance.connect(this.account2).collateralize("200000000000000000000")
     );
   });
 
@@ -343,11 +343,11 @@ describe("Protocol Token contract", function () {
     assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvl");
     assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
     // minting dummryERC20 token to account 2
-    await this.DummyERC20Instance.mint(this.account2.address,"250000000000000000000");
+    await this.DummyERC20Instance.mint(this.account2.address,"200000000000000000000");
     // approving the protocol contract to use the dummry erc20 token held by account 2
-    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "250000000000000000000");
+    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "200000000000000000000");
     // collaterilzing the position
-    const receipt = await this.protcolInstance.connect(this.account2).collateralize("25000000000000000000");
+    const receipt = await this.protcolInstance.connect(this.account2).collateralize("20000000000000000000");
     expect(receipt.confirmations).to.be.above(0);
     const ethvlBalance = await this.ethVLongInstance.balanceOf(this.account2.address);
     const ethvsBalance = await this.ethVShortInstance.balanceOf(this.account2.address);
@@ -359,11 +359,11 @@ describe("Protocol Token contract", function () {
     assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvl");
     assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
     // minting dummryERC20 token to account 2
-    await this.DummyERC20Instance.mint(this.account2.address,"250000000000000000000");
+    await this.DummyERC20Instance.mint(this.account2.address,"200000000000000000000");
     // approving the protocol contract to use the dummry erc20 token held by account 2
-    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "250000000000000000000");
+    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "200000000000000000000");
     // collaterilzing the position
-    const receipt = await this.protcolInstance.connect(this.account2).collateralize("25000000000000000000");
+    const receipt = await this.protcolInstance.connect(this.account2).collateralize("20000000000000000000");
     expect(receipt.confirmations).to.be.above(0);
     const ethvlBalance = await this.ethVLongInstance.balanceOf(this.account2.address);
     const ethvsBalance = await this.ethVShortInstance.balanceOf(this.account2.address);
@@ -383,13 +383,13 @@ describe("Protocol Token contract", function () {
     assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvl");
     assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
     // minting dummryERC20 token to account 2
-    await this.DummyERC20Instance.mint(this.account2.address,"500000000000000000000");
+    await this.DummyERC20Instance.mint(this.account2.address,"400000000000000000000");
     // approving the protocol contract to use the dummry erc20 token held by account 2
-    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "500000000000000000000");
+    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "400000000000000000000");
     // updating the issuancefee
     await this.protcolInstance.updateFees(500,0);
     // collaterilzing the position
-    const receipt = await this.protcolInstance.connect(this.account2).collateralize("500000000000000000000");
+    const receipt = await this.protcolInstance.connect(this.account2).collateralize("400000000000000000000");
     expect(receipt.confirmations).to.be.above(0);
     const ethvlBalance = await this.ethVLongInstance.balanceOf(this.account2.address);
     const ethvsBalance = await this.ethVShortInstance.balanceOf(this.account2.address);
@@ -401,13 +401,13 @@ describe("Protocol Token contract", function () {
     assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvl");
     assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
     // minting dummryERC20 token to account 2
-    await this.DummyERC20Instance.mint(this.account2.address,"500000000000000000000");
+    await this.DummyERC20Instance.mint(this.account2.address,"400000000000000000000");
     // approving the protocol contract to use the dummry erc20 token held by account 2
-    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "500000000000000000000");
+    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "400000000000000000000");
     // updating the issuancefee
     await this.protcolInstance.updateFees(500,0);
     // collaterilzing the position
-    const receipt = await this.protcolInstance.connect(this.account2).collateralize("500000000000000000000");
+    const receipt = await this.protcolInstance.connect(this.account2).collateralize("400000000000000000000");
     expect(receipt.confirmations).to.be.above(0);
     const ethvlBalance = await this.ethVLongInstance.balanceOf(this.account2.address);
     const ethvsBalance = await this.ethVShortInstance.balanceOf(this.account2.address);
@@ -422,11 +422,11 @@ describe("Protocol Token contract", function () {
     assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
     assert.equal((await this.DummyERC20Instance.balanceOf(this.account2.address)), 0, "Account2 already holds some DummyERC20 Tokens");
     // minting dummryERC20 token to account 2
-    await this.DummyERC20Instance.mint(this.account2.address,"250000000000000000000");
+    await this.DummyERC20Instance.mint(this.account2.address,"200000000000000000000");
     // approving the protocol contract to use the dummry erc20 token held by account 2
-    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "250000000000000000000");
+    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "200000000000000000000");
     // collaterilzing the position
-    const receipt = await this.protcolInstance.connect(this.account2).collateralize("250000000000000000000");
+    const receipt = await this.protcolInstance.connect(this.account2).collateralize("200000000000000000000");
     expect(receipt.confirmations).to.be.above(0);
     const ethvlBalance = await this.ethVLongInstance.balanceOf(this.account2.address);
     const ethvsBalance = await this.ethVShortInstance.balanceOf(this.account2.address);
@@ -441,7 +441,7 @@ describe("Protocol Token contract", function () {
     /// calling the redeem function
     await this.protcolInstance.connect(this.account2).redeem(ethvlBalance);
     const newDummyERC20Balance = (await this.DummyERC20Instance.balanceOf(this.account2.address)).toString();
-    expect(newDummyERC20Balance).to.be.equal("125000000000000000000");
+    expect(newDummyERC20Balance).to.be.equal("100000000000000000000");
   });
 
   it("if redeemFees > 0, accumulatedFee can be withdrawan through the claimAccumulatedFees fx", async function () {
@@ -450,11 +450,11 @@ describe("Protocol Token contract", function () {
     assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
     assert.equal((await this.DummyERC20Instance.balanceOf(this.account2.address)), 0, "Account2 already holds some DummyERC20 Tokens");
     // minting dummryERC20 token to account 2
-    await this.DummyERC20Instance.mint(this.account2.address,"250000000000000000000");
+    await this.DummyERC20Instance.mint(this.account2.address,"200000000000000000000");
     // approving the protocol contract to use the dummry erc20 token held by account 2
-    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "250000000000000000000");
+    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "200000000000000000000");
     // collaterilzing the position
-    const receipt = await this.protcolInstance.connect(this.account2).collateralize("250000000000000000000");
+    const receipt = await this.protcolInstance.connect(this.account2).collateralize("200000000000000000000");
     expect(receipt.confirmations).to.be.above(0);
     const ethvlBalance = await this.ethVLongInstance.balanceOf(this.account2.address);
     const ethvsBalance = await this.ethVShortInstance.balanceOf(this.account2.address);
@@ -469,12 +469,12 @@ describe("Protocol Token contract", function () {
     /// calling the redeem function
     await this.protcolInstance.connect(this.account2).redeem(ethvlBalance);
     const newDummyERC20Balance = (await this.DummyERC20Instance.balanceOf(this.account2.address)).toString();
-    expect(newDummyERC20Balance).to.be.equal("125000000000000000000");
+    expect(newDummyERC20Balance).to.be.equal("100000000000000000000");
     const feeWithdrawalReceipt = await this.protcolInstance.claimAccumulatedFees();
     expect(feeWithdrawalReceipt.confirmations).to.be.above(0);
     const newDummybalance = (await this.DummyERC20Instance.balanceOf(this.owner.address)).toString();
     let diff = newDummybalance - previousDummybalance;
-    expect((diff).toString()).to.be.equal("125000000000000000000")
+    expect((diff).toString()).to.be.equal("100000000000000000000")
   });
 
   it("checking the math of the number of ETHVL and ETHVS minted when \"x\" qty of collateralCoin is collateralized", async function () {
@@ -483,11 +483,11 @@ describe("Protocol Token contract", function () {
     assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
     assert.equal((await this.DummyERC20Instance.balanceOf(this.account2.address)), 0, "Account2 already holds some DummyERC20 Tokens");
     // minting dummryERC20 token to account 2
-    await this.DummyERC20Instance.mint(this.account2.address,"250000000000000000000");
+    await this.DummyERC20Instance.mint(this.account2.address,"200000000000000000000");
     // approving the protocol contract to use the dummry erc20 token held by account 2
-    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "250000000000000000000");
+    await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "200000000000000000000");
     // collaterilzing the position
-    const receipt = await this.protcolInstance.connect(this.account2).collateralize("250000000000000000000");
+    const receipt = await this.protcolInstance.connect(this.account2).collateralize("200000000000000000000");
     expect(receipt.confirmations).to.be.above(0);
     const ethvlBalance = await this.ethVLongInstance.balanceOf(this.account2.address);
     const ethvsBalance = await this.ethVShortInstance.balanceOf(this.account2.address);
