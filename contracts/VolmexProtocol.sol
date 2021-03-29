@@ -62,7 +62,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
      * @notice Creates the {PositionTokens}.
      *
      * @dev Makes the protocol `active` at deployment
-     * @dev Locks the `minimumCollateralQty` at 25*10^18 tokens
+     * @dev Locks the `minimumCollateralQty` at 20*10^18 tokens
      * @dev Makes the collateral token as `collateral`
      *
      * @param _collateralTokenAddress is address of collateral token typecasted to IERC20Modified
@@ -152,7 +152,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
             _collateralQty
         );
 
-        uint256 qtyToBeMinted = _collateralQty / 250;
+        uint256 qtyToBeMinted = _collateralQty / 200;
 
         longPosition.mint(msg.sender, qtyToBeMinted);
         shortPosition.mint(msg.sender, qtyToBeMinted);
@@ -165,13 +165,13 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
      *
      * @param _positionTokenQty Quantity of the position token that the user is surrendering
      *
-     * Amount of collateral is `_positionTokenQty` by the constant 250.
+     * Amount of collateral is `_positionTokenQty` by the constant 200.
      * Burn the position token
      *
      * Safely transfer the collateral to `_msgSender`
      */
     function redeem(uint256 _positionTokenQty) external onlyActive {
-        uint256 collQtyToBeRedeemed = SafeMath.mul(_positionTokenQty, 250);
+        uint256 collQtyToBeRedeemed = SafeMath.mul(_positionTokenQty, 200);
 
         uint256 fee;
         if (redeemFees > 0) {
