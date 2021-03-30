@@ -7,3 +7,6 @@ artifacts
 #Generated types
 types
 .env
+
+# vs code
+.history
