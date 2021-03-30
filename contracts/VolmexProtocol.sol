@@ -217,8 +217,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
         external
         onlyOwner
     {
-        require(_issuanceFees < MAX_FEE, "Volmex: issuanceFees should be less than MAX_FEE");
-        require(_redeemFees < MAX_FEE, "Volmex: redeemFees should be less than MAX_FEE");
+        require(_issuanceFees < MAX_FEE && _redeemFees < MAX_FEE, "Volmex: issue/redeem fees should be less than MAX_FEE");
 
         issuanceFees = _issuanceFees;
         redeemFees = _redeemFees;
