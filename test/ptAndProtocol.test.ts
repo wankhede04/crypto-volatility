@@ -395,6 +395,10 @@ describe("Protocol Token contract", function () {
     const ethvsBalance = await this.ethVShortInstance.balanceOf(this.account2.address);
     expect(ethvlBalance.toString()).to.be.equal("1900000000000000000");
     expect(ethvsBalance.toString()).to.be.equal("1900000000000000000");
+    await expectRevert(
+      this.protcolInstance.updateFees(500,0),
+      'Volmex: issue/redeem fees should be less than MAX_FEE'
+    );
   });
 
   it("if issuanceFee > 0, accumulatedFee can be withdrawan through the claimAccumulatedFees fx", async function () {
@@ -442,6 +446,10 @@ describe("Protocol Token contract", function () {
     await this.protcolInstance.connect(this.account2).redeem(ethvlBalance);
     const newDummyERC20Balance = (await this.DummyERC20Instance.balanceOf(this.account2.address)).toString();
     expect(newDummyERC20Balance).to.be.equal("190000000000000000000");
+    await expectRevert(
+      this.protcolInstance.updateFees(0,500),
+      'Volmex: issue/redeem fees should be less than MAX_FEE'
+    );
   });
 
   it("if redeemFees > 0, accumulatedFee can be withdrawan through the claimAccumulatedFees fx", async function () {
