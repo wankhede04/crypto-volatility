@@ -9,8 +9,11 @@ import "hardhat-typechain";
 import 'hardhat-deploy';
 // import * as dotenv from "dotenv";
 import "@nomiclabs/hardhat-etherscan";
+import 'hardhat-gas-reporter';
+import 'solidity-coverage';
 
 // dotenv.config({ path: '.' + '/.env' });
+const enableGasReport = !!process.env.ENABLE_GAS_REPORT;
 
 // This is a sample Buidler task. To learn how to create your own go to
 // https://buidler.dev/guides/create-task.html
@@ -65,5 +68,10 @@ export default {
   typechain: {
     outDir: "types",
     target: "ethers-v5",
-  }
+  },
+  gasReporter: {
+    enable: enableGasReport,
+    currency: 'USD',
+    outputFile: process.env.CI ? 'gas-report.txt' : undefined,
+  },
 };
