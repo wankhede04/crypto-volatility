@@ -185,6 +185,16 @@ describe("Position Token contract", function () {
       "ERC20Pausable: token transfer while paused"
     );
   });
+
+  it("only the owner of the contract is able to unpause the contract", async function () {
+    await expectRevert(
+      this.ptc.connect(this.account2).unpause(),
+      'VolmexPositionToken: must have volmex protocol role to unpause'
+    );
+    await this.ptc.pause();
+    const receipt = await this.ptc.unpause();
+    expect((await checkEvent(receipt, "Unpaused", "account"))).to.be.true;
+  });
 });
 
 describe("Protocol Token contract", function () {
@@ -214,6 +224,7 @@ describe("Protocol Token contract", function () {
     this.VolmexProtocolFactory = await ethers.getContractFactory("VolmexProtocol");
     this.PositionTokenContract = await ethers.getContractFactory("VolmexPositionToken");
     this.DummyERC20Contract = await ethers.getContractFactory("DummyERC20");
+    this.token = await ethers.getContractFactory("Token");
     this.ethVLongName = "ETHVLong";
     this.ethVLongSymbol = "ETHVL";
     this.ethVShortName = "ETHVShort";
@@ -234,6 +245,8 @@ describe("Protocol Token contract", function () {
       this.ethVShortInstance.address,
       "20000000000000000000"
     );
+    this.tokenInstance = await this.token.deploy("Token", "TKN");
+    await this.tokenInstance.deployed();
     // granting the MINTER_ROLE to the protocol contract
     await this.ethVLongInstance.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("VOLMEX_PROTOCOL_ROLE")), this.protcolInstance.address);
     await this.ethVShortInstance.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("VOLMEX_PROTOCOL_ROLE")), this.protcolInstance.address);
@@ -502,6 +515,26 @@ describe("Protocol Token contract", function () {
     expect(ethvlBalance).to.be.equal("1000000000000000000");
     expect(ethvsBalance).to.be.equal("1000000000000000000");
   });
+
+  it("only the owner can toggle the position token pause", async function () {
+    await expectRevert(
+      this.protcolInstance.connect(this.account2).togglePause(true),
+      'Ownable: caller is not the owner'
+    );
+    let receipt = await this.protcolInstance.togglePause(true);
+    expect((await checkEvent(receipt, "ToggledPositionTokenPause", "isPause"))).to.be.false;
+
+    receipt = await this.protcolInstance.togglePause(false);
+    expect((await checkEvent(receipt, "ToggledPositionTokenPause", "isPause"))).to.be.false;
+  });
+
+  it("only the owner can transfer the recovery tokens", async function () {
+    let wallet = ethers.Wallet.createRandom();
+    await expectRevert(
+      this.protcolInstance.connect(this.owner).recoverTokens(this.DummyERC20Instance.address, wallet.address, 0),
+      'Volmex: Collateral token not allowed'
+    );
+    const receipt = await this.protcolInstance.recoverTokens(this.tokenInstance.address, wallet.address, 0);
+    expect(await this.tokenInstance.balanceOf(wallet.address)).to.equal(0);
+  });
 });
-
-
