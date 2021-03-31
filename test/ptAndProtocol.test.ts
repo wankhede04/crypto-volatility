@@ -185,6 +185,16 @@ describe("Position Token contract", function () {
       "ERC20Pausable: token transfer while paused"
     );
   });
+
+  it("only the owner of the contract is able to unpause the contract", async function () {
+    await expectRevert(
+      this.ptc.connect(this.account2).unpause(),
+      'VolmexPositionToken: must have volmex protocol role to unpause'
+    );
+    await this.ptc.pause();
+    const receipt = await this.ptc.unpause();
+    expect((await checkEvent(receipt, "Unpaused", "account"))).to.be.true;
+  });
 });
 
 describe("Protocol Token contract", function () {
