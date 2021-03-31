@@ -387,14 +387,18 @@ describe("Protocol Token contract", function () {
     // approving the protocol contract to use the dummry erc20 token held by account 2
     await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "400000000000000000000");
     // updating the issuancefee
-    await this.protcolInstance.updateFees(500,0);
+    await this.protcolInstance.updateFees(50,0);
     // collaterilzing the position
     const receipt = await this.protcolInstance.connect(this.account2).collateralize("400000000000000000000");
     expect(receipt.confirmations).to.be.above(0);
     const ethvlBalance = await this.ethVLongInstance.balanceOf(this.account2.address);
     const ethvsBalance = await this.ethVShortInstance.balanceOf(this.account2.address);
-    expect(ethvlBalance.toString()).to.be.equal("1000000000000000000");
-    expect(ethvsBalance.toString()).to.be.equal("1000000000000000000");
+    expect(ethvlBalance.toString()).to.be.equal("1900000000000000000");
+    expect(ethvsBalance.toString()).to.be.equal("1900000000000000000");
+    await expectRevert(
+      this.protcolInstance.updateFees(1000,0),
+      'Volmex: issue/redeem fees should be less than MAX_FEE'
+    );
   });
 
   it("if issuanceFee > 0, accumulatedFee can be withdrawan through the claimAccumulatedFees fx", async function () {
@@ -405,14 +409,14 @@ describe("Protocol Token contract", function () {
     // approving the protocol contract to use the dummry erc20 token held by account 2
     await this.DummyERC20Instance.connect(this.account2).approve(this.protcolInstance.address, "400000000000000000000");
     // updating the issuancefee
-    await this.protcolInstance.updateFees(500,0);
+    await this.protcolInstance.updateFees(50,0);
     // collaterilzing the position
     const receipt = await this.protcolInstance.connect(this.account2).collateralize("400000000000000000000");
     expect(receipt.confirmations).to.be.above(0);
     const ethvlBalance = await this.ethVLongInstance.balanceOf(this.account2.address);
     const ethvsBalance = await this.ethVShortInstance.balanceOf(this.account2.address);
-    expect(ethvlBalance.toString()).to.be.equal("1000000000000000000");
-    expect(ethvsBalance.toString()).to.be.equal("1000000000000000000");
+    expect(ethvlBalance.toString()).to.be.equal("1900000000000000000");
+    expect(ethvsBalance.toString()).to.be.equal("1900000000000000000");
     const feeWithdrawalReceipt = await this.protcolInstance.claimAccumulatedFees();
     expect(feeWithdrawalReceipt.confirmations).to.be.above(0);
   });
@@ -437,11 +441,15 @@ describe("Protocol Token contract", function () {
     await this.ethVLongInstance.connect(this.account2).approve(this.protcolInstance.address, ethvlBalance);
     await this.ethVShortInstance.connect(this.account2).approve(this.protcolInstance.address, ethvsBalance);
     // setting up the redemption fee
-    await this.protcolInstance.updateFees(0,500);
+    await this.protcolInstance.updateFees(0,50);
     /// calling the redeem function
     await this.protcolInstance.connect(this.account2).redeem(ethvlBalance);
     const newDummyERC20Balance = (await this.DummyERC20Instance.balanceOf(this.account2.address)).toString();
-    expect(newDummyERC20Balance).to.be.equal("100000000000000000000");
+    expect(newDummyERC20Balance).to.be.equal("190000000000000000000");
+    await expectRevert(
+      this.protcolInstance.updateFees(0,1000),
+      'Volmex: issue/redeem fees should be less than MAX_FEE'
+    );
   });
 
   it("if redeemFees > 0, accumulatedFee can be withdrawan through the claimAccumulatedFees fx", async function () {
@@ -465,16 +473,16 @@ describe("Protocol Token contract", function () {
     await this.ethVLongInstance.connect(this.account2).approve(this.protcolInstance.address, ethvlBalance);
     await this.ethVShortInstance.connect(this.account2).approve(this.protcolInstance.address, ethvsBalance);
     // setting up the redemption fee
-    await this.protcolInstance.updateFees(0,500);
+    await this.protcolInstance.updateFees(0,50);
     /// calling the redeem function
     await this.protcolInstance.connect(this.account2).redeem(ethvlBalance);
     const newDummyERC20Balance = (await this.DummyERC20Instance.balanceOf(this.account2.address)).toString();
-    expect(newDummyERC20Balance).to.be.equal("100000000000000000000");
+    expect(newDummyERC20Balance).to.be.equal("190000000000000000000");
     const feeWithdrawalReceipt = await this.protcolInstance.claimAccumulatedFees();
     expect(feeWithdrawalReceipt.confirmations).to.be.above(0);
     const newDummybalance = (await this.DummyERC20Instance.balanceOf(this.owner.address)).toString();
     let diff = newDummybalance - previousDummybalance;
-    expect((diff).toString()).to.be.equal("100000000000000000000")
+    expect((diff).toString()).to.be.equal("10000000000000000000")
   });
 
   it("checking the math of the number of ETHVL and ETHVS minted when \"x\" qty of collateralCoin is collateralized", async function () {
