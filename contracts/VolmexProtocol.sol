@@ -50,9 +50,10 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
     uint256 public redeemFees;
     uint256 public accumulatedFees;
 
-    // Set the max fee as 10%, i.e. 100/1000
+    // Percentage value is upto two decimal places, so we're dividing it by 10000
+    // Set the max fee as 5%, i.e. 500/10000.
     // TODO: @cole need confirmation for this
-    uint256 constant MAX_FEE = 50;
+    uint256 constant MAX_FEE = 500;
 
     /**
      * @notice Used to check calling address is active
