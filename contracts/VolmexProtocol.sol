@@ -52,7 +52,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
 
     // Set the max fee as 10%, i.e. 100/1000
     // TODO: @cole need confirmation for this
-    uint256 constant MAX_FEE = 100;
+    uint256 constant MAX_FEE = 50;
 
     /**
      * @notice Used to check calling address is active
@@ -217,7 +217,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
         external
         onlyOwner
     {
-        require(_issuanceFees < MAX_FEE && _redeemFees < MAX_FEE, "Volmex: issue/redeem fees should be less than MAX_FEE");
+        require(_issuanceFees <= MAX_FEE && _redeemFees <= MAX_FEE, "Volmex: issue/redeem fees should be less than MAX_FEE");
 
         issuanceFees = _issuanceFees;
         redeemFees = _redeemFees;
