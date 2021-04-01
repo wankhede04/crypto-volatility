@@ -151,16 +151,18 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
             accumulatedFees = accumulatedFees.add(fee);
         }
 
-        collateral.transferFrom(
+        uint256 qtyToBeMinted = _collateralQty / 200;
+
+        try collateral.transferFrom(
             msg.sender,
             address(this),
             _collateralQty
-        );
-
-        uint256 qtyToBeMinted = _collateralQty / 200;
-
-        longPosition.mint(msg.sender, qtyToBeMinted);
-        shortPosition.mint(msg.sender, qtyToBeMinted);
+        ) returns (bool _result) {
+            longPosition.mint(msg.sender, qtyToBeMinted);
+            shortPosition.mint(msg.sender, qtyToBeMinted);
+        } catch Error(string memory reason) {
+            revert(reason);
+        }
 
         emit Collateralized(msg.sender, _collateralQty, qtyToBeMinted, fee);
     }
@@ -185,10 +187,12 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
             accumulatedFees = accumulatedFees.add(fee);
         }
 
-        longPosition.burn(msg.sender, _positionTokenQty);
-        shortPosition.burn(msg.sender, _positionTokenQty);
-
-        collateral.transfer(msg.sender, collQtyToBeRedeemed);
+        try collateral.transfer(msg.sender, collQtyToBeRedeemed) returns (bool) {
+            longPosition.burn(msg.sender, _positionTokenQty);
+            shortPosition.burn(msg.sender, _positionTokenQty);
+        } catch Error(string memory reason) {
+            revert(reason);
+        }
 
         emit Redeemed(msg.sender, collQtyToBeRedeemed, _positionTokenQty, fee);
     }
