@@ -32,9 +32,9 @@ async function main () {
   await dummyERC20Instance.deployed();
 
   // deploying the PositionTokenContracts
-  const ethvLongToken = await VolmexPositionTokenFactory.deploy('ETHVLong', 'ETHVL');
+  const ethvLongToken = await VolmexPositionTokenFactory.deploy('ETHV', 'ETHV');
   await ethvLongToken.deployed();
-  const ethvShortToken = await VolmexPositionTokenFactory.deploy('ETHVShort', 'ETHVS');
+  const ethvShortToken = await VolmexPositionTokenFactory.deploy('iETHV', 'iETHV');
   await ethvShortToken.deployed();
 
   // deploying the Protocol Contract
@@ -42,16 +42,16 @@ async function main () {
     dummyERC20Instance.address,
     ethvLongToken.address,
     ethvShortToken.address,
-    '25000000000000000000',
+    '20000000000000000000',
   );
 
   await VolmexProtocolFactoryInstance.deployed();
 
   // logging the addresses of the contracts
   console.log('DummyERC20 deployed to:', dummyERC20Instance.address);
-  console.log('ethvLongToken deployed to:', ethvLongToken.address);
-  console.log('ethvShortToken deployed to:', ethvShortToken.address);
-  console.log('VP deployed to:', VolmexProtocolFactoryInstance.address);
+  console.log('ETHV deployed to:', ethvLongToken.address);
+  console.log('iETHV deployed to:', ethvShortToken.address);
+  console.log('Volmex Protocol deployed to:', VolmexProtocolFactoryInstance.address);
 
   // granting MINTER_ROLE to the protocol contract
   await ethvLongToken.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes('VOLMEX_PROTOCOL_ROLE')), VolmexProtocolFactoryInstance.address);
@@ -72,7 +72,7 @@ async function main () {
         dummyERC20Instance.address,
         ethvLongToken.address,
         ethvShortToken.address,
-        '25000000000000000000',
+        '20000000000000000000',
       ],
     });
   }
