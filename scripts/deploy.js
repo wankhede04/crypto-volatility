@@ -32,9 +32,9 @@ async function main () {
   await dummyERC20Instance.deployed();
 
   // deploying the PositionTokenContracts
-  const ethvLongToken = await VolmexPositionTokenFactory.deploy('ETHVLong', 'ETHVL');
+  const ethvLongToken = await VolmexPositionTokenFactory.deploy('ETHVLong', 'ETHV');
   await ethvLongToken.deployed();
-  const ethvShortToken = await VolmexPositionTokenFactory.deploy('ETHVShort', 'ETHVS');
+  const ethvShortToken = await VolmexPositionTokenFactory.deploy('ETHVShort', 'iETHV');
   await ethvShortToken.deployed();
 
   // deploying the Protocol Contract
@@ -42,7 +42,7 @@ async function main () {
     dummyERC20Instance.address,
     ethvLongToken.address,
     ethvShortToken.address,
-    '25000000000000000000',
+    '20000000000000000000',
   );
 
   await VolmexProtocolFactoryInstance.deployed();
@@ -72,7 +72,7 @@ async function main () {
         dummyERC20Instance.address,
         ethvLongToken.address,
         ethvShortToken.address,
-        '25000000000000000000',
+        '20000000000000000000',
       ],
     });
   }

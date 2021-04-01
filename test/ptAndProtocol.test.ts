@@ -49,7 +49,7 @@ describe("Position Token contract", function () {
     [this.owner, this.account2, this.account3] = await ethers.getSigners();
     this.PositionTokenContract = await ethers.getContractFactory("VolmexPositionToken");
     this.tokenName = "ETHVLong";
-    this.tokenSymbol = "ETHVL"
+    this.tokenSymbol = "ETHV"
   });
 
   // deploying a fresh PTContract before each test
@@ -210,13 +210,13 @@ describe("Protocol Token contract", function () {
    * 8. collateralize function can only be called when the contract is active: DONE
    * 9. for calling the collateral function the minimum collateral quantity is required: DONE
    * 10. only the acceptableCollateralCoin is used in the collateralize function: DONE
-   * 11. on collateralization, msg.sender is issued both ETHVL and ETHVS tokens: DONE
-   * 12. after collateralization, msg.sender is able to redeem the ETHVL and ETHVS and gets back collateral coin: DONE
-   * 13. if issuanceFee > 0, fee is computed, reduced from the collateralQTY and only for the balance collateralQTY, the ETHVL and ETHVS tokens are minted: DONE
+   * 11. on collateralization, msg.sender is issued both ETHV and iETHV tokens: DONE
+   * 12. after collateralization, msg.sender is able to redeem the ETHV and iETHV and gets back collateral coin: DONE
+   * 13. if issuanceFee > 0, fee is computed, reduced from the collateralQTY and only for the balance collateralQTY, the ETHVL and iETHV tokens are minted: DONE
    * 14. if issuanceFee > 0, accumulatedFee can be withdrawan through the claimAccumulatedFees fx: DONE 
    * 15. if redeemFees > 0, fee is computed, reduced from the refundable collateralQTY and only the balance is returned back to the msg.sender: DONE
    * 16. if redeemFees > 0, accumulatedFee can be withdrawan through the claimAccumulatedFees fx: DONE
-   * 17. checking the math of the number of ETHVL and ETHVS minted when "x" qty of collateralCoin is collateralized: DONE
+   * 17. checking the math of the number of ETHV and iETHV minted when "x" qty of collateralCoin is collateralized: DONE
    */
 
   before(async function () {
@@ -226,9 +226,9 @@ describe("Protocol Token contract", function () {
     this.DummyERC20Contract = await ethers.getContractFactory("DummyERC20");
     this.token = await ethers.getContractFactory("Token");
     this.ethVLongName = "ETHVLong";
-    this.ethVLongSymbol = "ETHVL";
+    this.ethVLongSymbol = "ETHV";
     this.ethVShortName = "ETHVShort";
-    this.ethVShortSymbol = "ETHVS";
+    this.ethVShortSymbol = "iETHV";
   });
 
   // deploying a fresh PTContract before each test
@@ -351,7 +351,7 @@ describe("Protocol Token contract", function () {
     );
   });
 
-  it("on collateralization, msg.sender is issued both ETHVL and ETHVS tokens", async function () {
+  it("on collateralization, msg.sender is issued both ETHV and iETHV tokens", async function () {
     //
     assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvl");
     assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
@@ -368,7 +368,7 @@ describe("Protocol Token contract", function () {
     expect(ethvsBalance).to.be.above(0);
   });
 
-  it("after collateralization, msg.sender is able to redeem the ETHVL and ETHVS and gets back collateral coin", async function () {
+  it("after collateralization, msg.sender is able to redeem the ETHVL and iETHV and gets back collateral coin", async function () {
     assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvl");
     assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
     // minting dummryERC20 token to account 2
@@ -391,7 +391,7 @@ describe("Protocol Token contract", function () {
     expect(receipt2.confirmations).to.be.above(0);
   });
 
-  it("if issuanceFee > 0, fee is computed, reduced from the collateralQTY and only for the balance collateralQTY, the ETHVL and ETHVS tokens are minted", async function () {
+  it("if issuanceFee > 0, fee is computed, reduced from the collateralQTY and only for the balance collateralQTY, the ETHV and iETHV tokens are minted", async function () {
     //
     assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvl");
     assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
@@ -498,7 +498,7 @@ describe("Protocol Token contract", function () {
     expect((diff).toString()).to.be.equal("10000000000000000000")
   });
 
-  it("checking the math of the number of ETHVL and ETHVS minted when \"x\" qty of collateralCoin is collateralized", async function () {
+  it("checking the math of the number of ETHVL and iETHV minted when \"x\" qty of collateralCoin is collateralized", async function () {
     const previousDummybalance = (await this.DummyERC20Instance.balanceOf(this.owner.address)).toString();
     assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvl");
     assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
