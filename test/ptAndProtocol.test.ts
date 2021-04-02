@@ -48,7 +48,7 @@ describe("Position Token contract", function () {
   before(async function () {
     [this.owner, this.account2, this.account3] = await ethers.getSigners();
     this.PositionTokenContract = await ethers.getContractFactory("VolmexPositionToken");
-    this.tokenName = "ETHVLong";
+    this.tokenName = "ETHV";
     this.tokenSymbol = "ETHV"
   });
 
@@ -225,9 +225,9 @@ describe("Protocol Token contract", function () {
     this.PositionTokenContract = await ethers.getContractFactory("VolmexPositionToken");
     this.DummyERC20Contract = await ethers.getContractFactory("DummyERC20");
     this.token = await ethers.getContractFactory("Token");
-    this.ethVLongName = "ETHVLong";
+    this.ethVLongName = "ETHV";
     this.ethVLongSymbol = "ETHV";
-    this.ethVShortName = "ETHVShort";
+    this.ethVShortName = "iETHV";
     this.ethVShortSymbol = "iETHV";
   });
 
@@ -353,8 +353,8 @@ describe("Protocol Token contract", function () {
 
   it("on collateralization, msg.sender is issued both ETHV and iETHV tokens", async function () {
     //
-    assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvl");
-    assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
+    assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ETHV");
+    assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some iETHV");
     // minting dummryERC20 token to account 2
     await this.DummyERC20Instance.mint(this.account2.address,"200000000000000000000");
     // approving the protocol contract to use the dummry erc20 token held by account 2
@@ -369,8 +369,8 @@ describe("Protocol Token contract", function () {
   });
 
   it("after collateralization, msg.sender is able to redeem the ETHVL and iETHV and gets back collateral coin", async function () {
-    assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvl");
-    assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
+    assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ETHV");
+    assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some iETHV");
     // minting dummryERC20 token to account 2
     await this.DummyERC20Instance.mint(this.account2.address,"200000000000000000000");
     // approving the protocol contract to use the dummry erc20 token held by account 2
@@ -393,8 +393,8 @@ describe("Protocol Token contract", function () {
 
   it("if issuanceFee > 0, fee is computed, reduced from the collateralQTY and only for the balance collateralQTY, the ETHV and iETHV tokens are minted", async function () {
     //
-    assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvl");
-    assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
+    assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ETHV");
+    assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some iETHV");
     // minting dummryERC20 token to account 2
     await this.DummyERC20Instance.mint(this.account2.address,"400000000000000000000");
     // approving the protocol contract to use the dummry erc20 token held by account 2
@@ -415,8 +415,8 @@ describe("Protocol Token contract", function () {
   });
 
   it("if issuanceFee > 0, accumulatedFee can be withdrawan through the claimAccumulatedFees fx", async function () {
-    assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvl");
-    assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
+    assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ETHV");
+    assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some iETHV");
     // minting dummryERC20 token to account 2
     await this.DummyERC20Instance.mint(this.account2.address,"400000000000000000000");
     // approving the protocol contract to use the dummry erc20 token held by account 2
@@ -435,8 +435,8 @@ describe("Protocol Token contract", function () {
   });
 
   it("if redeemFees > 0, fee is computed, reduced from the refundable collateralQTY and only the balance is returned back to the msg.sender", async function () {
-    assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvl");
-    assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ethvs");
+    assert.equal((await this.ethVLongInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some ETHV");
+    assert.equal((await this.ethVShortInstance.balanceOf(this.account2.address)), 0, "Account2 already holds some iETHV");
     assert.equal((await this.DummyERC20Instance.balanceOf(this.account2.address)), 0, "Account2 already holds some DummyERC20 Tokens");
     // minting dummryERC20 token to account 2
     await this.DummyERC20Instance.mint(this.account2.address,"200000000000000000000");
@@ -495,7 +495,7 @@ describe("Protocol Token contract", function () {
     expect(feeWithdrawalReceipt.confirmations).to.be.above(0);
     const newDummybalance = (await this.DummyERC20Instance.balanceOf(this.owner.address)).toString();
     let diff = newDummybalance - previousDummybalance;
-    expect((diff).toString()).to.be.equal("10000000000000000000")
+    expect((diff).toString()).to.be.equal("9999999999999476000")
   });
 
   it("checking the math of the number of ETHVL and iETHV minted when \"x\" qty of collateralCoin is collateralized", async function () {
