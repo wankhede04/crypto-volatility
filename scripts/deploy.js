@@ -32,9 +32,9 @@ async function main () {
   await dummyERC20Instance.deployed();
 
   // deploying the PositionTokenContracts
-  const ethvLongToken = await VolmexPositionTokenFactory.deploy('ETHV', 'ETHV');
+  const ethvLongToken = await VolmexPositionTokenFactory.deploy('Ethereum Volatility Index', 'ETHV');
   await ethvLongToken.deployed();
-  const ethvShortToken = await VolmexPositionTokenFactory.deploy('iETHV', 'iETHV');
+  const ethvShortToken = await VolmexPositionTokenFactory.deploy('Inverse Ethereum Volatility Index', 'iETHV');
   await ethvShortToken.deployed();
 
   // deploying the Protocol Contract
@@ -49,8 +49,8 @@ async function main () {
 
   // logging the addresses of the contracts
   console.log('DummyERC20 deployed to:', dummyERC20Instance.address);
-  console.log('ETHV deployed to:', ethvLongToken.address);
-  console.log('iETHV deployed to:', ethvShortToken.address);
+  console.log('Ethereum Volatility Index deployed to:', ethvLongToken.address);
+  console.log('Inverse Ethereum Volatility Index deployed to:', ethvShortToken.address);
   console.log('Volmex Protocol deployed to:', VolmexProtocolFactoryInstance.address);
 
   // granting MINTER_ROLE to the protocol contract

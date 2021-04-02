@@ -495,7 +495,7 @@ describe("Protocol Token contract", function () {
     expect(feeWithdrawalReceipt.confirmations).to.be.above(0);
     const newDummybalance = (await this.DummyERC20Instance.balanceOf(this.owner.address)).toString();
     let diff = newDummybalance - previousDummybalance;
-    expect((diff).toString()).to.be.equal("10000000000000000000")
+    expect((diff).toString()).to.be.equal("9999999999999476000")
   });
 
   it("checking the math of the number of ETHVL and iETHV minted when \"x\" qty of collateralCoin is collateralized", async function () {
