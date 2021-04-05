@@ -46,6 +46,7 @@ library VolmexSafeERC20 {
         _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
     }
 
+    // TODO: This will be uncommented after upgrading the contracts to 0.8.0
     // function safeDecreaseAllowance(IERC20 token, address spender, uint256 value) internal {
     //     unchecked {
     //         uint256 oldAllowance = token.allowance(address(this), spender);
