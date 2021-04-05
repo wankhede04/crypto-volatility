@@ -10,7 +10,7 @@ const {
 
 const VolmexPositionTokenMock = artifacts.require('VolmexPositionTokenMock');
 
-contract('ERC20', function (accounts) {
+contract('VolmexPositionToken', function (accounts) {
   const [ initialHolder, recipient, anotherAccount ] = accounts;
 
   const name = 'My Token';
