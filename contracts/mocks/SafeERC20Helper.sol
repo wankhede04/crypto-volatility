@@ -27,11 +27,6 @@ contract ERC20ReturnFalseMock is Context {
         _dummy = 0;
         return false;
     }
-
-    function allowance(address, address) public view returns (uint256) {
-        require(_dummy == 0); // Duummy read from a state variable so that the function is view
-        return 0;
-    }
 }
 
 contract ERC20ReturnTrueMock is Context {
@@ -124,9 +119,5 @@ contract SafeERC20Wrapper is Context {
 
     function setAllowance(uint256 allowance_) public {
         ERC20ReturnTrueMock(address(_token)).setAllowance(allowance_);
-    }
-
-    function allowance() public view returns (uint256) {
-        return _token.allowance(address(0), address(0));
     }
 }

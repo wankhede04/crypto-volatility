@@ -224,7 +224,7 @@ describe("Protocol Token contract", function () {
     this.VolmexProtocolFactory = await ethers.getContractFactory("VolmexProtocol");
     this.PositionTokenContract = await ethers.getContractFactory("VolmexPositionToken");
     this.DummyERC20Contract = await ethers.getContractFactory("DummyERC20");
-    this.token = await ethers.getContractFactory("Token");
+    this.token = await ethers.getContractFactory("NonCollateral");
     this.ethVLongName = "ETHV";
     this.ethVLongSymbol = "ETHV";
     this.ethVShortName = "iETHV";
@@ -245,7 +245,16 @@ describe("Protocol Token contract", function () {
       this.ethVShortInstance.address,
       "20000000000000000000"
     );
-    this.tokenInstance = await this.token.deploy("Token", "TKN");
+    await expectRevert(
+      this.VolmexProtocolFactory.deploy(
+        this.DummyERC20Instance.address,
+        this.ethVLongInstance.address,
+        this.ethVShortInstance.address,
+        "0"
+      ),
+      "Volmex: Minimum collateral quantity should be greater than 0"
+    );
+    this.tokenInstance = await this.token.deploy("NonCollateral", "TKN");
     await this.tokenInstance.deployed();
     // granting the MINTER_ROLE to the protocol contract
     await this.ethVLongInstance.grantRole(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("VOLMEX_PROTOCOL_ROLE")), this.protcolInstance.address);
@@ -286,6 +295,10 @@ describe("Protocol Token contract", function () {
     await expectRevert(
       this.protcolInstance.connect(this.account2).updateMinimumCollQty("20000000000000000000"),
       'Ownable: caller is not the owner'
+    );
+    await expectRevert(
+      this.protcolInstance.updateMinimumCollQty("0"),
+      "Volmex: Minimum collateral quantity should be greater than 0"
     );
     const receipt = await this.protcolInstance.updateMinimumCollQty("20000000000000000001");
     expect((await checkEvent(receipt, "UpdatedMinimumCollateral", "newMinimumCollateralQty"))).to.be.true;
