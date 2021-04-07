@@ -3,6 +3,7 @@
 pragma solidity 0.7.6;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 /**
  * @title VolmexSafeERC20
@@ -14,6 +15,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  * which allows you to call the safe operations as `token.safeTransfer(...)`, etc.
  */
 library VolmexSafeERC20 {
+    using SafeMath for uint256;
 
     function safeTransfer(IERC20 token, address to, uint256 value) internal {
         _callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, value));
@@ -46,15 +48,10 @@ library VolmexSafeERC20 {
         _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
     }
 
-    // TODO: This will be uncommented after upgrading the contracts to 0.8.0
-    // function safeDecreaseAllowance(IERC20 token, address spender, uint256 value) internal {
-    //     unchecked {
-    //         uint256 oldAllowance = token.allowance(address(this), spender);
-    //         require(oldAllowance >= value, "VolmexSafeERC20: decreased allowance below zero");
-    //         uint256 newAllowance = oldAllowance - value;
-    //         _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
-    //     }
-    // }
+    function safeDecreaseAllowance(IERC20 token, address spender, uint256 value) internal {
+        uint256 newAllowance = token.allowance(address(this), spender).sub(value, "VolmexSafeERC20: decreased allowance below zero");
+        _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
+    }
 
     /**
      * @dev Imitates a Solidity high-level call (i.e. a regular function call to a contract), relaxing the requirement
