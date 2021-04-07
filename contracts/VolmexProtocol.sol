@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.7.6;
+pragma solidity 0.8.2;
 
 import "./IERC20Modified.sol";
 import "./library/VolmexSafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /**
  * @title Protocol contract
@@ -15,7 +13,6 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  * @author ayush-volmex [https://github.com/ayush-volmex]
  */
 contract VolmexProtocol is Ownable, ReentrancyGuard {
-    using SafeMath for uint256;
     using VolmexSafeERC20 for IERC20Modified;
 
     event ToggleActivated(bool isActive);
@@ -147,9 +144,9 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
 
         uint256 fee;
         if (issuanceFees > 0) {
-            fee = _collateralQty.mul(issuanceFees).div(1000);
-            _collateralQty = _collateralQty.sub(fee);
-            accumulatedFees = accumulatedFees.add(fee);
+            fee = (_collateralQty * issuanceFees) / 1000;
+            _collateralQty = _collateralQty - fee;
+            accumulatedFees = accumulatedFees + fee;
         }
 
         uint256 qtyToBeMinted = _collateralQty / 200;
@@ -181,9 +178,9 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
 
         uint256 fee;
         if (redeemFees > 0) {
-            fee = collQtyToBeRedeemed.mul(redeemFees).div(1000);
-            collQtyToBeRedeemed = collQtyToBeRedeemed.sub(fee);
-            accumulatedFees = accumulatedFees.add(fee);
+            fee = (collQtyToBeRedeemed * redeemFees) / 1000;
+            collQtyToBeRedeemed = collQtyToBeRedeemed - fee;
+            accumulatedFees = accumulatedFees + fee;
         }
 
         collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
