@@ -4,7 +4,7 @@ pragma solidity ^0.7.6;
 
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "../library/VolmexSafeERC20.sol";
 
 contract ERC20ReturnFalseMock is Context {
     uint256 private _allowance;
@@ -89,7 +89,7 @@ contract ERC20NoReturnMock is Context {
 }
 
 contract SafeERC20Wrapper is Context {
-    using SafeERC20 for IERC20;
+    using VolmexSafeERC20 for IERC20;
 
     IERC20 private _token;
 
