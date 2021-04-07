@@ -13,7 +13,7 @@ contract('VolmexSafeERC20', function (accounts) {
       this.wrapper = await SafeERC20Wrapper.new(hasNoCode);
     });
 
-    shouldRevertOnAllCalls('Address: call to non-contract');
+    shouldRevertOnAllCalls('VolmexSafeERC20: call to non-contract');
   });
 
   describe('with token that returns false on all calls', function () {
