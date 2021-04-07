@@ -47,10 +47,10 @@ export default {
       gasLimit: 8000000,
       gasPrice: 1,
     },
-    // kovan: {
-    //   url: `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
-    //   accounts: [`0x${process.env.PRIVATE_KEY}`]
-    // }
+    kovan: {
+      url: `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
+      accounts: [`0x${process.env.PRIVATE_KEY}`]
+    }
   },
   etherscan: {
     // Your API key for Etherscan
@@ -58,7 +58,7 @@ export default {
     apiKey: process.env.ETHERSCAN_API_KEY
   },
   solidity: {
-    version: "0.7.6",
+    version: "0.8.2",
     settings: {
       optimizer: {
         enabled: true
