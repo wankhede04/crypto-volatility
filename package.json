@@ -15,8 +15,7 @@
     "lint:js:fix": "eslint --ignore-path .gitignore . --fix",
     "lint:sol": "echo 'solidity linter currently disabled' # solhint --max-warnings 0 \"contracts/**/*.sol\"",
     "test": "hardhat test",
-    "gas-report": "env ENABLE_GAS_REPORT=1 npm run test",
-    "postinstall": "patch-package --patch-dir node_modules/@thesatoshicompany/optimism-openzeppelin-compat/patches"
+    "gas-report": "env ENABLE_GAS_REPORT=1 npm run test"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",

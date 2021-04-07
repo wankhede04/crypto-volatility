@@ -3,6 +3,7 @@
 pragma solidity 0.7.6;
 
 import "./IERC20Modified.sol";
+import "./library/VolmexSafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -15,7 +16,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  */
 contract VolmexProtocol is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
-    using SafeERC20 for IERC20Modified;
+    using VolmexSafeERC20 for IERC20Modified;
 
     event ToggleActivated(bool isActive);
     event UpdatedPositionToken(address indexed positionToken, bool isLong);
@@ -151,13 +152,13 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
             accumulatedFees = accumulatedFees.add(fee);
         }
 
-        collateral.transferFrom(
+        uint256 qtyToBeMinted = _collateralQty / 200;
+
+        collateral.safeTransferFrom(
             msg.sender,
             address(this),
             _collateralQty
         );
-
-        uint256 qtyToBeMinted = _collateralQty / 200;
 
         longPosition.mint(msg.sender, qtyToBeMinted);
         shortPosition.mint(msg.sender, qtyToBeMinted);
@@ -185,10 +186,10 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
             accumulatedFees = accumulatedFees.add(fee);
         }
 
+        collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
+
         longPosition.burn(msg.sender, _positionTokenQty);
         shortPosition.burn(msg.sender, _positionTokenQty);
-
-        collateral.transfer(msg.sender, collQtyToBeRedeemed);
 
         emit Redeemed(msg.sender, collQtyToBeRedeemed, _positionTokenQty, fee);
     }
@@ -205,7 +206,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
             _token != address(collateral),
             "Volmex: Collateral token not allowed"
         );
-        IERC20Modified(_token).transfer(_toWhom, _howMuch);
+        IERC20Modified(_token).safeTransfer(_toWhom, _howMuch);
     }
 
     /**
@@ -230,7 +231,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
      * @notice Safely transfer the accumulated fees to owner
      */
     function claimAccumulatedFees() external onlyOwner {
-        collateral.transfer(owner(), accumulatedFees);
+        collateral.safeTransfer(owner(), accumulatedFees);
         delete accumulatedFees;
 
         emit ClaimedFees(accumulatedFees);
