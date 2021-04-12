@@ -89,6 +89,9 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         collateral = _collateralTokenAddress;
         longPosition = _longPosition;
         shortPosition = _shortPosition;
+
+        __Ownable_init();
+        __ReentrancyGuard_init();
     }
 
     /**
