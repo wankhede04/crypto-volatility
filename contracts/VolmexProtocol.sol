@@ -4,15 +4,16 @@ pragma solidity 0.8.2;
 
 import "./IERC20Modified.sol";
 import "./library/VolmexSafeERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /**
  * @title Protocol contract
  * @author dipeshsukhani [https://github.com/amateur-dev]
  * @author ayush-volmex [https://github.com/ayush-volmex]
  */
-contract VolmexProtocol is Ownable, ReentrancyGuard {
+contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using VolmexSafeERC20 for IERC20Modified;
 
     event ToggleActivated(bool isActive);
@@ -42,7 +43,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
 
     // Only ERC20 standard functions are used by the collateral defined here.
     // Address of the acceptable collateral token.
-    IERC20Modified immutable public collateral;
+    IERC20Modified public collateral;
 
     uint256 public issuanceFees;
     uint256 public redeemFees;
@@ -72,12 +73,30 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
      * @param _longPosition is address of long position token typecasted to IERC20Modified
      * @param _shortPosition is address of short position token typecasted to IERC20Modified
      */
-    constructor(
+    /* constructor(
         IERC20Modified _collateralTokenAddress,
         IERC20Modified _longPosition,
         IERC20Modified _shortPosition,
         uint256 _minimumCollateralQty
     ) {
+        require(
+            _minimumCollateralQty > 0,
+            "Volmex: Minimum collateral quantity should be greater than 0"
+        );
+
+        active = true;
+        minimumCollateralQty = _minimumCollateralQty;
+        collateral = _collateralTokenAddress;
+        longPosition = _longPosition;
+        shortPosition = _shortPosition;
+    } */
+
+    function initialize(
+        IERC20Modified _collateralTokenAddress,
+        IERC20Modified _longPosition,
+        IERC20Modified _shortPosition,
+        uint256 _minimumCollateralQty
+    ) public initializer {
         require(
             _minimumCollateralQty > 0,
             "Volmex: Minimum collateral quantity should be greater than 0"
