@@ -73,24 +73,6 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      * @param _longPosition is address of long position token typecasted to IERC20Modified
      * @param _shortPosition is address of short position token typecasted to IERC20Modified
      */
-    /* constructor(
-        IERC20Modified _collateralTokenAddress,
-        IERC20Modified _longPosition,
-        IERC20Modified _shortPosition,
-        uint256 _minimumCollateralQty
-    ) {
-        require(
-            _minimumCollateralQty > 0,
-            "Volmex: Minimum collateral quantity should be greater than 0"
-        );
-
-        active = true;
-        minimumCollateralQty = _minimumCollateralQty;
-        collateral = _collateralTokenAddress;
-        longPosition = _longPosition;
-        shortPosition = _shortPosition;
-    } */
-
     function initialize(
         IERC20Modified _collateralTokenAddress,
         IERC20Modified _longPosition,
