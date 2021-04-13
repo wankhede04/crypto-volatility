@@ -79,6 +79,9 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         IERC20Modified _shortPosition,
         uint256 _minimumCollateralQty
     ) public initializer {
+        __Ownable_init();
+        __ReentrancyGuard_init();
+
         require(
             _minimumCollateralQty > 0,
             "Volmex: Minimum collateral quantity should be greater than 0"
@@ -89,9 +92,6 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         collateral = _collateralTokenAddress;
         longPosition = _longPosition;
         shortPosition = _shortPosition;
-
-        __Ownable_init();
-        __ReentrancyGuard_init();
     }
 
     /**
