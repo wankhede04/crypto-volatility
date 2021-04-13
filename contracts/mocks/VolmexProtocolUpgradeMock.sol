@@ -2,8 +2,8 @@
 
 pragma solidity 0.8.2;
 
-import "./IERC20Modified.sol";
-import "./library/VolmexSafeERC20.sol";
+import "../IERC20Modified.sol";
+import "../library/VolmexSafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -13,7 +13,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * @author dipeshsukhani [https://github.com/amateur-dev]
  * @author ayush-volmex [https://github.com/ayush-volmex]
  */
-contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
+contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using VolmexSafeERC20 for IERC20Modified;
 
     event ToggleActivated(bool isActive);
@@ -30,10 +30,11 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         uint256 positionTokenBurned,
         uint256 fees
     );
-    event UpdatedFees(uint256 issuanceFees, uint256 redeemFees);
+    event UpdatedFees(uint256 issuanceFees, uint256 redeemFees, uint256 MAX_FEE);
     event UpdatedMinimumCollateral(uint256 newMinimumCollateralQty);
     event ClaimedFees(uint256 fees);
     event ToggledPositionTokenPause(bool isPause);
+    event TransferDevFees(uint256 devFees);
 
     uint256 public minimumCollateralQty;
     bool public active;
@@ -50,9 +51,10 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
     uint256 public accumulatedFees;
 
     // Percentage value is upto two decimal places, so we're dividing it by 10000
-    // Set the max fee as 5%, i.e. 500/10000.
+    // Set the max fee as 15%, i.e. 1500/10000.
     // TODO: @cole need confirmation for this
-    uint256 constant MAX_FEE = 500;
+    uint256 constant MAX_FEE = 1500;
+    uint256 public devFees;
 
     /**
      * @notice Used to check calling address is active
@@ -79,9 +81,6 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         IERC20Modified _shortPosition,
         uint256 _minimumCollateralQty
     ) public initializer {
-        __Ownable_init();
-        __ReentrancyGuard_init();
-
         require(
             _minimumCollateralQty > 0,
             "Volmex: Minimum collateral quantity should be greater than 0"
@@ -97,9 +96,9 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
     /**
      * @notice Toggles the active variable. Restricted to only the owner of the contract.
      */
-    function toggleActive() external onlyOwner {
-        active = !active;
-        emit ToggleActivated(active);
+    function toggleActive(bool _active) external onlyOwner {
+        active = _active;
+        emit ToggleActivated(_active);
     }
 
     /**
@@ -146,20 +145,21 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
             "Volmex: CollateralQty < minimum qty required"
         );
 
+        uint256 fee;
+        if (issuanceFees > 0) {
+            fee = (_collateralQty * issuanceFees) / 10000;
+            _collateralQty = _collateralQty - fee - 10;
+            accumulatedFees = accumulatedFees + fee;
+            devFees = devFees + 10;
+        }
+
+        uint256 qtyToBeMinted = _collateralQty / 200;
+
         collateral.safeTransferFrom(
             msg.sender,
             address(this),
             _collateralQty
         );
-
-        uint256 fee;
-        if (issuanceFees > 0) {
-            fee = (_collateralQty * issuanceFees) / 10000;
-            _collateralQty = _collateralQty - fee;
-            accumulatedFees = accumulatedFees + fee;
-        }
-
-        uint256 qtyToBeMinted = _collateralQty / 200;
 
         longPosition.mint(msg.sender, qtyToBeMinted);
         shortPosition.mint(msg.sender, qtyToBeMinted);
@@ -183,8 +183,9 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         uint256 fee;
         if (redeemFees > 0) {
             fee = (collQtyToBeRedeemed * redeemFees) / 10000;
-            collQtyToBeRedeemed = collQtyToBeRedeemed - fee;
+            collQtyToBeRedeemed = collQtyToBeRedeemed - fee - 10;
             accumulatedFees = accumulatedFees + fee;
+            devFees = devFees + 10;
         }
 
         collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
@@ -225,7 +226,7 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         issuanceFees = _issuanceFees;
         redeemFees = _redeemFees;
 
-        emit UpdatedFees(_issuanceFees, _redeemFees);
+        emit UpdatedFees(_issuanceFees, _redeemFees, MAX_FEE);
     }
 
     /**
@@ -253,5 +254,17 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         }
 
         emit ToggledPositionTokenPause(_isPause);
+    }
+
+    /**
+     * @notice Safely transfer dev fees to developer wallet address
+     *
+     * @param devWalletAddress Wallet address of developer on which the devFees will be transfered
+     */
+    function transferDevFees(address devWalletAddress) external onlyOwner {
+      collateral.safeTransfer(devWalletAddress, devFees);
+      delete devFees;
+
+      emit TransferDevFees(devFees);
     }
 }
