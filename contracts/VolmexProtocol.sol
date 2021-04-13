@@ -29,13 +29,23 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
         uint256 positionTokenBurned,
         uint256 fees
     );
+    event RedeemedSettled(
+        address indexed sender,
+        uint256 collateralReleased,
+        uint256 longTokenBurned,
+        uint256 shortTokenBurned,
+        uint256 fees
+    );
     event UpdatedFees(uint256 issuanceFees, uint256 redeemFees);
     event UpdatedMinimumCollateral(uint256 newMinimumCollateralQty);
     event ClaimedFees(uint256 fees);
     event ToggledPositionTokenPause(bool isPause);
+    event Settled(uint256 settlementPrice);
 
     uint256 public minimumCollateralQty;
+    uint256 public settlementPrice;
     bool public active;
+    bool public isSettled;
 
     IERC20Modified public longPosition;
     IERC20Modified public shortPosition;
@@ -58,6 +68,22 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
      */
     modifier onlyActive() {
         require(active, "Volmex: Protocol not active");
+        _;
+    }
+
+    /**
+     * @notice Used to check calling address is not settled
+     */
+    modifier onlyNotSettled() {
+        require(!isSettled, "Volmex: Protocol settled");
+        _;
+    }
+
+    /**
+     * @notice Used to check calling address is settled
+     */
+    modifier onlySettled() {
+        require(isSettled, "Volmex: Protocol not settled");
         _;
     }
 
@@ -136,7 +162,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
      * Mint the position token for `_msgSender`
      *
      */
-    function collateralize(uint256 _collateralQty) external onlyActive {
+    function collateralize(uint256 _collateralQty) external onlyActive onlyNotSettled {
         require(
             _collateralQty >= minimumCollateralQty,
             "Volmex: CollateralQty < minimum qty required"
@@ -173,7 +199,7 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
      *
      * Safely transfer the collateral to `_msgSender`
      */
-    function redeem(uint256 _positionTokenQty) external onlyActive {
+    function redeem(uint256 _positionTokenQty) external onlyActive onlyNotSettled {
         uint256 collQtyToBeRedeemed = SafeMath.mul(_positionTokenQty, 200);
 
         uint256 fee;
@@ -189,6 +215,52 @@ contract VolmexProtocol is Ownable, ReentrancyGuard {
         shortPosition.burn(msg.sender, _positionTokenQty);
 
         emit Redeemed(msg.sender, collQtyToBeRedeemed, _positionTokenQty, fee);
+    }
+
+    /**
+     * @notice Redeem the collateral from the protocol after settlement
+     *
+     * @param _longTokenQty Quantity of the long position token that the user is surrendering
+     * @param _shortTokenQty Quantity of the short position token that the user is surrendering
+     *
+     * Amount of collateral is `_longTokenQty` by the settlementPrice and `_shortTokenQty`
+     * by 200 - settlementPrice
+     * Burn the position token
+     *
+     * Safely transfer the collateral to `_msgSender`
+     */
+    function redeemSettled(uint256 _longTokenQty, uint256 _shortTokenQty) external onlyActive onlySettled {
+        uint256 collQtyToBeRedeemed = SafeMath.add(
+          SafeMath.mul(_longTokenQty, settlementPrice),
+          SafeMath.mul(_shortTokenQty, SafeMath.sub(200, settlementPrice))
+        );
+
+        uint256 fee;
+        if (redeemFees > 0) {
+            fee = (collQtyToBeRedeemed * redeemFees) / 1000;
+            collQtyToBeRedeemed = collQtyToBeRedeemed - fee;
+            accumulatedFees = accumulatedFees + fee;
+        }
+
+        collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
+
+        longPosition.burn(msg.sender, _longTokenQty);
+        shortPosition.burn(msg.sender, _shortTokenQty);
+
+        emit RedeemedSettled(msg.sender, collQtyToBeRedeemed, _longTokenQty, _shortTokenQty, fee);
+    }
+
+    /**
+     * @notice Settle the contract, preventing new minting and providing individual token redemption
+     *
+     * @param _settlementPrice The price of the long after settlement
+     *
+     * The short token at settlement is worth 200 - long settlement price
+     */
+    function settle(uint256 _settlementPrice) external onlyOwner {
+        settlementPrice = _settlementPrice;
+        isSettled = true;
+        emit Settled(settlementPrice);
     }
 
     /**
