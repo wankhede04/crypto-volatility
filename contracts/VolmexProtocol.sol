@@ -68,8 +68,15 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      * @notice Used to secure our functions from flash loans attack.
      */
     modifier blockLocked() {
-        require(blockLock[tx.origin] < block.number, "Volmex: Operations are locked for current block");
+        require(blockLock[msg.sender] < block.number, "Volmex: Operations are locked for current block");
         _;
+    }
+
+    /**
+     * @notice Used to check callee is not a contract
+     */
+    modifier defend() {
+        require(msg.sender == tx.origin, "Volmex: Access denied for caller");
     }
 
     /**
@@ -150,7 +157,7 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      * Mint the position token for `_msgSender`
      *
      */
-    function collateralize(uint256 _collateralQty) external onlyActive blockLocked {
+    function collateralize(uint256 _collateralQty) external onlyActive defend blockLocked {
         require(
             _collateralQty >= minimumCollateralQty,
             "Volmex: CollateralQty < minimum qty required"
@@ -189,7 +196,7 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      *
      * Safely transfer the collateral to `_msgSender`
      */
-    function redeem(uint256 _positionTokenQty) external onlyActive blockLocked {
+    function redeem(uint256 _positionTokenQty) external onlyActive defend blockLocked {
         uint256 collQtyToBeRedeemed = _positionTokenQty * 200;
 
         uint256 fee;
@@ -270,6 +277,6 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
     }
 
     function _lockForBlock() private {
-        blockLock[tx.origin] = block.number;
+        blockLock[msg.sender] = block.number;
     }
 }
