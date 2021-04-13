@@ -146,6 +146,12 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
             "Volmex: CollateralQty < minimum qty required"
         );
 
+        collateral.safeTransferFrom(
+            msg.sender,
+            address(this),
+            _collateralQty
+        );
+
         uint256 fee;
         if (issuanceFees > 0) {
             fee = (_collateralQty * issuanceFees) / 10000;
@@ -154,12 +160,6 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         }
 
         uint256 qtyToBeMinted = _collateralQty / 200;
-
-        collateral.safeTransferFrom(
-            msg.sender,
-            address(this),
-            _collateralQty
-        );
 
         longPosition.mint(msg.sender, qtyToBeMinted);
         shortPosition.mint(msg.sender, qtyToBeMinted);
