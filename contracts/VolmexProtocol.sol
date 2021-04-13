@@ -148,7 +148,7 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
 
         uint256 fee;
         if (issuanceFees > 0) {
-            fee = (_collateralQty * issuanceFees) / 1000;
+            fee = (_collateralQty * issuanceFees) / 10000;
             _collateralQty = _collateralQty - fee;
             accumulatedFees = accumulatedFees + fee;
         }
@@ -178,11 +178,11 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      * Safely transfer the collateral to `_msgSender`
      */
     function redeem(uint256 _positionTokenQty) external onlyActive {
-        uint256 collQtyToBeRedeemed = SafeMath.mul(_positionTokenQty, 200);
+        uint256 collQtyToBeRedeemed = _positionTokenQty * 200;
 
         uint256 fee;
         if (redeemFees > 0) {
-            fee = (collQtyToBeRedeemed * redeemFees) / 1000;
+            fee = (collQtyToBeRedeemed * redeemFees) / 10000;
             collQtyToBeRedeemed = collQtyToBeRedeemed - fee;
             accumulatedFees = accumulatedFees + fee;
         }
