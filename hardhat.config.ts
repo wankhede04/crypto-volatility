@@ -1,18 +1,18 @@
-require('dotenv').config();
+require("dotenv").config();
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-truffle5");
-require('@nomiclabs/hardhat-ethers');
-require('@openzeppelin/hardhat-upgrades');
+require("@nomiclabs/hardhat-ethers");
+require("@openzeppelin/hardhat-upgrades");
 
 import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
-import 'hardhat-contract-sizer';
+import "hardhat-contract-sizer";
 import "hardhat-typechain";
-import 'hardhat-deploy';
+import "hardhat-deploy";
 // import * as dotenv from "dotenv";
 import "@nomiclabs/hardhat-etherscan";
-import 'hardhat-gas-reporter';
-import 'solidity-coverage';
+import "hardhat-gas-reporter";
+import "solidity-coverage";
 
 // dotenv.config({ path: '.' + '/.env' });
 const enableGasReport = !!process.env.ENABLE_GAS_REPORT;
@@ -51,21 +51,21 @@ export default {
     },
     kovan: {
       url: `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
-      accounts: [`0x${process.env.PRIVATE_KEY}`]
-    }
+      accounts: [`0x${process.env.PRIVATE_KEY}`],
+    },
   },
   etherscan: {
     // Your API key for Etherscan
     // Obtain one at https://etherscan.io/
-    apiKey: process.env.ETHERSCAN_API_KEY
+    apiKey: process.env.ETHERSCAN_API_KEY,
   },
   solidity: {
     version: "0.8.2",
     settings: {
       optimizer: {
-        enabled: true
-      }
-    }
+        enabled: true,
+      },
+    },
   },
   typechain: {
     outDir: "types",
@@ -73,7 +73,7 @@ export default {
   },
   gasReporter: {
     enable: enableGasReport,
-    currency: 'USD',
-    outputFile: process.env.CI ? 'gas-report.txt' : undefined,
+    currency: "USD",
+    outputFile: process.env.CI ? "gas-report.txt" : undefined,
   },
 };
