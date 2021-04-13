@@ -80,7 +80,7 @@ async function main () {
   );
 
   // verifying the contracts only if deployed to etherscan compatible network
-  if (['kovan', 'rinkeby', 'ropsten', 'mainnet'].includes(network.name)) {
+  if (['kovan', 'rinkeby', 'ropsten', 'mainnet'].includes(ethers.provider.network.name)) {
     // verifying the dummryERC20 contract
     await hre.run('verify:verify', {
       address: dummyERC20Instance.address,
