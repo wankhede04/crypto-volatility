@@ -1,6 +1,6 @@
 const { expect, assert } = require("chai");
 const { expectRevert } = require('@openzeppelin/test-helpers');
-const { ethers } = require("hardhat");
+const { ethers, upgrades } = require("hardhat");
 
 // custom function to check event and its args
 const checkEvent = async (r: any, ...args: string[]) => {
@@ -239,21 +239,14 @@ describe("Protocol Token contract", function () {
     await this.ethVLongInstance.deployed();
     this.ethVShortInstance = await this.PositionTokenContract.deploy(this.ethVShortName, this.ethVShortSymbol);
     await this.ethVShortInstance.deployed();
-    this.protcolInstance = await this.VolmexProtocolFactory.deploy(
+
+    this.protcolInstance = await upgrades.deployProxy(this.VolmexProtocolFactory, [
       this.DummyERC20Instance.address,
       this.ethVLongInstance.address,
       this.ethVShortInstance.address,
       "20000000000000000000"
-    );
-    await expectRevert(
-      this.VolmexProtocolFactory.deploy(
-        this.DummyERC20Instance.address,
-        this.ethVLongInstance.address,
-        this.ethVShortInstance.address,
-        "0"
-      ),
-      "Volmex: Minimum collateral quantity should be greater than 0"
-    );
+    ]);
+
     this.tokenInstance = await this.token.deploy("NonCollateral", "TKN");
     await this.tokenInstance.deployed();
     // granting the MINTER_ROLE to the protocol contract
