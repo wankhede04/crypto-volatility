@@ -269,7 +269,7 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         emit ToggledPositionTokenPause(_isPause);
     }
 
-    function _lockForBlock() internal {
+    function _lockForBlock() private {
         blockLock[tx.origin] = block.number;
     }
 }
