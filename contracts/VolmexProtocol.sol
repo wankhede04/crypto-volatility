@@ -262,6 +262,7 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      * The short token at settlement is worth 200 - long settlement price
      */
     function settle(uint256 _settlementPrice) external onlyOwner {
+        require(_settlementPrice <= volatilityCap, "Volmex: _settlementPrice should be less than equal to volatilityCap");
         settlementPrice = _settlementPrice;
         isSettled = true;
         emit Settled(settlementPrice);
