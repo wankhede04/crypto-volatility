@@ -61,8 +61,9 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
 
     // Percentage value is upto two decimal places, so we're dividing it by 10000
     // Set the max fee as 5%, i.e. 500/10000.
-    // TODO: @cole need confirmation for this
     uint256 constant MAX_FEE = 500;
+
+    uint256 public volatilityCap;
 
     /**
      * @notice Used to check calling address is active
@@ -103,7 +104,8 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         IERC20Modified _collateralTokenAddress,
         IERC20Modified _longPosition,
         IERC20Modified _shortPosition,
-        uint256 _minimumCollateralQty
+        uint256 _minimumCollateralQty,
+        uint256 _volatilityCap
     ) public initializer {
         __Ownable_init();
         __ReentrancyGuard_init();
@@ -118,6 +120,7 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         collateral = _collateralTokenAddress;
         longPosition = _longPosition;
         shortPosition = _shortPosition;
+        volatilityCap = _volatilityCap;
     }
 
     /**
@@ -204,7 +207,7 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      * Safely transfer the collateral to `_msgSender`
      */
     function redeem(uint256 _positionTokenQty) external onlyActive onlyNotSettled {
-        uint256 collQtyToBeRedeemed = SafeMath.mul(_positionTokenQty, 200);
+        uint256 collQtyToBeRedeemed = _positionTokenQty * volatilityCap;
 
         uint256 fee;
         if (redeemFees > 0) {
@@ -234,10 +237,7 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      * Safely transfer the collateral to `_msgSender`
      */
     function redeemSettled(uint256 _longTokenQty, uint256 _shortTokenQty) external onlyActive onlySettled {
-        uint256 collQtyToBeRedeemed = SafeMath.add(
-          SafeMath.mul(_longTokenQty, settlementPrice),
-          SafeMath.mul(_shortTokenQty, SafeMath.sub(200, settlementPrice))
-        );
+        uint256 collQtyToBeRedeemed = (_longTokenQty * settlementPrice) + (_shortTokenQty * (volatilityCap - settlementPrice));
 
         uint256 fee;
         if (redeemFees > 0) {
