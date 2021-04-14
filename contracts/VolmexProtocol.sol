@@ -9,8 +9,7 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /**
- * @title Protocol contract
- * @author dipeshsukhani [https://github.com/amateur-dev]
+ * @title Protocol Contract
  * @author ayush-volmex [https://github.com/ayush-volmex]
  */
 contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
@@ -56,6 +55,8 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
 
     mapping(address => uint256) public blockLock;
 
+    mapping (address => bool) public approved;
+
     /**
      * @notice Used to check calling address is active
      */
@@ -76,7 +77,8 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      * @notice Used to check callee is not a contract
      */
     modifier defend() {
-        require(msg.sender == tx.origin, "Volmex: Access denied for caller");
+        require(approved[msg.sender] || msg.sender == tx.origin, "Volmex: Access denied for caller");
+        _;
     }
 
     /**
@@ -274,6 +276,14 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         }
 
         emit ToggledPositionTokenPause(_isPause);
+    }
+
+    function approveContractAccess(address account) external onlyOwner {
+        approved[account] = true;
+    }
+
+    function revokeContractAccess(address account) external  onlyOwner {
+        approved[account] = false;
     }
 
     function _lockForBlock() private {
