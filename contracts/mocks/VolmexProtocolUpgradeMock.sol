@@ -38,6 +38,7 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
 
     uint256 public minimumCollateralQty;
     bool public active;
+    bool public isSettled;
 
     IERC20Modified public longPosition;
     IERC20Modified public shortPosition;
@@ -54,6 +55,14 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
     // Set the max fee as 15%, i.e. 1500/10000.
     // TODO: @cole need confirmation for this
     uint256 constant MAX_FEE = 1500;
+
+    // No need to add 18 decimals, because they are already considered in respective token qty arguments.
+    uint256 public volatilityCapRatio;
+
+    // This is the price of long volatility, ranges from 0 to volatilityCapRatio,
+    // and the inverse can be calculated using volatilityCapRatio
+    uint256 public settlementPrice;
+
     uint256 public devFees;
 
     /**
