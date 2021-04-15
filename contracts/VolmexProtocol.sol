@@ -65,7 +65,7 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
     uint256 public volatilityCapRatio;
 
     // This is the price of long volatility, ranges from 0 to volatilityCapRatio,
-    // and the inverse can be calculated using volatilityCapRatio
+    // and the inverse can be calculated by subtracting volatilityCapRatio by settlementPrice.
     uint256 public settlementPrice;
     mapping(address => uint256) public blockLock;
 
