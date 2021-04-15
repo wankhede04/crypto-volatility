@@ -12,7 +12,11 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * @title Protocol Contract
  * @author ayush-volmex [https://github.com/ayush-volmex]
  */
-contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
+contract VolmexProtocol is
+    Initializable,
+    OwnableUpgradeable,
+    ReentrancyGuardUpgradeable
+{
     using VolmexSafeERC20 for IERC20Modified;
 
     event ToggleActivated(bool isActive);
@@ -83,7 +87,10 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      * @notice Used to secure our functions from flash loans attack.
      */
     modifier blockLocked() {
-        require(blockLock[msg.sender] < block.number, "Volmex: Operations are locked for current block");
+        require(
+            blockLock[msg.sender] < block.number,
+            "Volmex: Operations are locked for current block"
+        );
         _;
     }
 
@@ -91,7 +98,10 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      * @notice Used to check callee is not a contract
      */
     modifier defend() {
-        require(approved[msg.sender] || msg.sender == tx.origin, "Volmex: Access denied for caller");
+        require(
+            approved[msg.sender] || msg.sender == tx.origin,
+            "Volmex: Access denied for caller"
+        );
         _;
     }
 
@@ -157,7 +167,10 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      * @notice Update the `minimumCollateralQty`
      * @param _newMinimumCollQty Provides the new minimum collateral quantity
      */
-    function updateMinimumCollQty(uint256 _newMinimumCollQty) external onlyOwner {
+    function updateMinimumCollQty(uint256 _newMinimumCollQty)
+        external
+        onlyOwner
+    {
         require(
             _newMinimumCollQty > 0,
             "Volmex: Minimum collateral quantity should be greater than 0"
@@ -191,17 +204,19 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      * Mint the position token for `_msgSender`
      *
      */
-    function collateralize(uint256 _collateralQty) external onlyActive defend blockLocked onlyNotSettled {
+    function collateralize(uint256 _collateralQty)
+        external
+        onlyActive
+        defend
+        blockLocked
+        onlyNotSettled
+    {
         require(
             _collateralQty >= minimumCollateralQty,
             "Volmex: CollateralQty < minimum qty required"
         );
 
-        collateral.safeTransferFrom(
-            msg.sender,
-            address(this),
-            _collateralQty
-        );
+        collateral.safeTransferFrom(msg.sender, address(this), _collateralQty);
 
         uint256 fee;
         if (issuanceFees > 0) {
@@ -230,7 +245,13 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      *
      * Safely transfer the collateral to `_msgSender`
      */
-    function redeem(uint256 _positionTokenQty) external onlyActive defend blockLocked onlyNotSettled {
+    function redeem(uint256 _positionTokenQty)
+        external
+        onlyActive
+        defend
+        blockLocked
+        onlyNotSettled
+    {
         uint256 collQtyToBeRedeemed = _positionTokenQty * volatilityCapRatio;
 
         uint256 fee;
@@ -262,8 +283,14 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      *
      * Safely transfer the collateral to `_msgSender`
      */
-    function redeemSettled(uint256 _longTokenQty, uint256 _shortTokenQty) external onlyActive onlySettled {
-        uint256 collQtyToBeRedeemed = (_longTokenQty * settlementPrice) + (_shortTokenQty * (volatilityCapRatio - settlementPrice));
+    function redeemSettled(uint256 _longTokenQty, uint256 _shortTokenQty)
+        external
+        onlyActive
+        onlySettled
+    {
+        uint256 collQtyToBeRedeemed =
+            (_longTokenQty * settlementPrice) +
+                (_shortTokenQty * (volatilityCapRatio - settlementPrice));
 
         uint256 fee;
         if (redeemFees > 0) {
@@ -277,7 +304,13 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
 
         collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
 
-        emit RedeemedSettled(msg.sender, collQtyToBeRedeemed, _longTokenQty, _shortTokenQty, fee);
+        emit RedeemedSettled(
+            msg.sender,
+            collQtyToBeRedeemed,
+            _longTokenQty,
+            _shortTokenQty,
+            fee
+        );
     }
 
     /**
@@ -288,7 +321,10 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      * The short token at settlement is worth volatilityCapRatio - long settlement price
      */
     function settle(uint256 _settlementPrice) external onlyOwner {
-        require(_settlementPrice <= volatilityCapRatio, "Volmex: _settlementPrice should be less than equal to volatilityCapRatio");
+        require(
+            _settlementPrice <= volatilityCapRatio,
+            "Volmex: _settlementPrice should be less than equal to volatilityCapRatio"
+        );
         settlementPrice = _settlementPrice;
         isSettled = true;
         emit Settled(settlementPrice);
@@ -319,7 +355,10 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         external
         onlyOwner
     {
-        require(_issuanceFees <= MAX_FEE && _redeemFees <= MAX_FEE, "Volmex: issue/redeem fees should be less than MAX_FEE");
+        require(
+            _issuanceFees <= MAX_FEE && _redeemFees <= MAX_FEE,
+            "Volmex: issue/redeem fees should be less than MAX_FEE"
+        );
 
         issuanceFees = _issuanceFees;
         redeemFees = _redeemFees;
@@ -358,7 +397,7 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         approved[account] = true;
     }
 
-    function revokeContractAccess(address account) external  onlyOwner {
+    function revokeContractAccess(address account) external onlyOwner {
         approved[account] = false;
     }
 

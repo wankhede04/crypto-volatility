@@ -13,7 +13,11 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * @author dipeshsukhani [https://github.com/amateur-dev]
  * @author ayush-volmex [https://github.com/ayush-volmex]
  */
-contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
+contract VolmexProtocolUpgradeMock is
+    Initializable,
+    OwnableUpgradeable,
+    ReentrancyGuardUpgradeable
+{
     using VolmexSafeERC20 for IERC20Modified;
 
     event ToggleActivated(bool isActive);
@@ -30,7 +34,11 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
         uint256 positionTokenBurned,
         uint256 fees
     );
-    event UpdatedFees(uint256 issuanceFees, uint256 redeemFees, uint256 MAX_FEE);
+    event UpdatedFees(
+        uint256 issuanceFees,
+        uint256 redeemFees,
+        uint256 MAX_FEE
+    );
     event UpdatedMinimumCollateral(uint256 newMinimumCollateralQty);
     event ClaimedFees(uint256 fees);
     event ToggledPositionTokenPause(bool isPause);
@@ -65,7 +73,7 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
 
     mapping(address => uint256) public blockLock;
 
-    mapping (address => bool) public approved;
+    mapping(address => bool) public approved;
     uint256 public devFees;
 
     /**
@@ -80,7 +88,10 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
      * @notice Used to secure our functions from flash loans attack.
      */
     modifier blockLocked() {
-        require(blockLock[tx.origin] < block.number, "Volmex: Operations are locked for current block");
+        require(
+            blockLock[tx.origin] < block.number,
+            "Volmex: Operations are locked for current block"
+        );
         _;
     }
 
@@ -125,7 +136,10 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
      * @notice Update the `minimumCollateralQty`
      * @param _newMinimumCollQty Provides the new minimum collateral quantity
      */
-    function updateMinimumCollQty(uint256 _newMinimumCollQty) external onlyOwner {
+    function updateMinimumCollQty(uint256 _newMinimumCollQty)
+        external
+        onlyOwner
+    {
         require(
             _newMinimumCollQty > 0,
             "Volmex: Minimum collateral quantity should be greater than 0"
@@ -159,7 +173,11 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
      * Mint the position token for `_msgSender`
      *
      */
-    function collateralize(uint256 _collateralQty) external onlyActive blockLocked {
+    function collateralize(uint256 _collateralQty)
+        external
+        onlyActive
+        blockLocked
+    {
         require(
             _collateralQty >= minimumCollateralQty,
             "Volmex: CollateralQty < minimum qty required"
@@ -175,11 +193,7 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
 
         uint256 qtyToBeMinted = _collateralQty / 200;
 
-        collateral.safeTransferFrom(
-            msg.sender,
-            address(this),
-            _collateralQty
-        );
+        collateral.safeTransferFrom(msg.sender, address(this), _collateralQty);
 
         longPosition.mint(msg.sender, qtyToBeMinted);
         shortPosition.mint(msg.sender, qtyToBeMinted);
@@ -245,7 +259,10 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
         external
         onlyOwner
     {
-        require(_issuanceFees <= MAX_FEE && _redeemFees <= MAX_FEE, "Volmex: issue/redeem fees should be less than MAX_FEE");
+        require(
+            _issuanceFees <= MAX_FEE && _redeemFees <= MAX_FEE,
+            "Volmex: issue/redeem fees should be less than MAX_FEE"
+        );
 
         issuanceFees = _issuanceFees;
         redeemFees = _redeemFees;
@@ -290,9 +307,9 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
      * @param devWalletAddress Wallet address of developer on which the devFees will be transfered
      */
     function transferDevFees(address devWalletAddress) external onlyOwner {
-      collateral.safeTransfer(devWalletAddress, devFees);
-      delete devFees;
+        collateral.safeTransfer(devWalletAddress, devFees);
+        delete devFees;
 
-      emit TransferDevFees(devFees);
+        emit TransferDevFees(devFees);
     }
 }
