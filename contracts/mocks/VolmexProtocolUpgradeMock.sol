@@ -63,6 +63,7 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
     // and the inverse can be calculated using volatilityCapRatio
     uint256 public settlementPrice;
 
+    mapping(address => uint256) public blockLock;
     uint256 public devFees;
 
     /**
@@ -70,6 +71,14 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
      */
     modifier onlyActive() {
         require(active, "Volmex: Protocol not active");
+        _;
+    }
+
+    /**
+     * @notice Used to secure our functions from flash loans attack.
+     */
+    modifier blockLocked() {
+        require(blockLock[tx.origin] < block.number, "Volmex: Operations are locked for current block");
         _;
     }
 
@@ -148,7 +157,7 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
      * Mint the position token for `_msgSender`
      *
      */
-    function collateralize(uint256 _collateralQty) external onlyActive {
+    function collateralize(uint256 _collateralQty) external onlyActive blockLocked {
         require(
             _collateralQty >= minimumCollateralQty,
             "Volmex: CollateralQty < minimum qty required"
@@ -174,6 +183,8 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
         shortPosition.mint(msg.sender, qtyToBeMinted);
 
         emit Collateralized(msg.sender, _collateralQty, qtyToBeMinted, fee);
+
+        _lockForBlock();
     }
 
     /**
@@ -186,7 +197,7 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
      *
      * Safely transfer the collateral to `_msgSender`
      */
-    function redeem(uint256 _positionTokenQty) external onlyActive {
+    function redeem(uint256 _positionTokenQty) external onlyActive blockLocked {
         uint256 collQtyToBeRedeemed = _positionTokenQty * 200;
 
         uint256 fee;
@@ -203,6 +214,8 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
         shortPosition.burn(msg.sender, _positionTokenQty);
 
         emit Redeemed(msg.sender, collQtyToBeRedeemed, _positionTokenQty, fee);
+
+        _lockForBlock();
     }
 
     /**
@@ -263,6 +276,10 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
         }
 
         emit ToggledPositionTokenPause(_isPause);
+    }
+
+    function _lockForBlock() internal {
+        blockLock[tx.origin] = block.number;
     }
 
     /**

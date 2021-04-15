@@ -9,8 +9,7 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /**
- * @title Protocol contract
- * @author dipeshsukhani [https://github.com/amateur-dev]
+ * @title Protocol Contract
  * @author ayush-volmex [https://github.com/ayush-volmex]
  */
 contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
@@ -68,12 +67,31 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
     // This is the price of long volatility, ranges from 0 to volatilityCapRatio,
     // and the inverse can be calculated using volatilityCapRatio
     uint256 public settlementPrice;
+    mapping(address => uint256) public blockLock;
+
+    mapping (address => bool) public approved;
 
     /**
      * @notice Used to check calling address is active
      */
     modifier onlyActive() {
         require(active, "Volmex: Protocol not active");
+        _;
+    }
+
+    /**
+     * @notice Used to secure our functions from flash loans attack.
+     */
+    modifier blockLocked() {
+        require(blockLock[msg.sender] < block.number, "Volmex: Operations are locked for current block");
+        _;
+    }
+
+    /**
+     * @notice Used to check callee is not a contract
+     */
+    modifier defend() {
+        require(approved[msg.sender] || msg.sender == tx.origin, "Volmex: Access denied for caller");
         _;
     }
 
@@ -173,7 +191,7 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      * Mint the position token for `_msgSender`
      *
      */
-    function collateralize(uint256 _collateralQty) external onlyActive onlyNotSettled {
+    function collateralize(uint256 _collateralQty) external onlyActive defend blockLocked onlyNotSettled {
         require(
             _collateralQty >= minimumCollateralQty,
             "Volmex: CollateralQty < minimum qty required"
@@ -198,6 +216,8 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         shortPosition.mint(msg.sender, qtyToBeMinted);
 
         emit Collateralized(msg.sender, _collateralQty, qtyToBeMinted, fee);
+
+        _lockForBlock();
     }
 
     /**
@@ -210,7 +230,7 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      *
      * Safely transfer the collateral to `_msgSender`
      */
-    function redeem(uint256 _positionTokenQty) external onlyActive onlyNotSettled {
+    function redeem(uint256 _positionTokenQty) external onlyActive defend blockLocked onlyNotSettled {
         uint256 collQtyToBeRedeemed = _positionTokenQty * volatilityCapRatio;
 
         uint256 fee;
@@ -226,6 +246,8 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
 
         emit Redeemed(msg.sender, collQtyToBeRedeemed, _positionTokenQty, fee);
+
+        _lockForBlock();
     }
 
     /**
@@ -330,5 +352,17 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         }
 
         emit ToggledPositionTokenPause(_isPause);
+    }
+
+    function approveContractAccess(address account) external onlyOwner {
+        approved[account] = true;
+    }
+
+    function revokeContractAccess(address account) external  onlyOwner {
+        approved[account] = false;
+    }
+
+    function _lockForBlock() private {
+        blockLock[msg.sender] = block.number;
     }
 }
