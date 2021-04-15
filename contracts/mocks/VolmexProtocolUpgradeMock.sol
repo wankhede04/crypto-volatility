@@ -64,6 +64,8 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
     uint256 public settlementPrice;
 
     mapping(address => uint256) public blockLock;
+
+    mapping (address => bool) public approved;
     uint256 public devFees;
 
     /**
