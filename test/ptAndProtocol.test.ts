@@ -568,8 +568,8 @@ describe("Protocol Token contract", function () {
     const ethvsBalance = await this.ethVShortInstance.balanceOf(
       this.account2.address
     );
-    expect(ethvlBalance.toString()).to.be.equal("1900000000000000000");
-    expect(ethvsBalance.toString()).to.be.equal("1900000000000000000");
+    expect(ethvlBalance.toString()).to.be.equal("1990000000000000000");
+    expect(ethvsBalance.toString()).to.be.equal("1990000000000000000");
     await expectRevert(
       this.protcolInstance.updateFees(1000, 0),
       "Volmex: issue/redeem fees should be less than MAX_FEE"
@@ -610,8 +610,8 @@ describe("Protocol Token contract", function () {
     const ethvsBalance = await this.ethVShortInstance.balanceOf(
       this.account2.address
     );
-    expect(ethvlBalance.toString()).to.be.equal("1900000000000000000");
-    expect(ethvsBalance.toString()).to.be.equal("1900000000000000000");
+    expect(ethvlBalance.toString()).to.be.equal("1990000000000000000");
+    expect(ethvsBalance.toString()).to.be.equal("1990000000000000000");
     const feeWithdrawalReceipt = await this.protcolInstance.claimAccumulatedFees();
     expect(feeWithdrawalReceipt.confirmations).to.be.above(0);
   });
@@ -670,7 +670,7 @@ describe("Protocol Token contract", function () {
     const newDummyERC20Balance = (
       await this.DummyERC20Instance.balanceOf(this.account2.address)
     ).toString();
-    expect(newDummyERC20Balance).to.be.equal("190000000000000000000");
+    expect(newDummyERC20Balance).to.be.equal("199000000000000000000");
     await expectRevert(
       this.protcolInstance.updateFees(0, 1000),
       "Volmex: issue/redeem fees should be less than MAX_FEE"
@@ -734,14 +734,14 @@ describe("Protocol Token contract", function () {
     const newDummyERC20Balance = (
       await this.DummyERC20Instance.balanceOf(this.account2.address)
     ).toString();
-    expect(newDummyERC20Balance).to.be.equal("190000000000000000000");
+    expect(newDummyERC20Balance).to.be.equal("199000000000000000000");
     const feeWithdrawalReceipt = await this.protcolInstance.claimAccumulatedFees();
     expect(feeWithdrawalReceipt.confirmations).to.be.above(0);
     const newDummybalance = (
       await this.DummyERC20Instance.balanceOf(this.owner.address)
     ).toString();
     let diff = newDummybalance - previousDummybalance;
-    expect(diff.toString()).to.be.equal("9999999999999476000");
+    expect(diff.toString()).to.be.equal("999999999999737900");
   });
 
   it('checking the math of the number of ETHVL and iETHV minted when "x" qty of collateralCoin is collateralized', async function () {
@@ -816,5 +816,38 @@ describe("Protocol Token contract", function () {
       0
     );
     expect(await this.tokenInstance.balanceOf(wallet.address)).to.equal(0);
+  });
+
+  it("protocol functions should not be called in same transaction", async function () {
+    const protocolAttacksMock = await ethers.getContractFactory(
+      "ProtocolAttacksMock"
+    );
+    const protocolAttacksInstance = await protocolAttacksMock.deploy(
+      this.protcolInstance.address,
+      this.DummyERC20Instance.address
+    );
+    await protocolAttacksInstance.deployed();
+
+    this.DummyERC20Instance.transfer(
+      protocolAttacksInstance.address,
+      "500000000000000000000"
+    );
+
+    await this.protcolInstance.approveContractAccess(protocolAttacksInstance.address);
+
+    const receipt = await protocolAttacksInstance.callCollaterize();
+    expect(receipt.confirmations).to.be.above(0);
+
+    expectRevert(
+      protocolAttacksInstance.callCollaterizeAndRedeem(),
+      "Volmex: Operations are locked for current block"
+    );
+
+    await this.protcolInstance.revokeContractAccess(protocolAttacksInstance.address);
+
+    expectRevert(
+      protocolAttacksInstance.callCollaterizeAndRedeem(),
+      "Volmex: Access denied for caller"
+    );
   });
 });
