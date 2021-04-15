@@ -29,6 +29,7 @@ describe("VolmexProtocolUpgradeable", function () {
       ethVLongInstance.address,
       ethVShortInstance.address,
       "20000000000000000000",
+      "200",
     ]);
 
     const originalProxy = {
@@ -90,6 +91,7 @@ describe("VolmexProtocolUpgradeable", function () {
       ethVLongInstance.address,
       ethVShortInstance.address,
       "20000000000000000000",
+      "200",
     ]);
 
     const upgraded = await upgrades.upgradeProxy(
@@ -127,6 +129,7 @@ describe("VolmexProtocolUpgradeable", function () {
       ethVLongInstance.address,
       ethVShortInstance.address,
       "20000000000000000000",
+      "200",
     ]);
 
     const upgraded = await upgrades.upgradeProxy(
@@ -166,6 +169,7 @@ describe("VolmexProtocolUpgradeable", function () {
       ethVLongInstance.address,
       ethVShortInstance.address,
       "20000000000000000000",
+      "200",
     ]);
 
     const upgraded = await upgrades.upgradeProxy(
