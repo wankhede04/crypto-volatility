@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BUSL-1.1
 
 pragma solidity 0.8.2;
 
@@ -69,7 +69,7 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
     uint256 public settlementPrice;
     mapping(address => uint256) public blockLock;
 
-    mapping (address => bool) public approved;
+    mapping(address => bool) public approved;
 
     /**
      * @notice Used to check calling address is active
