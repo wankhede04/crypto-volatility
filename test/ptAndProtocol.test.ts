@@ -274,6 +274,7 @@ describe("Protocol Token contract", function () {
         this.ethVLongInstance.address,
         this.ethVShortInstance.address,
         "20000000000000000000",
+        "200",
       ]
     );
 
@@ -290,7 +291,7 @@ describe("Protocol Token contract", function () {
     );
   });
 
-  it("alll contracts are successfully deployed", async function () {
+  it("all contracts are successfully deployed", async function () {
     expect(this.DummyERC20Instance.address).to.not.equal(null);
     expect(this.ethVLongInstance.address).to.not.equal(null);
     expect(this.ethVShortInstance.address).to.not.equal(null);
@@ -568,8 +569,8 @@ describe("Protocol Token contract", function () {
     const ethvsBalance = await this.ethVShortInstance.balanceOf(
       this.account2.address
     );
-    expect(ethvlBalance.toString()).to.be.equal("1900000000000000000");
-    expect(ethvsBalance.toString()).to.be.equal("1900000000000000000");
+    expect(ethvlBalance.toString()).to.be.equal("1990000000000000000");
+    expect(ethvsBalance.toString()).to.be.equal("1990000000000000000");
     await expectRevert(
       this.protcolInstance.updateFees(1000, 0),
       "Volmex: issue/redeem fees should be less than MAX_FEE"
@@ -610,8 +611,8 @@ describe("Protocol Token contract", function () {
     const ethvsBalance = await this.ethVShortInstance.balanceOf(
       this.account2.address
     );
-    expect(ethvlBalance.toString()).to.be.equal("1900000000000000000");
-    expect(ethvsBalance.toString()).to.be.equal("1900000000000000000");
+    expect(ethvlBalance.toString()).to.be.equal("1990000000000000000");
+    expect(ethvsBalance.toString()).to.be.equal("1990000000000000000");
     const feeWithdrawalReceipt = await this.protcolInstance.claimAccumulatedFees();
     expect(feeWithdrawalReceipt.confirmations).to.be.above(0);
   });
@@ -670,7 +671,7 @@ describe("Protocol Token contract", function () {
     const newDummyERC20Balance = (
       await this.DummyERC20Instance.balanceOf(this.account2.address)
     ).toString();
-    expect(newDummyERC20Balance).to.be.equal("190000000000000000000");
+    expect(newDummyERC20Balance).to.be.equal("199000000000000000000");
     await expectRevert(
       this.protcolInstance.updateFees(0, 1000),
       "Volmex: issue/redeem fees should be less than MAX_FEE"
@@ -734,14 +735,14 @@ describe("Protocol Token contract", function () {
     const newDummyERC20Balance = (
       await this.DummyERC20Instance.balanceOf(this.account2.address)
     ).toString();
-    expect(newDummyERC20Balance).to.be.equal("190000000000000000000");
+    expect(newDummyERC20Balance).to.be.equal("199000000000000000000");
     const feeWithdrawalReceipt = await this.protcolInstance.claimAccumulatedFees();
     expect(feeWithdrawalReceipt.confirmations).to.be.above(0);
     const newDummybalance = (
       await this.DummyERC20Instance.balanceOf(this.owner.address)
     ).toString();
     let diff = newDummybalance - previousDummybalance;
-    expect(diff.toString()).to.be.equal("9999999999999476000");
+    expect(diff.toString()).to.be.equal("999999999999737900");
   });
 
   it('checking the math of the number of ETHVL and iETHV minted when "x" qty of collateralCoin is collateralized', async function () {
@@ -816,5 +817,52 @@ describe("Protocol Token contract", function () {
       0
     );
     expect(await this.tokenInstance.balanceOf(wallet.address)).to.equal(0);
+  });
+
+  it("on settle, revert if settlementPrice > volatilityCap", async function () {
+    await expectRevert(
+      this.protcolInstance.settle("210"),
+      "Volmex: _settlementPrice should be less than equal to volatilityCap"
+    );
+  });
+
+  it("On settle, call to collateralize and redeem should revert", async function () {
+    await this.protcolInstance.settle("10");
+
+    await expectRevert(
+      this.protcolInstance
+        .connect(this.account2)
+        .collateralize("20000000000000000000"),
+      "Volmex: Protocol settled"
+    );
+
+    await expectRevert(
+      this.protcolInstance.connect(this.account2).redeem("100000000000000000"),
+      "Volmex: Protocol settled"
+    );
+  });
+
+  it("On settle, call to redeemSettled should be successful", async function () {
+    await this.DummyERC20Instance.mint(
+      this.account2.address,
+      "200000000000000000000"
+    );
+    // approving the protocol contract to use the dummry erc20 token held by account 2
+    await this.DummyERC20Instance.connect(this.account2).approve(
+      this.protcolInstance.address,
+      "200000000000000000000"
+    );
+    // collaterilzing the position
+    await this.protcolInstance
+      .connect(this.account2)
+      .collateralize("200000000000000000000");
+
+    await this.protcolInstance.connect(this.owner).settle("10");
+
+    const receipt = await this.protcolInstance
+      .connect(this.account2)
+      .redeemSettled("1000000000000000000", "1000000000000000000");
+
+    expect(receipt.confirmations).to.be.above(0);
   });
 });
