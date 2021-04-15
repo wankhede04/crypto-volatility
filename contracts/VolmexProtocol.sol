@@ -44,7 +44,6 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
     event Settled(uint256 settlementPrice);
 
     uint256 public minimumCollateralQty;
-    uint256 public settlementPrice;
     bool public active;
     bool public isSettled;
 
@@ -63,7 +62,12 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
     // Set the max fee as 5%, i.e. 500/10000.
     uint256 constant MAX_FEE = 500;
 
-    uint256 public volatilityCap;
+    // No need to add 18 decimals, because they are already considered in respective token qty arguments.
+    uint256 public volatilityCapRatio;
+
+    // This is the price of long volatility, ranges from 0 to volatilityCapRatio,
+    // and the inverse can be calculated using volatilityCapRatio
+    uint256 public settlementPrice;
 
     /**
      * @notice Used to check calling address is active
@@ -105,7 +109,7 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         IERC20Modified _longPosition,
         IERC20Modified _shortPosition,
         uint256 _minimumCollateralQty,
-        uint256 _volatilityCap
+        uint256 _volatilityCapRatio
     ) public initializer {
         __Ownable_init();
         __ReentrancyGuard_init();
@@ -120,7 +124,7 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         collateral = _collateralTokenAddress;
         longPosition = _longPosition;
         shortPosition = _shortPosition;
-        volatilityCap = _volatilityCap;
+        volatilityCapRatio = _volatilityCapRatio;
     }
 
     /**
@@ -188,7 +192,7 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
             accumulatedFees = accumulatedFees + fee;
         }
 
-        uint256 qtyToBeMinted = _collateralQty / 200;
+        uint256 qtyToBeMinted = _collateralQty / volatilityCapRatio;
 
         longPosition.mint(msg.sender, qtyToBeMinted);
         shortPosition.mint(msg.sender, qtyToBeMinted);
@@ -201,13 +205,13 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      *
      * @param _positionTokenQty Quantity of the position token that the user is surrendering
      *
-     * Amount of collateral is `_positionTokenQty` by the constant 200.
+     * Amount of collateral is `_positionTokenQty` by the volatilityCapRatio.
      * Burn the position token
      *
      * Safely transfer the collateral to `_msgSender`
      */
     function redeem(uint256 _positionTokenQty) external onlyActive onlyNotSettled {
-        uint256 collQtyToBeRedeemed = _positionTokenQty * volatilityCap;
+        uint256 collQtyToBeRedeemed = _positionTokenQty * volatilityCapRatio;
 
         uint256 fee;
         if (redeemFees > 0) {
@@ -216,10 +220,10 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
             accumulatedFees = accumulatedFees + fee;
         }
 
-        collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
-
         longPosition.burn(msg.sender, _positionTokenQty);
         shortPosition.burn(msg.sender, _positionTokenQty);
+
+        collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
 
         emit Redeemed(msg.sender, collQtyToBeRedeemed, _positionTokenQty, fee);
     }
@@ -231,13 +235,13 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      * @param _shortTokenQty Quantity of the short position token that the user is surrendering
      *
      * Amount of collateral is `_longTokenQty` by the settlementPrice and `_shortTokenQty`
-     * by 200 - settlementPrice
+     * by volatilityCapRatio - settlementPrice
      * Burn the position token
      *
      * Safely transfer the collateral to `_msgSender`
      */
     function redeemSettled(uint256 _longTokenQty, uint256 _shortTokenQty) external onlyActive onlySettled {
-        uint256 collQtyToBeRedeemed = (_longTokenQty * settlementPrice) + (_shortTokenQty * (volatilityCap - settlementPrice));
+        uint256 collQtyToBeRedeemed = (_longTokenQty * settlementPrice) + (_shortTokenQty * (volatilityCapRatio - settlementPrice));
 
         uint256 fee;
         if (redeemFees > 0) {
@@ -246,10 +250,10 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
             accumulatedFees = accumulatedFees + fee;
         }
 
-        collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
-
         longPosition.burn(msg.sender, _longTokenQty);
         shortPosition.burn(msg.sender, _shortTokenQty);
+
+        collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
 
         emit RedeemedSettled(msg.sender, collQtyToBeRedeemed, _longTokenQty, _shortTokenQty, fee);
     }
@@ -259,10 +263,10 @@ contract VolmexProtocol is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      *
      * @param _settlementPrice The price of the long after settlement
      *
-     * The short token at settlement is worth 200 - long settlement price
+     * The short token at settlement is worth volatilityCapRatio - long settlement price
      */
     function settle(uint256 _settlementPrice) external onlyOwner {
-        require(_settlementPrice <= volatilityCap, "Volmex: _settlementPrice should be less than equal to volatilityCap");
+        require(_settlementPrice <= volatilityCapRatio, "Volmex: _settlementPrice should be less than equal to volatilityCapRatio");
         settlementPrice = _settlementPrice;
         isSettled = true;
         emit Settled(settlementPrice);
