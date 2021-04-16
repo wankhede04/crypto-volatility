@@ -11,7 +11,7 @@ import "../library/VolmexSafeERC20.sol";
 
 /**
  * @title Protocol contract
- * @author ayush-volmex [https://github.com/ayush-volmex]
+ * @author ayush-volmex [ayusht11@outlook.com]
  */
 contract VolmexProtocolUpgradeMock is
     Initializable,

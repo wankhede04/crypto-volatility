@@ -11,7 +11,7 @@ import "./library/VolmexSafeERC20.sol";
 
 /**
  * @title Protocol Contract
- * @author ayush-volmex [https://github.com/ayush-volmex]
+ * @author ayush-volmex [ayusht11@outlook.com]
  */
 contract VolmexProtocol is
     Initializable,
