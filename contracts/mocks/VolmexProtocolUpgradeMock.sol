@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.2;
 
-import "../IERC20Modified.sol";
+import "../interfaces/IERC20Modified.sol";
 import "../library/VolmexSafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
