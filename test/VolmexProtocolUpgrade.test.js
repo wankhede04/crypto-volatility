@@ -7,7 +7,7 @@ describe("VolmexProtocolUpgradeable", function () {
     const PositionTokenContract = await ethers.getContractFactory(
       "VolmexPositionToken"
     );
-    const DummyERC20Contract = await ethers.getContractFactory("DummyERC20");
+    const DummyERC20Contract = await ethers.getContractFactory("TestCollateralToken");
 
     const DummyERC20Instance = await DummyERC20Contract.deploy();
     await DummyERC20Instance.deployed();
@@ -29,6 +29,7 @@ describe("VolmexProtocolUpgradeable", function () {
       ethVLongInstance.address,
       ethVShortInstance.address,
       "20000000000000000000",
+      "200",
     ]);
 
     const originalProxy = {
@@ -68,7 +69,7 @@ describe("VolmexProtocolUpgradeable", function () {
     const PositionTokenContract = await ethers.getContractFactory(
       "VolmexPositionToken"
     );
-    const DummyERC20Contract = await ethers.getContractFactory("DummyERC20");
+    const DummyERC20Contract = await ethers.getContractFactory("TestCollateralToken");
 
     const DummyERC20Instance = await DummyERC20Contract.deploy();
     await DummyERC20Instance.deployed();
@@ -90,6 +91,7 @@ describe("VolmexProtocolUpgradeable", function () {
       ethVLongInstance.address,
       ethVShortInstance.address,
       "20000000000000000000",
+      "200",
     ]);
 
     const upgraded = await upgrades.upgradeProxy(
@@ -105,7 +107,7 @@ describe("VolmexProtocolUpgradeable", function () {
     const PositionTokenContract = await ethers.getContractFactory(
       "VolmexPositionToken"
     );
-    const DummyERC20Contract = await ethers.getContractFactory("DummyERC20");
+    const DummyERC20Contract = await ethers.getContractFactory("TestCollateralToken");
 
     const DummyERC20Instance = await DummyERC20Contract.deploy();
     await DummyERC20Instance.deployed();
@@ -127,6 +129,7 @@ describe("VolmexProtocolUpgradeable", function () {
       ethVLongInstance.address,
       ethVShortInstance.address,
       "20000000000000000000",
+      "200",
     ]);
 
     const upgraded = await upgrades.upgradeProxy(
@@ -144,7 +147,7 @@ describe("VolmexProtocolUpgradeable", function () {
     const PositionTokenContract = await ethers.getContractFactory(
       "VolmexPositionToken"
     );
-    const DummyERC20Contract = await ethers.getContractFactory("DummyERC20");
+    const DummyERC20Contract = await ethers.getContractFactory("TestCollateralToken");
 
     const DummyERC20Instance = await DummyERC20Contract.deploy();
     await DummyERC20Instance.deployed();
@@ -166,6 +169,7 @@ describe("VolmexProtocolUpgradeable", function () {
       ethVLongInstance.address,
       ethVShortInstance.address,
       "20000000000000000000",
+      "200",
     ]);
 
     const upgraded = await upgrades.upgradeProxy(

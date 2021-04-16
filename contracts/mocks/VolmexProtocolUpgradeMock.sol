@@ -2,18 +2,22 @@
 
 pragma solidity 0.8.2;
 
-import "../IERC20Modified.sol";
-import "../library/VolmexSafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
+import "../interfaces/IERC20Modified.sol";
+import "../library/VolmexSafeERC20.sol";
+
 /**
  * @title Protocol contract
- * @author dipeshsukhani [https://github.com/amateur-dev]
- * @author ayush-volmex [https://github.com/ayush-volmex]
+ * @author ayush-volmex [ayusht11@outlook.com]
  */
-contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
+contract VolmexProtocolUpgradeMock is
+    Initializable,
+    OwnableUpgradeable,
+    ReentrancyGuardUpgradeable
+{
     using VolmexSafeERC20 for IERC20Modified;
 
     event ToggleActivated(bool isActive);
@@ -30,7 +34,11 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
         uint256 positionTokenBurned,
         uint256 fees
     );
-    event UpdatedFees(uint256 issuanceFees, uint256 redeemFees, uint256 MAX_FEE);
+    event UpdatedFees(
+        uint256 issuanceFees,
+        uint256 redeemFees,
+        uint256 MAX_FEE
+    );
     event UpdatedMinimumCollateral(uint256 newMinimumCollateralQty);
     event ClaimedFees(uint256 fees);
     event ToggledPositionTokenPause(bool isPause);
@@ -38,6 +46,7 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
 
     uint256 public minimumCollateralQty;
     bool public active;
+    bool public isSettled;
 
     IERC20Modified public longPosition;
     IERC20Modified public shortPosition;
@@ -54,7 +63,17 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
     // Set the max fee as 15%, i.e. 1500/10000.
     // TODO: @cole need confirmation for this
     uint256 constant MAX_FEE = 1500;
+
+    // No need to add 18 decimals, because they are already considered in respective token qty arguments.
+    uint256 public volatilityCapRatio;
+
+    // This is the price of long volatility, ranges from 0 to volatilityCapRatio,
+    // and the inverse can be calculated using volatilityCapRatio
+    uint256 public settlementPrice;
+
     mapping(address => uint256) public blockLock;
+
+    mapping(address => bool) public approved;
     uint256 public devFees;
 
     /**
@@ -69,7 +88,10 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
      * @notice Used to secure our functions from flash loans attack.
      */
     modifier blockLocked() {
-        require(blockLock[tx.origin] < block.number, "Volmex: Operations are locked for current block");
+        require(
+            blockLock[tx.origin] < block.number,
+            "Volmex: Operations are locked for current block"
+        );
         _;
     }
 
@@ -114,7 +136,10 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
      * @notice Update the `minimumCollateralQty`
      * @param _newMinimumCollQty Provides the new minimum collateral quantity
      */
-    function updateMinimumCollQty(uint256 _newMinimumCollQty) external onlyOwner {
+    function updateMinimumCollQty(uint256 _newMinimumCollQty)
+        external
+        onlyOwner
+    {
         require(
             _newMinimumCollQty > 0,
             "Volmex: Minimum collateral quantity should be greater than 0"
@@ -148,7 +173,11 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
      * Mint the position token for `_msgSender`
      *
      */
-    function collateralize(uint256 _collateralQty) external onlyActive blockLocked {
+    function collateralize(uint256 _collateralQty)
+        external
+        onlyActive
+        blockLocked
+    {
         require(
             _collateralQty >= minimumCollateralQty,
             "Volmex: CollateralQty < minimum qty required"
@@ -164,11 +193,7 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
 
         uint256 qtyToBeMinted = _collateralQty / 200;
 
-        collateral.safeTransferFrom(
-            msg.sender,
-            address(this),
-            _collateralQty
-        );
+        collateral.safeTransferFrom(msg.sender, address(this), _collateralQty);
 
         longPosition.mint(msg.sender, qtyToBeMinted);
         shortPosition.mint(msg.sender, qtyToBeMinted);
@@ -234,7 +259,10 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
         external
         onlyOwner
     {
-        require(_issuanceFees <= MAX_FEE && _redeemFees <= MAX_FEE, "Volmex: issue/redeem fees should be less than MAX_FEE");
+        require(
+            _issuanceFees <= MAX_FEE && _redeemFees <= MAX_FEE,
+            "Volmex: issue/redeem fees should be less than MAX_FEE"
+        );
 
         issuanceFees = _issuanceFees;
         redeemFees = _redeemFees;
@@ -279,9 +307,9 @@ contract VolmexProtocolUpgradeMock is Initializable, OwnableUpgradeable, Reentra
      * @param devWalletAddress Wallet address of developer on which the devFees will be transfered
      */
     function transferDevFees(address devWalletAddress) external onlyOwner {
-      collateral.safeTransfer(devWalletAddress, devFees);
-      delete devFees;
+        collateral.safeTransfer(devWalletAddress, devFees);
+        delete devFees;
 
-      emit TransferDevFees(devFees);
+        emit TransferDevFees(devFees);
     }
 }

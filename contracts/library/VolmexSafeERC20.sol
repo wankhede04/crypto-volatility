@@ -3,7 +3,6 @@
 pragma solidity 0.8.2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
  * @title VolmexSafeERC20
@@ -13,10 +12,10 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * successful.
  * To use this library you can add a `using VolmexSafeERC20 for IERC20;` statement to your contract,
  * which allows you to call the safe operations as `token.safeTransfer(...)`, etc.
+ *
+ * NOTE: Inspired from Openzeppelin's SafeERC20 library.
  */
 library VolmexSafeERC20 {
-    using SafeMath for uint256;
-
     function safeTransfer(IERC20 token, address to, uint256 value) internal {
         _callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, value));
     }
@@ -44,7 +43,7 @@ library VolmexSafeERC20 {
     }
 
     function safeIncreaseAllowance(IERC20 token, address spender, uint256 value) internal {
-        uint256 newAllowance = token.allowance(address(this), spender).add(value);
+        uint256 newAllowance = token.allowance(address(this), spender) + value;
         _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
     }
 

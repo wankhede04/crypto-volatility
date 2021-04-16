@@ -244,7 +244,7 @@ describe("Protocol Token contract", function () {
     this.PositionTokenContract = await ethers.getContractFactory(
       "VolmexPositionToken"
     );
-    this.DummyERC20Contract = await ethers.getContractFactory("DummyERC20");
+    this.DummyERC20Contract = await ethers.getContractFactory("TestCollateralToken");
     this.token = await ethers.getContractFactory("NonCollateral");
     this.ethVLongName = "ETHV";
     this.ethVLongSymbol = "ETHV";
@@ -274,6 +274,7 @@ describe("Protocol Token contract", function () {
         this.ethVLongInstance.address,
         this.ethVShortInstance.address,
         "20000000000000000000",
+        "200",
       ]
     );
 
@@ -290,7 +291,7 @@ describe("Protocol Token contract", function () {
     );
   });
 
-  it("alll contracts are successfully deployed", async function () {
+  it("all contracts are successfully deployed", async function () {
     expect(this.DummyERC20Instance.address).to.not.equal(null);
     expect(this.ethVLongInstance.address).to.not.equal(null);
     expect(this.ethVShortInstance.address).to.not.equal(null);
@@ -426,7 +427,7 @@ describe("Protocol Token contract", function () {
   });
 
   it("only the acceptableCollateralCoin is used in the collateralize function", async function () {
-    // deploying another version of the DummyERC20 for this test
+    // deploying another version of the TestCollateralToken for this test
     this.DummyERC20InstanceV2 = await this.DummyERC20Contract.deploy();
     await this.DummyERC20InstanceV2.deployed();
     // minting dummryERC20 token to account 2
@@ -630,7 +631,7 @@ describe("Protocol Token contract", function () {
     assert.equal(
       await this.DummyERC20Instance.balanceOf(this.account2.address),
       0,
-      "Account2 already holds some DummyERC20 Tokens"
+      "Account2 already holds some TestCollateralToken Tokens"
     );
     // minting dummryERC20 token to account 2
     await this.DummyERC20Instance.mint(
@@ -694,7 +695,7 @@ describe("Protocol Token contract", function () {
     assert.equal(
       await this.DummyERC20Instance.balanceOf(this.account2.address),
       0,
-      "Account2 already holds some DummyERC20 Tokens"
+      "Account2 already holds some TestCollateralToken Tokens"
     );
     // minting dummryERC20 token to account 2
     await this.DummyERC20Instance.mint(
@@ -761,7 +762,7 @@ describe("Protocol Token contract", function () {
     assert.equal(
       await this.DummyERC20Instance.balanceOf(this.account2.address),
       0,
-      "Account2 already holds some DummyERC20 Tokens"
+      "Account2 already holds some TestCollateralToken Tokens"
     );
     // minting dummryERC20 token to account 2
     await this.DummyERC20Instance.mint(
@@ -816,6 +817,53 @@ describe("Protocol Token contract", function () {
       0
     );
     expect(await this.tokenInstance.balanceOf(wallet.address)).to.equal(0);
+  });
+
+  it("on settle, revert if settlementPrice > volatilityCap", async function () {
+    await expectRevert(
+      this.protcolInstance.settle("210"),
+      "Volmex: _settlementPrice should be less than equal to volatilityCap"
+    );
+  });
+
+  it("On settle, call to collateralize and redeem should revert", async function () {
+    await this.protcolInstance.settle("10");
+
+    await expectRevert(
+      this.protcolInstance
+        .connect(this.account2)
+        .collateralize("20000000000000000000"),
+      "Volmex: Protocol settled"
+    );
+
+    await expectRevert(
+      this.protcolInstance.connect(this.account2).redeem("100000000000000000"),
+      "Volmex: Protocol settled"
+    );
+  });
+
+  it("On settle, call to redeemSettled should be successful", async function () {
+    await this.DummyERC20Instance.mint(
+      this.account2.address,
+      "200000000000000000000"
+    );
+    // approving the protocol contract to use the dummry erc20 token held by account 2
+    await this.DummyERC20Instance.connect(this.account2).approve(
+      this.protcolInstance.address,
+      "200000000000000000000"
+    );
+    // collaterilzing the position
+    await this.protcolInstance
+      .connect(this.account2)
+      .collateralize("200000000000000000000");
+
+    await this.protcolInstance.connect(this.owner).settle("10");
+
+    const receipt = await this.protcolInstance
+      .connect(this.account2)
+      .redeemSettled("1000000000000000000", "1000000000000000000");
+
+    expect(receipt.confirmations).to.be.above(0);
   });
 
   it("protocol functions should not be called in same transaction", async function () {

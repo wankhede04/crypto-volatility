@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 
-pragma solidity ^0.8.2;
+pragma solidity 0.8.2;
 
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 import "../library/VolmexSafeERC20.sol";
 
 contract ERC20ReturnFalseMock is Context {
@@ -18,7 +19,11 @@ contract ERC20ReturnFalseMock is Context {
         return false;
     }
 
-    function transferFrom(address, address, uint256) public returns (bool) {
+    function transferFrom(
+        address,
+        address,
+        uint256
+    ) public returns (bool) {
         _dummy = 0;
         return false;
     }
@@ -30,7 +35,7 @@ contract ERC20ReturnFalseMock is Context {
 }
 
 contract ERC20ReturnTrueMock is Context {
-    mapping (address => uint256) private _allowances;
+    mapping(address => uint256) private _allowances;
 
     // IERC20's functions are not pure, but these mock implementations are: to prevent Solidity from issuing warnings,
     // we write to a dummy state variable.
@@ -41,7 +46,11 @@ contract ERC20ReturnTrueMock is Context {
         return true;
     }
 
-    function transferFrom(address, address, uint256) public returns (bool) {
+    function transferFrom(
+        address,
+        address,
+        uint256
+    ) public returns (bool) {
         _dummy = 0;
         return true;
     }
@@ -61,7 +70,7 @@ contract ERC20ReturnTrueMock is Context {
 }
 
 contract ERC20NoReturnMock is Context {
-    mapping (address => uint256) private _allowances;
+    mapping(address => uint256) private _allowances;
 
     // IERC20's functions are not pure, but these mock implementations are: to prevent Solidity from issuing warnings,
     // we write to a dummy state variable.
@@ -71,7 +80,11 @@ contract ERC20NoReturnMock is Context {
         _dummy = 0;
     }
 
-    function transferFrom(address, address, uint256) public {
+    function transferFrom(
+        address,
+        address,
+        uint256
+    ) public {
         _dummy = 0;
     }
 
@@ -93,7 +106,7 @@ contract SafeERC20Wrapper is Context {
 
     IERC20 private _token;
 
-    constructor (IERC20 token) {
+    constructor(IERC20 token) {
         _token = token;
     }
 
