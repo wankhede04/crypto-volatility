@@ -52,6 +52,7 @@ async function main() {
       ethvLongToken.address,
       ethvShortToken.address,
       "20000000000000000000",
+      "200"
     ]
   );
 
