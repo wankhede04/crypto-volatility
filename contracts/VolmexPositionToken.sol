@@ -6,11 +6,14 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 
+/**
+ * This contract is used to deploy the volatility and inverse volatility tokens.
+ */
 contract VolmexPositionToken is Context, AccessControl, ERC20Pausable {
     bytes32 public constant VOLMEX_PROTOCOL_ROLE = keccak256("VOLMEX_PROTOCOL_ROLE");
 
     /**
-     * @dev Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE`, `PAUSER_ROLE` and `BURNER_ROLE` to the
+     * @dev Grants `DEFAULT_ADMIN_ROLE` and `VOLMEX_PROTOCOL_ROLE` to the
      * account that deploys the contract.
      *
      * See {ERC20-constructor}.
@@ -27,7 +30,7 @@ contract VolmexPositionToken is Context, AccessControl, ERC20Pausable {
      *
      * Requirements:
      *
-     * - the caller must have the `MINTER_ROLE`.
+     * - the caller must have the `VOLMEX_PROTOCOL_ROLE`.
      */
     function mint(address to, uint256 amount) public virtual {
         require(
@@ -57,7 +60,7 @@ contract VolmexPositionToken is Context, AccessControl, ERC20Pausable {
      *
      * Requirements:
      *
-     * - the caller must have the `PAUSER_ROLE`.
+     * - the caller must have the `VOLMEX_PROTOCOL_ROLE`.
      */
     function pause() public virtual {
         require(
@@ -74,7 +77,7 @@ contract VolmexPositionToken is Context, AccessControl, ERC20Pausable {
      *
      * Requirements:
      *
-     * - the caller must have the `PAUSER_ROLE`.
+     * - the caller must have the `VOLMEX_PROTOCOL_ROLE`.
      */
     function unpause() public virtual {
         require(
@@ -82,13 +85,5 @@ contract VolmexPositionToken is Context, AccessControl, ERC20Pausable {
             "VolmexPositionToken: must have volmex protocol role to unpause"
         );
         _unpause();
-    }
-
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal virtual override {
-        super._beforeTokenTransfer(from, to, amount);
     }
 }
