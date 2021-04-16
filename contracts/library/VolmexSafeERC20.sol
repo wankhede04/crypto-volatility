@@ -12,6 +12,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  * successful.
  * To use this library you can add a `using VolmexSafeERC20 for IERC20;` statement to your contract,
  * which allows you to call the safe operations as `token.safeTransfer(...)`, etc.
+ *
+ * NOTE: Inspired from Openzeppelin's SafeERC20 library.
  */
 library VolmexSafeERC20 {
     function safeTransfer(IERC20 token, address to, uint256 value) internal {
