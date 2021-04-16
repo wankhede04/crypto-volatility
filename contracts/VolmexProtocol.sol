@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.2;
 
-import "./IERC20Modified.sol";
+import "./interfaces/IERC20Modified.sol";
 import "./library/VolmexSafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
@@ -349,7 +349,7 @@ contract VolmexProtocol is
      * @notice Update the percentage of `issuanceFees` and `redeemFees`
      *
      * @param _issuanceFees Percentage of fees required to collateralize the collateral
-     * @param _redeemFees Percentage of fees reuired to redeem the collateral
+     * @param _redeemFees Percentage of fees required to redeem the collateral
      */
     function updateFees(uint256 _issuanceFees, uint256 _redeemFees)
         external
