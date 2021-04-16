@@ -5,7 +5,7 @@ pragma solidity 0.8.2;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
- * @dev Modified Interface of the OpenZeppelin's IERC20 to add the mint and burn function .
+ * @dev Modified Interface of the OpenZeppelin's IERC20 extra functions to add features in position token.
  */
 interface IERC20Modified is IERC20 {
     function mint(address _toWhom, uint256 amount) external;
