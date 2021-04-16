@@ -27,7 +27,7 @@ async function main() {
   const VolmexPositionTokenFactory = await hre.ethers.getContractFactory(
     "VolmexPositionToken"
   );
-  const DummyERC20Factory = await hre.ethers.getContractFactory("DummyERC20");
+  const DummyERC20Factory = await hre.ethers.getContractFactory("TestCollateralToken");
 
   // deploying the dummyERC20
   const dummyERC20Instance = await DummyERC20Factory.deploy();
@@ -58,7 +58,7 @@ async function main() {
   await VolmexProtocolFactoryUpgradesInstance.deployed();
 
   // logging the addresses of the contracts
-  console.log("DummyERC20 deployed to:", dummyERC20Instance.address);
+  console.log("TestCollateralToken deployed to:", dummyERC20Instance.address);
   console.log("Ethereum Volatility Index deployed to:", ethvLongToken.address);
   console.log(
     "Inverse Ethereum Volatility Index deployed to:",

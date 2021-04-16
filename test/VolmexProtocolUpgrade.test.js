@@ -7,7 +7,7 @@ describe("VolmexProtocolUpgradeable", function () {
     const PositionTokenContract = await ethers.getContractFactory(
       "VolmexPositionToken"
     );
-    const DummyERC20Contract = await ethers.getContractFactory("DummyERC20");
+    const DummyERC20Contract = await ethers.getContractFactory("TestCollateralToken");
 
     const DummyERC20Instance = await DummyERC20Contract.deploy();
     await DummyERC20Instance.deployed();
@@ -69,7 +69,7 @@ describe("VolmexProtocolUpgradeable", function () {
     const PositionTokenContract = await ethers.getContractFactory(
       "VolmexPositionToken"
     );
-    const DummyERC20Contract = await ethers.getContractFactory("DummyERC20");
+    const DummyERC20Contract = await ethers.getContractFactory("TestCollateralToken");
 
     const DummyERC20Instance = await DummyERC20Contract.deploy();
     await DummyERC20Instance.deployed();
@@ -107,7 +107,7 @@ describe("VolmexProtocolUpgradeable", function () {
     const PositionTokenContract = await ethers.getContractFactory(
       "VolmexPositionToken"
     );
-    const DummyERC20Contract = await ethers.getContractFactory("DummyERC20");
+    const DummyERC20Contract = await ethers.getContractFactory("TestCollateralToken");
 
     const DummyERC20Instance = await DummyERC20Contract.deploy();
     await DummyERC20Instance.deployed();
@@ -147,7 +147,7 @@ describe("VolmexProtocolUpgradeable", function () {
     const PositionTokenContract = await ethers.getContractFactory(
       "VolmexPositionToken"
     );
-    const DummyERC20Contract = await ethers.getContractFactory("DummyERC20");
+    const DummyERC20Contract = await ethers.getContractFactory("TestCollateralToken");
 
     const DummyERC20Instance = await DummyERC20Contract.deploy();
     await DummyERC20Instance.deployed();

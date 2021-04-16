@@ -10,7 +10,6 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /**
  * @title Protocol contract
- * @author dipeshsukhani [https://github.com/amateur-dev]
  * @author ayush-volmex [https://github.com/ayush-volmex]
  */
 contract VolmexProtocolUpgradeMock is

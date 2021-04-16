@@ -244,7 +244,7 @@ describe("Protocol Token contract", function () {
     this.PositionTokenContract = await ethers.getContractFactory(
       "VolmexPositionToken"
     );
-    this.DummyERC20Contract = await ethers.getContractFactory("DummyERC20");
+    this.DummyERC20Contract = await ethers.getContractFactory("TestCollateralToken");
     this.token = await ethers.getContractFactory("NonCollateral");
     this.ethVLongName = "ETHV";
     this.ethVLongSymbol = "ETHV";
@@ -427,7 +427,7 @@ describe("Protocol Token contract", function () {
   });
 
   it("only the acceptableCollateralCoin is used in the collateralize function", async function () {
-    // deploying another version of the DummyERC20 for this test
+    // deploying another version of the TestCollateralToken for this test
     this.DummyERC20InstanceV2 = await this.DummyERC20Contract.deploy();
     await this.DummyERC20InstanceV2.deployed();
     // minting dummryERC20 token to account 2
@@ -631,7 +631,7 @@ describe("Protocol Token contract", function () {
     assert.equal(
       await this.DummyERC20Instance.balanceOf(this.account2.address),
       0,
-      "Account2 already holds some DummyERC20 Tokens"
+      "Account2 already holds some TestCollateralToken Tokens"
     );
     // minting dummryERC20 token to account 2
     await this.DummyERC20Instance.mint(
@@ -695,7 +695,7 @@ describe("Protocol Token contract", function () {
     assert.equal(
       await this.DummyERC20Instance.balanceOf(this.account2.address),
       0,
-      "Account2 already holds some DummyERC20 Tokens"
+      "Account2 already holds some TestCollateralToken Tokens"
     );
     // minting dummryERC20 token to account 2
     await this.DummyERC20Instance.mint(
@@ -762,7 +762,7 @@ describe("Protocol Token contract", function () {
     assert.equal(
       await this.DummyERC20Instance.balanceOf(this.account2.address),
       0,
-      "Account2 already holds some DummyERC20 Tokens"
+      "Account2 already holds some TestCollateralToken Tokens"
     );
     // minting dummryERC20 token to account 2
     await this.DummyERC20Instance.mint(
