@@ -415,12 +415,18 @@ contract VolmexProtocol is
         emit ToggledPositionTokenPause(_isPause);
     }
 
+    /**
+     * @notice Used to grant the contract's access from account
+     */
     function approveContractAccess(address account) external onlyOwner {
         approved[account] = true;
 
         emit ContractApproved(account);
     }
 
+    /**
+     * @notice Used to revoke the contract's access from account
+     */
     function revokeContractAccess(address account) external onlyOwner {
         approved[account] = false;
 
