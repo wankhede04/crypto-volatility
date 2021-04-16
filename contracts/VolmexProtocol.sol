@@ -47,10 +47,16 @@ contract VolmexProtocol is
     event ToggledPositionTokenPause(bool isPause);
     event Settled(uint256 settlementPrice);
 
+    // Has the value of minimum collateral qty required
     uint256 public minimumCollateralQty;
+
+    // Has the boolean state of protocol
     bool public active;
+
+    // Has the boolean state of protocol settlement
     bool public isSettled;
 
+    // Position tokens
     IERC20Modified public longPosition;
     IERC20Modified public shortPosition;
 
@@ -58,8 +64,13 @@ contract VolmexProtocol is
     // Address of the acceptable collateral token.
     IERC20Modified public collateral;
 
+    // Used to calculate collateralize fee
     uint256 public issuanceFees;
+
+    // Used to calculate redeem fee
     uint256 public redeemFees;
+
+    // Total fee amount for call of collateralize and redeem
     uint256 public accumulatedFees;
 
     // Percentage value is upto two decimal places, so we're dividing it by 10000
@@ -72,8 +83,11 @@ contract VolmexProtocol is
     // This is the price of long volatility, ranges from 0 to volatilityCapRatio,
     // and the inverse can be calculated by subtracting volatilityCapRatio by settlementPrice.
     uint256 public settlementPrice;
+
+    // Stores the block number of caller.
     mapping(address => uint256) public blockLock;
 
+    // Contract approve to interact with the protocol.
     mapping(address => bool) public approved;
 
     /**
@@ -123,15 +137,17 @@ contract VolmexProtocol is
     }
 
     /**
-     * @notice Creates the {PositionTokens}.
-     *
      * @dev Makes the protocol `active` at deployment
-     * @dev Locks the `minimumCollateralQty` at 20*10^18 tokens
+     * @dev Sets the `minimumCollateralQty`
      * @dev Makes the collateral token as `collateral`
+     * @dev Assign position tokens
+     * @dev Sets the `volatilityCapRatio`
      *
      * @param _collateralTokenAddress is address of collateral token typecasted to IERC20Modified
      * @param _longPosition is address of long position token typecasted to IERC20Modified
      * @param _shortPosition is address of short position token typecasted to IERC20Modified
+     * @param _minimumCollateralQty is the minimum qty of tokens need to mint 0.1 long and short tokens
+     * @param _volatilityCapRatio is the cap for volatility
      */
     function initialize(
         IERC20Modified _collateralTokenAddress,
@@ -217,6 +233,8 @@ contract VolmexProtocol is
             "Volmex: CollateralQty < minimum qty required"
         );
 
+        _lockForBlock();
+
         collateral.safeTransferFrom(msg.sender, address(this), _collateralQty);
 
         uint256 fee;
@@ -232,8 +250,6 @@ contract VolmexProtocol is
         shortPosition.mint(msg.sender, qtyToBeMinted);
 
         emit Collateralized(msg.sender, _collateralQty, qtyToBeMinted, fee);
-
-        _lockForBlock();
     }
 
     /**
@@ -253,6 +269,8 @@ contract VolmexProtocol is
         blockLocked
         onlyNotSettled
     {
+        _lockForBlock();
+
         uint256 collQtyToBeRedeemed = _positionTokenQty * volatilityCapRatio;
 
         uint256 fee;
@@ -268,8 +286,6 @@ contract VolmexProtocol is
         collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
 
         emit Redeemed(msg.sender, collQtyToBeRedeemed, _positionTokenQty, fee);
-
-        _lockForBlock();
     }
 
     /**
@@ -289,6 +305,8 @@ contract VolmexProtocol is
         onlyActive
         onlySettled
     {
+        _lockForBlock();
+
         uint256 collQtyToBeRedeemed =
             (_longTokenQty * settlementPrice) +
                 (_shortTokenQty * (volatilityCapRatio - settlementPrice));
