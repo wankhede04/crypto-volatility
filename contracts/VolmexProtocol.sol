@@ -39,12 +39,6 @@ contract VolmexProtocol is
     event Redeemed(
         address indexed sender,
         uint256 collateralReleased,
-        uint256 positionTokenBurned,
-        uint256 fees
-    );
-    event RedeemedSettled(
-        address indexed sender,
-        uint256 collateralReleased,
         uint256 longTokenBurned,
         uint256 shortTokenBurned,
         uint256 fees
@@ -276,19 +270,7 @@ contract VolmexProtocol is
 
         uint256 collQtyToBeRedeemed = _positionTokenQty * volatilityCapRatio;
 
-        uint256 fee;
-        if (redeemFees > 0) {
-            fee = (collQtyToBeRedeemed * redeemFees) / 10000;
-            collQtyToBeRedeemed = collQtyToBeRedeemed - fee;
-            accumulatedFees = accumulatedFees + fee;
-        }
-
-        longPosition.burn(msg.sender, _positionTokenQty);
-        shortPosition.burn(msg.sender, _positionTokenQty);
-
-        collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
-
-        emit Redeemed(msg.sender, collQtyToBeRedeemed, _positionTokenQty, fee);
+        _redeem(collQtyToBeRedeemed, _positionTokenQty, _positionTokenQty);
     }
 
     /**
@@ -314,25 +296,7 @@ contract VolmexProtocol is
             (_longTokenQty * settlementPrice) +
                 (_shortTokenQty * (volatilityCapRatio - settlementPrice));
 
-        uint256 fee;
-        if (redeemFees > 0) {
-            fee = (collQtyToBeRedeemed * redeemFees) / 10000;
-            collQtyToBeRedeemed = collQtyToBeRedeemed - fee;
-            accumulatedFees = accumulatedFees + fee;
-        }
-
-        longPosition.burn(msg.sender, _longTokenQty);
-        shortPosition.burn(msg.sender, _shortTokenQty);
-
-        collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
-
-        emit RedeemedSettled(
-            msg.sender,
-            collQtyToBeRedeemed,
-            _longTokenQty,
-            _shortTokenQty,
-            fee
-        );
+        _redeem(collQtyToBeRedeemed, _longTokenQty, _shortTokenQty);
     }
 
     /**
@@ -418,19 +382,45 @@ contract VolmexProtocol is
     /**
      * @notice Used to grant the contract's access from account
      */
-    function approveContractAccess(address account) external onlyOwner {
-        approved[account] = true;
+    function approveContractAccess(address _account) external onlyOwner {
+        approved[_account] = true;
 
-        emit ContractApproved(account);
+        emit ContractApproved(_account);
     }
 
     /**
      * @notice Used to revoke the contract's access from account
      */
-    function revokeContractAccess(address account) external onlyOwner {
-        approved[account] = false;
+    function revokeContractAccess(address _account) external onlyOwner {
+        approved[_account] = false;
 
-        emit ContractRevoked(account);
+        emit ContractRevoked(_account);
+    }
+
+    function _redeem(
+        uint256 _collateralQtyRedeemed,
+        uint256 _longTokenQty,
+        uint256 _shortTokenQty
+    ) internal {
+        uint256 fee;
+        if (redeemFees > 0) {
+            fee = (_collateralQtyRedeemed * redeemFees) / 10000;
+            _collateralQtyRedeemed = _collateralQtyRedeemed - fee;
+            accumulatedFees = accumulatedFees + fee;
+        }
+
+        longPosition.burn(msg.sender, _longTokenQty);
+        shortPosition.burn(msg.sender, _shortTokenQty);
+
+        collateral.safeTransfer(msg.sender, _collateralQtyRedeemed);
+
+        emit Redeemed(
+            msg.sender,
+            _collateralQtyRedeemed,
+            _longTokenQty,
+            _shortTokenQty,
+            fee
+        );
     }
 
     function _lockForBlock() private {
