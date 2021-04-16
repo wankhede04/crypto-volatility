@@ -22,6 +22,14 @@ contract VolmexProtocol is
 
     event ToggleActivated(bool isActive);
     event UpdatedPositionToken(address indexed positionToken, bool isLong);
+    event UpdatedFees(uint256 issuanceFees, uint256 redeemFees);
+    event UpdatedMinimumCollateral(uint256 newMinimumCollateralQty);
+    event ClaimedFees(uint256 fees);
+    event ToggledPositionTokenPause(bool isPause);
+    event Settled(uint256 settlementPrice);
+    event ContractApproved(address indexed account);
+    event ContractRevoked(address indexed account);
+    event BlockLocked(address indexed account, uint256 blockNumber);
     event Collateralized(
         address indexed sender,
         uint256 collateralLock,
@@ -41,11 +49,6 @@ contract VolmexProtocol is
         uint256 shortTokenBurned,
         uint256 fees
     );
-    event UpdatedFees(uint256 issuanceFees, uint256 redeemFees);
-    event UpdatedMinimumCollateral(uint256 newMinimumCollateralQty);
-    event ClaimedFees(uint256 fees);
-    event ToggledPositionTokenPause(bool isPause);
-    event Settled(uint256 settlementPrice);
 
     // Has the value of minimum collateral qty required
     uint256 public minimumCollateralQty;
@@ -414,13 +417,19 @@ contract VolmexProtocol is
 
     function approveContractAccess(address account) external onlyOwner {
         approved[account] = true;
+
+        emit ContractApproved(account);
     }
 
     function revokeContractAccess(address account) external onlyOwner {
         approved[account] = false;
+
+        emit ContractRevoked(account);
     }
 
     function _lockForBlock() private {
         blockLock[msg.sender] = block.number;
+
+        emit BlockLocked(msg.sender, block.number);
     }
 }
