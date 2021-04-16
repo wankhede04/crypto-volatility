@@ -27,11 +27,11 @@ async function main() {
   const VolmexPositionTokenFactory = await hre.ethers.getContractFactory(
     "VolmexPositionToken"
   );
-  const DummyERC20Factory = await hre.ethers.getContractFactory("TestCollateralToken");
+  const TestCollateralFactory = await hre.ethers.getContractFactory("TestCollateralToken");
 
-  // deploying the dummyERC20
-  const dummyERC20Instance = await DummyERC20Factory.deploy();
-  await dummyERC20Instance.deployed();
+  // deploying the testCollateral
+  const testCollateralInstance = await TestCollateralFactory.deploy();
+  await testCollateralInstance.deployed();
 
   // deploying the PositionTokenContracts
   const ethvLongToken = await VolmexPositionTokenFactory.deploy(
@@ -48,7 +48,7 @@ async function main() {
   const VolmexProtocolFactoryUpgradesInstance = await hre.upgrades.deployProxy(
     VolmexProtocolFactory,
     [
-      dummyERC20Instance.address,
+      testCollateralInstance.address,
       ethvLongToken.address,
       ethvShortToken.address,
       "20000000000000000000",
@@ -58,7 +58,7 @@ async function main() {
   await VolmexProtocolFactoryUpgradesInstance.deployed();
 
   // logging the addresses of the contracts
-  console.log("TestCollateralToken deployed to:", dummyERC20Instance.address);
+  console.log("TestCollateralToken deployed to:", testCollateralInstance.address);
   console.log("Ethereum Volatility Index deployed to:", ethvLongToken.address);
   console.log(
     "Inverse Ethereum Volatility Index deployed to:",
@@ -87,7 +87,7 @@ async function main() {
   ) {
     // verifying the dummryERC20 contract
     await hre.run("verify:verify", {
-      address: dummyERC20Instance.address,
+      address: testCollateralInstance.address,
       constructorArguments: [],
     });
 
@@ -95,7 +95,7 @@ async function main() {
     await hre.run("verify:verify", {
       address: VolmexProtocolFactoryUpgradesInstance.address,
       constructorArguments: [
-        dummyERC20Instance.address,
+        testCollateralInstance.address,
         ethvLongToken.address,
         ethvShortToken.address,
         "20000000000000000000",
