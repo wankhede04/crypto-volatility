@@ -52,6 +52,8 @@ export default {
     kovan: {
       url: `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
       accounts: [`0x${process.env.PRIVATE_KEY}`],
+      throwOnTransactionFailures: true,
+      loggingEnabled: true,
     },
   },
   etherscan: {
