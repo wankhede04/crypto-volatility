@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.2;
 
-import "../VolmexPositionToken.sol";
+import "../helper/VolmexPositionToken.sol";
 
 // mock class using ERC20
 contract VolmexPositionTokenMock is VolmexPositionToken {
