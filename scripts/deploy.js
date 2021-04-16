@@ -70,15 +70,16 @@ async function main() {
     VolmexProtocolFactoryUpgradesInstance.address
   );
 
-  // granting MINTER_ROLE to the protocol contract
-  await ethvLongToken.grantRole(
-    ethers.utils.keccak256(ethers.utils.toUtf8Bytes("VOLMEX_PROTOCOL_ROLE")),
-    VolmexProtocolFactoryUpgradesInstance.address
-  );
-  await ethvShortToken.grantRole(
-    ethers.utils.keccak256(ethers.utils.toUtf8Bytes("VOLMEX_PROTOCOL_ROLE")),
-    VolmexProtocolFactoryUpgradesInstance.address
-  );
+  // granting VOLMEX_PROTOCOL_ROLE to the protocol contract
+  // We need to manually grant the role until we switch to hardhat-deploy.
+  // await ethvLongToken.grantRole(
+  //   ethers.utils.keccak256(ethers.utils.toUtf8Bytes("VOLMEX_PROTOCOL_ROLE")),
+  //   VolmexProtocolFactoryUpgradesInstance.address
+  // );
+  // await ethvShortToken.grantRole(
+  //   ethers.utils.keccak256(ethers.utils.toUtf8Bytes("VOLMEX_PROTOCOL_ROLE")),
+  //   VolmexProtocolFactoryUpgradesInstance.address
+  // );
 
   // verifying the contracts only if deployed to etherscan compatible network
   if (
