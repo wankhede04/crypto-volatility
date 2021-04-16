@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.2;
 
-import "../IERC20Modified.sol";
+import "../interfaces/IERC20Modified.sol";
 
 interface IVolmexProtocol {
     function collateralize(uint256 collateralQty) external;
