@@ -20,8 +20,10 @@ contract VolmexPositionToken is Initializable, AccessControlUpgradeable, ERC20Pa
      */
     function initialize(string memory name, string memory symbol) public initializer {
         __ERC20_init_unchained(name, symbol);
-        __ERC20Pausable_init();
         __AccessControl_init_unchained();
+
+        __ERC20Pausable_init();
+        __ERC165_init();
 
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(VOLMEX_PROTOCOL_ROLE, _msgSender());

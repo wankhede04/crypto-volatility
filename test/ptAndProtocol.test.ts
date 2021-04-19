@@ -50,17 +50,15 @@ describe("Position Token contract", function () {
     this.PositionTokenContract = await ethers.getContractFactory(
       "VolmexPositionToken"
     );
-    this.tokenName = "ETHV";
+    this.tokenName = "Ethereum Volatility Index";
     this.tokenSymbol = "ETHV";
   });
 
   // deploying a fresh PTContract before each test
   beforeEach(async function () {
-    this.ptc = await upgrades.deployProxy(
-      this.PositionTokenContract,
-      [this.tokenName, this.tokenSymbol]
-    );
+    this.ptc = await this.PositionTokenContract.deploy();
     await this.ptc.deployed();
+    await this.ptc.initialize(this.tokenName, this.tokenSymbol)
   });
 
   it("contract is successfully deployed", async function () {
@@ -214,7 +212,7 @@ describe("Position Token contract", function () {
   });
 });
 
-describe("Protocol Token contract", function () {
+describe("Protocol contract", function () {
   /**
    * SCOPE OF THE TEST FOR THE POSITION TOKEN CONTRACT
    * 1. contract is successfully deployed: DONE
@@ -246,9 +244,9 @@ describe("Protocol Token contract", function () {
     );
     this.DummyERC20Contract = await ethers.getContractFactory("TestCollateralToken");
     this.token = await ethers.getContractFactory("NonCollateral");
-    this.ethVLongName = "ETHV";
+    this.ethVLongName = "Ethereum Volatility Index";
     this.ethVLongSymbol = "ETHV";
-    this.ethVShortName = "iETHV";
+    this.ethVShortName = "Inverse Ethereum Volatility Index";
     this.ethVShortSymbol = "iETHV";
   });
 
@@ -256,18 +254,13 @@ describe("Protocol Token contract", function () {
   beforeEach(async function () {
     this.DummyERC20Instance = await this.DummyERC20Contract.deploy();
     await this.DummyERC20Instance.deployed();
-
-    this.ethVLongInstance = await upgrades.deployProxy(
-      this.PositionTokenContract,
-      [this.ethVLongName, this.ethVLongSymbol]
-    );
+    this.ethVLongInstance = await this.PositionTokenContract.deploy();
     await this.ethVLongInstance.deployed();
+    await this.ethVLongInstance.initialize(this.ethVLongName, this.ethVLongSymbol);
 
-    this.ethVShortInstance = await upgrades.deployProxy(
-      this.PositionTokenContract,
-      [this.ethVShortName, this.ethVShortSymbol]
-    );
+    this.ethVShortInstance = await this.PositionTokenContract.deploy();
     await this.ethVShortInstance.deployed();
+    this.ethVShortInstance.initialize(this.ethVShortName, this.ethVShortSymbol);
 
     this.protcolInstance = await upgrades.deployProxy(
       this.VolmexProtocolFactory,
