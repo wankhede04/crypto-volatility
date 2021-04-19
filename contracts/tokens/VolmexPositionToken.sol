@@ -2,14 +2,14 @@
 
 pragma solidity 0.8.2;
 
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PausableUpgradeable.sol";
 
 /**
  * This contract is used to deploy the volatility and inverse volatility tokens.
  */
-contract VolmexPositionToken is Context, AccessControl, ERC20Pausable {
+contract VolmexPositionToken is Initializable, AccessControlUpgradeable, ERC20PausableUpgradeable {
     bytes32 public constant VOLMEX_PROTOCOL_ROLE = keccak256("VOLMEX_PROTOCOL_ROLE");
 
     /**
@@ -18,7 +18,11 @@ contract VolmexPositionToken is Context, AccessControl, ERC20Pausable {
      *
      * See {ERC20-constructor}.
      */
-    constructor(string memory name, string memory symbol) ERC20(name, symbol) {
+    function initialize(string memory name, string memory symbol) public initializer {
+        __ERC20_init_unchained(name, symbol);
+        __ERC20Pausable_init();
+        __AccessControl_init_unchained();
+
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(VOLMEX_PROTOCOL_ROLE, _msgSender());
     }

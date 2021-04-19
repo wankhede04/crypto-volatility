@@ -11,7 +11,8 @@ contract VolmexPositionTokenMock is VolmexPositionToken {
         string memory symbol,
         address initialAccount,
         uint256 initialBalance
-    ) payable VolmexPositionToken(name, symbol) {
+    ) payable {
+        initialize(name, symbol);
         _mint(initialAccount, initialBalance);
     }
 

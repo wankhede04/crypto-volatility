@@ -56,9 +56,9 @@ describe("Position Token contract", function () {
 
   // deploying a fresh PTContract before each test
   beforeEach(async function () {
-    this.ptc = await this.PositionTokenContract.deploy(
-      this.tokenName,
-      this.tokenSymbol
+    this.ptc = await upgrades.deployProxy(
+      this.PositionTokenContract,
+      [this.tokenName, this.tokenSymbol]
     );
     await this.ptc.deployed();
   });
@@ -256,14 +256,16 @@ describe("Protocol Token contract", function () {
   beforeEach(async function () {
     this.DummyERC20Instance = await this.DummyERC20Contract.deploy();
     await this.DummyERC20Instance.deployed();
-    this.ethVLongInstance = await this.PositionTokenContract.deploy(
-      this.ethVLongName,
-      this.ethVLongSymbol
+
+    this.ethVLongInstance = await upgrades.deployProxy(
+      this.PositionTokenContract,
+      [this.ethVLongName, this.ethVLongSymbol]
     );
     await this.ethVLongInstance.deployed();
-    this.ethVShortInstance = await this.PositionTokenContract.deploy(
-      this.ethVShortName,
-      this.ethVShortSymbol
+
+    this.ethVShortInstance = await upgrades.deployProxy(
+      this.PositionTokenContract,
+      [this.ethVShortName, this.ethVShortSymbol]
     );
     await this.ethVShortInstance.deployed();
 
