@@ -10,8 +10,8 @@ import "../interfaces/IERC20Modified.sol";
 import "../library/VolmexSafeERC20.sol";
 
 /**
- * @title Protocol contract
- * @author ayush-volmex [ayusht11@outlook.com]
+ * @title Protocol Contract
+ * @author Volmex [security@volmexlabs.com]
  */
 contract VolmexProtocolUpgradeMock is
     Initializable,
