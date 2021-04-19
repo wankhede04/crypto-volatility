@@ -11,16 +11,12 @@ describe("VolmexProtocolUpgradeable", function () {
 
     const DummyERC20Instance = await DummyERC20Contract.deploy();
     await DummyERC20Instance.deployed();
-    const ethVLongInstance = await upgrades.deployProxy(
-      PositionTokenContract,
-      ["Ethereum Volatility Index", "ETHV"]
-    );
+    const ethVLongInstance = await PositionTokenContract.deploy();
     await ethVLongInstance.deployed();
-    const ethVShortInstance = await upgrades.deployProxy(
-      PositionTokenContract,
-      ["Inverse Ethereum Volatility Index", "iETHV"]
-    );
+    await ethVLongInstance.initialize("Ethereum Volatility Index", "ETHV");
+    const ethVShortInstance = await PositionTokenContract.deploy();
     await ethVShortInstance.deployed();
+    await ethVShortInstance.initialize("Inverse Ethereum Volatility Index", "iETHV");
 
     const VolmexProtocol = await ethers.getContractFactory("VolmexProtocol");
     const VolmexProtocolUpgrade = await ethers.getContractFactory(
@@ -76,16 +72,12 @@ describe("VolmexProtocolUpgradeable", function () {
 
     const DummyERC20Instance = await DummyERC20Contract.deploy();
     await DummyERC20Instance.deployed();
-    const ethVLongInstance = await upgrades.deployProxy(
-      PositionTokenContract,
-      ["Ethereum Volatility Index", "ETHV"]
-    );
+    const ethVLongInstance = await PositionTokenContract.deploy();
     await ethVLongInstance.deployed();
-    const ethVShortInstance = await upgrades.deployProxy(
-      PositionTokenContract,
-      ["Inverse Ethereum Volatility Index", "iETHV"]
-    );
+    await ethVLongInstance.initialize("Ethereum Volatility Index", "ETHV");
+    const ethVShortInstance = await PositionTokenContract.deploy();
     await ethVShortInstance.deployed();
+    await ethVShortInstance.initialize("Inverse Ethereum Volatility Index", "iETHV");
 
     const VolmexProtocol = await ethers.getContractFactory("VolmexProtocol");
     const VolmexProtocolUpgrade = await ethers.getContractFactory(
@@ -117,16 +109,12 @@ describe("VolmexProtocolUpgradeable", function () {
 
     const DummyERC20Instance = await DummyERC20Contract.deploy();
     await DummyERC20Instance.deployed();
-    const ethVLongInstance = await upgrades.deployProxy(
-      PositionTokenContract,
-      ["Ethereum Volatility Index", "ETHV"]
-    );
+    const ethVLongInstance = await PositionTokenContract.deploy();
     await ethVLongInstance.deployed();
-    const ethVShortInstance = await upgrades.deployProxy(
-      PositionTokenContract,
-      ["Inverse Ethereum Volatility Index", "iETHV"]
-    );
+    await ethVLongInstance.initialize("Ethereum Volatility Index", "ETHV");
+    const ethVShortInstance = await PositionTokenContract.deploy();
     await ethVShortInstance.deployed();
+    await ethVShortInstance.initialize("Inverse Ethereum Volatility Index", "iETHV");
 
     const VolmexProtocol = await ethers.getContractFactory("VolmexProtocol");
     const VolmexProtocolUpgrade = await ethers.getContractFactory(
@@ -160,16 +148,12 @@ describe("VolmexProtocolUpgradeable", function () {
 
     const DummyERC20Instance = await DummyERC20Contract.deploy();
     await DummyERC20Instance.deployed();
-    const ethVLongInstance = await upgrades.deployProxy(
-      PositionTokenContract,
-      ["Ethereum Volatility Index", "ETHV"]
-    );
+    const ethVLongInstance = await PositionTokenContract.deploy();
     await ethVLongInstance.deployed();
-    const ethVShortInstance = await upgrades.deployProxy(
-      PositionTokenContract,
-      ["Inverse Ethereum Volatility Index", "iETHV"]
-    );
+    await ethVLongInstance.initialize("Ethereum Volatility Index", "ETHV");
+    const ethVShortInstance = await PositionTokenContract.deploy();
     await ethVShortInstance.deployed();
+    await ethVShortInstance.initialize("Inverse Ethereum Volatility Index", "iETHV");
 
     const VolmexProtocol = await ethers.getContractFactory("VolmexProtocol");
     const VolmexProtocolUpgrade = await ethers.getContractFactory(
