@@ -35,12 +35,12 @@ async function main() {
 
   // deploying the PositionTokenContracts
   const ethvLongToken = await VolmexPositionTokenFactory.deploy(
-    "Ethereum Volatility Index",
+    "Ethereum Volatility Index Token",
     "ETHV"
   );
   await ethvLongToken.deployed();
   const ethvShortToken = await VolmexPositionTokenFactory.deploy(
-    "Inverse Ethereum Volatility Index",
+    "Inverse Ethereum Volatility Index Token",
     "iETHV"
   );
   await ethvShortToken.deployed();
@@ -60,9 +60,9 @@ async function main() {
 
   // logging the addresses of the contracts
   console.log("TestCollateralToken deployed to:", testCollateralInstance.address);
-  console.log("Ethereum Volatility Index deployed to:", ethvLongToken.address);
+  console.log("Ethereum Volatility Index Token deployed to:", ethvLongToken.address);
   console.log(
-    "Inverse Ethereum Volatility Index deployed to:",
+    "Inverse Ethereum Volatility Index Token deployed to:",
     ethvShortToken.address
   );
   console.log(
