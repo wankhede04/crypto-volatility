@@ -7,7 +7,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./interfaces/IERC20Modified.sol";
 import "./tokens/VolmexPositionToken.sol";
 import './VolmexProtocol.sol';
-import "hardhat/console.sol";
 
 contract IndexFactory is Ownable {
     // Implementation contracts for factory
@@ -17,7 +16,7 @@ contract IndexFactory is Ownable {
     mapping(address => address) public getIndex;
     address[] public allIndex;
 
-    event IndexCreated(string name, address indexed token, address indexed index, uint256 position);
+    event IndexCreated(string name, address token, address index, uint256 position);
 
     constructor() {
         implementation = address(new VolmexProtocol());

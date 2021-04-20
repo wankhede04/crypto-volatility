@@ -1,8 +1,23 @@
 const expectEvent = require("@openzeppelin/test-helpers/src/expectEvent");
 const { expect } = require("chai");
 const { ethers, upgrades } = require("hardhat");
-import { Signer, utils } from 'ethers';
+import { Signer, utils, Contract, ContractReceipt, Event } from 'ethers';
 import { IndexFactory, IndexFactory__factory, TestCollateralToken, TestCollateralToken__factory, VolmexPositionToken, VolmexPositionToken__factory, VolmexProtocol, VolmexProtocol__factory } from '../types';
+import { Result } from '@ethersproject/abi';
+
+export const filterEvents = (blockEvents: ContractReceipt, name: String): Array<Event> => {
+    return blockEvents.events?.filter(event => event.event === name) || [];
+  }
+  
+
+export const decodeEvents = <T extends Contract>(token: T, events: Array<Event>): Array<Result> => {
+    const decodedEvents = []
+    for (const event of events) {
+      const getEventInterface = token.interface.getEvent(event.event || '')
+      decodedEvents.push(token.interface.decodeEventLog(getEventInterface, event.data))
+    }
+    return decodedEvents;
+  }
 
 describe("Index Factory", function () {
   let accounts: Signer[];
@@ -33,22 +48,24 @@ describe("Index Factory", function () {
 
     const deployedIndex = await factory.createIndex(tokenToMakeIndexOf.address, CollateralToken.address, "20000000000000000000", "200",'Ethereum', 'ETH');
     
-    const transaction = await deployedIndex.wait()
-    const factoryEvents = transaction.events
-    const { address } = factoryEvents?.find(Boolean) || {}
+    const transaction = await deployedIndex.wait();
+
+    const indexCreatedEvent = decodeEvents(factory, filterEvents(transaction, 'IndexCreated'))
+
+    //@ts-ignore
+    const address = indexCreatedEvent[0].index
 
     expect(address).not.equal(undefined)
+    
     let instance: VolmexProtocol | null
     
-    if(address !== undefined){
+    if(address !== undefined){    
       const { interface: contract_interface } = await ethers.getContractFactory('VolmexProtocol') as VolmexProtocol__factory;
-      instance = new ethers.Contract(address, contract_interface, accounts[0]) as VolmexProtocol
-
-      // expect((await instance.volatilityCapRatio()).toNumber()).to.equal(200)
+      instance = new ethers.Contract(address, contract_interface, accounts[0])
+      expect(await instance?.active()).to.equal(true)
     } else {
       instance = null;
     }
-
     expect(instance).not.equal(null)
   });
 
