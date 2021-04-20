@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./interfaces/IERC20Modified.sol";
 import "./tokens/VolmexPositionToken.sol";
 import './VolmexProtocol.sol';
+import "hardhat/console.sol";
 
 contract IndexFactory is Initializable, OwnableUpgradeable {
     // Implementation contracts for factory
@@ -32,41 +33,43 @@ contract IndexFactory is Initializable, OwnableUpgradeable {
         return allIndex.length;
     }
     
+    function determineIndexAddress() external view returns (address) {
+        return address(0);
+    }
+    
     function createIndex(
-        address token,
+        address _token,
         IERC20Modified _collateralTokenAddress,  
         uint256 _minimumCollateralQty,
-        uint256 _volatilityCapRatio
+        uint256 _volatilityCapRatio,
+        string memory _tokenName,
+        string memory _tokenSymbol
     ) external onlyOwner returns (address index) {        
         // Make sure that the token isn't a zero address
-        require(token != address(0), 'Zero address cannot be used as an index');
+        require(_token != address(0), 'Volmex Protocol: Zero address cannot be used as an index');
 
         // Make sure the index hasn't been created already
-        require(getIndex[token] == address(0), 'Index already exists');
+        require(getIndex[_token] == address(0), 'Volmex Protocol: Index already exists');
 
-        string memory tokenSymbol = ERC20(token).symbol();
-        string memory tokenName = ERC20(token).name();
-
-        VolmexPositionToken longToken = clonePositonToken(tokenSymbol, tokenName);
-        VolmexPositionToken shortToken = clonePositonToken(tokenSymbol, tokenName);
+        VolmexPositionToken longToken = clonePositonToken(_token, _tokenName, _tokenSymbol);
+        VolmexPositionToken shortToken = clonePositonToken(_token, string(abi.encodePacked('i', _tokenName)), _tokenSymbol);
         
         // Next we will determine the salt for the current sender
-        bytes32 salt = keccak256(abi.encodePacked(token));
+        bytes32 salt = keccak256(abi.encodePacked(_token));
         
         // Clone the implementation with a salt so that it is deterministic
         address newIndex = ClonesUpgradeable.cloneDeterministic(address(implementation), salt);
-        
+
         // Intialize the strategy
         VolmexProtocol(newIndex).initialize(_collateralTokenAddress, IERC20Modified(address(longToken)), IERC20Modified(address(shortToken)), _minimumCollateralQty, _volatilityCapRatio);
-        getIndex[token] = newIndex; 
+        getIndex[_token] = newIndex; 
         allIndex.push(newIndex);
-        emit IndexCreated(tokenName, token, newIndex, allIndex.length);
-
+        emit IndexCreated(_tokenName, _token, newIndex, allIndex.length);
         return address(newIndex);
     }
 
-    function clonePositonToken(string memory name, string memory symbol) private returns (VolmexPositionToken _address) {
-        bytes32 salt = keccak256(abi.encodePacked(name, symbol));
+    function clonePositonToken(address token, string memory name, string memory symbol) private returns (VolmexPositionToken _address) {
+        bytes32 salt = keccak256(abi.encodePacked(token, name, symbol));
         // Clone the implementation with a salt so that it is deterministic
         address newPositionToken = ClonesUpgradeable.cloneDeterministic(address(position_token_implementation), salt);
         VolmexPositionToken(newPositionToken).initialize(name, symbol);
