@@ -50,7 +50,7 @@ describe("Position Token contract", function () {
     this.PositionTokenContract = await ethers.getContractFactory(
       "VolmexPositionToken"
     );
-    this.tokenName = "Ethereum Volatility Index";
+    this.tokenName = "Ethereum Volatility Index Token";
     this.tokenSymbol = "ETHV";
   });
 
@@ -244,9 +244,9 @@ describe("Protocol contract", function () {
     );
     this.DummyERC20Contract = await ethers.getContractFactory("TestCollateralToken");
     this.token = await ethers.getContractFactory("NonCollateral");
-    this.ethVLongName = "Ethereum Volatility Index";
+    this.ethVLongName = "Ethereum Volatility Index Token";
     this.ethVLongSymbol = "ETHV";
-    this.ethVShortName = "Inverse Ethereum Volatility Index";
+    this.ethVShortName = "Inverse Ethereum Volatility Index Token";
     this.ethVShortSymbol = "iETHV";
   });
 
