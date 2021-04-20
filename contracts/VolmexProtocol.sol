@@ -54,8 +54,8 @@ contract VolmexProtocol is
     bool public isSettled;
 
     // Position tokens
-    IERC20Modified public longPosition;
-    IERC20Modified public shortPosition;
+    IERC20Modified public volatilityToken;
+    IERC20Modified public inverseVolatilityToken;
 
     // Only ERC20 standard functions are used by the collateral defined here.
     // Address of the acceptable collateral token.
@@ -141,15 +141,15 @@ contract VolmexProtocol is
      * @dev Sets the `volatilityCapRatio`
      *
      * @param _collateralTokenAddress is address of collateral token typecasted to IERC20Modified
-     * @param _longPosition is address of long position token typecasted to IERC20Modified
-     * @param _shortPosition is address of short position token typecasted to IERC20Modified
+     * @param _volatilityToken is address of long position token typecasted to IERC20Modified
+     * @param _inverseVolatilityToken is address of short position token typecasted to IERC20Modified
      * @param _minimumCollateralQty is the minimum qty of tokens need to mint 0.1 long and short tokens
      * @param _volatilityCapRatio is the cap for volatility
      */
     function initialize(
         IERC20Modified _collateralTokenAddress,
-        IERC20Modified _longPosition,
-        IERC20Modified _shortPosition,
+        IERC20Modified _volatilityToken,
+        IERC20Modified _inverseVolatilityToken,
         uint256 _minimumCollateralQty,
         uint256 _volatilityCapRatio
     ) public initializer {
@@ -164,8 +164,8 @@ contract VolmexProtocol is
         active = true;
         minimumCollateralQty = _minimumCollateralQty;
         collateral = _collateralTokenAddress;
-        longPosition = _longPosition;
-        shortPosition = _shortPosition;
+        volatilityToken = _volatilityToken;
+        inverseVolatilityToken = _inverseVolatilityToken;
         volatilityCapRatio = _volatilityCapRatio;
     }
 
@@ -203,8 +203,8 @@ contract VolmexProtocol is
         onlyOwner
     {
         _isLong
-            ? longPosition = IERC20Modified(_positionToken)
-            : shortPosition = IERC20Modified(_positionToken);
+            ? volatilityToken = IERC20Modified(_positionToken)
+            : inverseVolatilityToken = IERC20Modified(_positionToken);
         emit UpdatedPositionToken(_positionToken, _isLong);
     }
 
@@ -243,8 +243,8 @@ contract VolmexProtocol is
 
         uint256 qtyToBeMinted = _collateralQty / volatilityCapRatio;
 
-        longPosition.mint(msg.sender, qtyToBeMinted);
-        shortPosition.mint(msg.sender, qtyToBeMinted);
+        volatilityToken.mint(msg.sender, qtyToBeMinted);
+        inverseVolatilityToken.mint(msg.sender, qtyToBeMinted);
 
         emit Collateralized(msg.sender, _collateralQty, qtyToBeMinted, fee);
     }
@@ -369,11 +369,11 @@ contract VolmexProtocol is
      */
     function togglePause(bool _isPause) external onlyOwner {
         if (_isPause) {
-            longPosition.pause();
-            shortPosition.pause();
+            volatilityToken.pause();
+            inverseVolatilityToken.pause();
         } else {
-            longPosition.unpause();
-            shortPosition.unpause();
+            volatilityToken.unpause();
+            inverseVolatilityToken.unpause();
         }
 
         emit ToggledPositionTokenPause(_isPause);
@@ -409,8 +409,8 @@ contract VolmexProtocol is
             accumulatedFees = accumulatedFees + fee;
         }
 
-        longPosition.burn(msg.sender, _longTokenQty);
-        shortPosition.burn(msg.sender, _shortTokenQty);
+        volatilityToken.burn(msg.sender, _longTokenQty);
+        inverseVolatilityToken.burn(msg.sender, _shortTokenQty);
 
         collateral.safeTransfer(msg.sender, _collateralQtyRedeemed);
 

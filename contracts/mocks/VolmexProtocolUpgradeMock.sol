@@ -48,8 +48,8 @@ contract VolmexProtocolUpgradeMock is
     bool public active;
     bool public isSettled;
 
-    IERC20Modified public longPosition;
-    IERC20Modified public shortPosition;
+    IERC20Modified public volatilityToken;
+    IERC20Modified public inverseVolatilityToken;
 
     // Only ERC20 standard functions are used by the collateral defined here.
     // Address of the acceptable collateral token.
@@ -103,13 +103,13 @@ contract VolmexProtocolUpgradeMock is
      * @dev Makes the collateral token as `collateral`
      *
      * @param _collateralTokenAddress is address of collateral token typecasted to IERC20Modified
-     * @param _longPosition is address of long position token typecasted to IERC20Modified
-     * @param _shortPosition is address of short position token typecasted to IERC20Modified
+     * @param _volatilityToken is address of long position token typecasted to IERC20Modified
+     * @param _inverseVolatilityToken is address of short position token typecasted to IERC20Modified
      */
     function initialize(
         IERC20Modified _collateralTokenAddress,
-        IERC20Modified _longPosition,
-        IERC20Modified _shortPosition,
+        IERC20Modified _volatilityToken,
+        IERC20Modified _inverseVolatilityToken,
         uint256 _minimumCollateralQty
     ) public initializer {
         require(
@@ -120,8 +120,8 @@ contract VolmexProtocolUpgradeMock is
         active = true;
         minimumCollateralQty = _minimumCollateralQty;
         collateral = _collateralTokenAddress;
-        longPosition = _longPosition;
-        shortPosition = _shortPosition;
+        volatilityToken = _volatilityToken;
+        inverseVolatilityToken = _inverseVolatilityToken;
     }
 
     /**
@@ -158,8 +158,8 @@ contract VolmexProtocolUpgradeMock is
         onlyOwner
     {
         _isLong
-            ? longPosition = IERC20Modified(_positionToken)
-            : shortPosition = IERC20Modified(_positionToken);
+            ? volatilityToken = IERC20Modified(_positionToken)
+            : inverseVolatilityToken = IERC20Modified(_positionToken);
         emit UpdatedPositionToken(_positionToken, _isLong);
     }
 
@@ -195,8 +195,8 @@ contract VolmexProtocolUpgradeMock is
 
         collateral.safeTransferFrom(msg.sender, address(this), _collateralQty);
 
-        longPosition.mint(msg.sender, qtyToBeMinted);
-        shortPosition.mint(msg.sender, qtyToBeMinted);
+        volatilityToken.mint(msg.sender, qtyToBeMinted);
+        inverseVolatilityToken.mint(msg.sender, qtyToBeMinted);
 
         emit Collateralized(msg.sender, _collateralQty, qtyToBeMinted, fee);
 
@@ -226,8 +226,8 @@ contract VolmexProtocolUpgradeMock is
 
         collateral.safeTransfer(msg.sender, collQtyToBeRedeemed);
 
-        longPosition.burn(msg.sender, _positionTokenQty);
-        shortPosition.burn(msg.sender, _positionTokenQty);
+        volatilityToken.burn(msg.sender, _positionTokenQty);
+        inverseVolatilityToken.burn(msg.sender, _positionTokenQty);
 
         emit Redeemed(msg.sender, collQtyToBeRedeemed, _positionTokenQty, fee);
 
@@ -287,11 +287,11 @@ contract VolmexProtocolUpgradeMock is
      */
     function togglePause(bool _isPause) external onlyOwner {
         if (_isPause) {
-            longPosition.pause();
-            shortPosition.pause();
+            volatilityToken.pause();
+            inverseVolatilityToken.pause();
         } else {
-            longPosition.unpause();
-            shortPosition.unpause();
+            volatilityToken.unpause();
+            inverseVolatilityToken.unpause();
         }
 
         emit ToggledPositionTokenPause(_isPause);
