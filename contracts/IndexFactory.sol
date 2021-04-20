@@ -42,7 +42,7 @@ contract IndexFactory is Initializable, OwnableUpgradeable {
         require(token != address(0), 'Zero address cannot be used as an index');
 
         // Make sure the index hasn't been created already
-        require(getIndex[token] != address(0), 'Index already exists');
+        require(getIndex[token] == address(0), 'Index already exists');
 
         string memory tokenSymbol = ERC20(token).symbol();
         string memory tokenName = ERC20(token).name();

@@ -1,8 +1,7 @@
 require("dotenv").config();
-require("@nomiclabs/hardhat-waffle");
-require("@nomiclabs/hardhat-truffle5");
-require("@nomiclabs/hardhat-ethers");
-require("@openzeppelin/hardhat-upgrades");
+import "@nomiclabs/hardhat-truffle5";
+import "@nomiclabs/hardhat-ethers";
+import "@openzeppelin/hardhat-upgrades";
 
 import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
