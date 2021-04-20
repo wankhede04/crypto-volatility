@@ -1,8 +1,7 @@
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import '@openzeppelin/contracts-upgradeable/proxy/ClonesUpgradeable.sol';
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./interfaces/IERC20Modified.sol";
@@ -10,7 +9,7 @@ import "./tokens/VolmexPositionToken.sol";
 import './VolmexProtocol.sol';
 import "hardhat/console.sol";
 
-contract IndexFactory is Initializable, OwnableUpgradeable {
+contract IndexFactory is Ownable {
     // Implementation contracts for factory
     address immutable implementation;
     address immutable position_token_implementation;
@@ -25,16 +24,12 @@ contract IndexFactory is Initializable, OwnableUpgradeable {
         position_token_implementation = address(new VolmexPositionToken());
     }
 
-    function initialize() public initializer {
-        __Ownable_init();
-    }
-
     function allIndexLength() external view returns (uint) {
         return allIndex.length;
     }
     
     function determineIndexAddress(address implementation, bytes32 salt, address deployer) external view returns (address) {
-        return ClonesUpgradeable.predictDeterministicAddress(implementation, salt, deployer);
+        return Clones.predictDeterministicAddress(implementation, salt, deployer);
     }
     
     function createIndex(
@@ -58,7 +53,7 @@ contract IndexFactory is Initializable, OwnableUpgradeable {
         bytes32 salt = keccak256(abi.encodePacked(_token));
         
         // Clone the implementation with a salt so that it is deterministic
-        address newIndex = ClonesUpgradeable.cloneDeterministic(address(implementation), salt);
+        address newIndex = Clones.cloneDeterministic(address(implementation), salt);
 
         // Intialize the strategy
         VolmexProtocol(newIndex).initialize(_collateralTokenAddress, IERC20Modified(address(longToken)), IERC20Modified(address(shortToken)), _minimumCollateralQty, _volatilityCapRatio);
@@ -71,7 +66,7 @@ contract IndexFactory is Initializable, OwnableUpgradeable {
     function clonePositonToken(address token, string memory name, string memory symbol) private returns (VolmexPositionToken _address) {
         bytes32 salt = keccak256(abi.encodePacked(token, name, symbol));
         // Clone the implementation with a salt so that it is deterministic
-        address newPositionToken = ClonesUpgradeable.cloneDeterministic(address(position_token_implementation), salt);
+        address newPositionToken = Clones.cloneDeterministic(address(position_token_implementation), salt);
         VolmexPositionToken(newPositionToken).initialize(name, symbol);
         return VolmexPositionToken(newPositionToken);
     }

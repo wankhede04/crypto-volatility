@@ -31,10 +31,6 @@ describe("Index Factory", function () {
 
     const factory = await indexFactory.deploy().then((f: IndexFactory) => f.deployed());
 
-    const initFactoryTx = await factory.initialize();
-
-    await initFactoryTx.wait()
-
     const deployedIndex = await factory.createIndex(tokenToMakeIndexOf.address, CollateralToken.address, "20000000000000000000", "200",'Ethereum', 'ETH');
     
     const transaction = await deployedIndex.wait()
