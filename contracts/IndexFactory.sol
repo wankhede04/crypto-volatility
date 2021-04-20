@@ -33,8 +33,8 @@ contract IndexFactory is Initializable, OwnableUpgradeable {
         return allIndex.length;
     }
     
-    function determineIndexAddress() external view returns (address) {
-        return address(0);
+    function determineIndexAddress(address implementation, bytes32 salt, address deployer) external view returns (address) {
+        return ClonesUpgradeable.predictDeterministicAddress(implementation, salt, deployer);
     }
     
     function createIndex(
