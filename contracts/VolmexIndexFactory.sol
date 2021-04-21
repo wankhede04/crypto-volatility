@@ -153,7 +153,10 @@ contract VolmexIndexFactory is Ownable {
         getIndexSymbol[indexCount] = _tokenSymbol;
 
         volatilityToken.grantRole(VOLMEX_PROTOCOL_ROLE, _index);
+        volatilityToken.renounceRole(VOLMEX_PROTOCOL_ROLE, address(this));
+
         inverseVolatilityToken.grantRole(VOLMEX_PROTOCOL_ROLE, _index);
+        inverseVolatilityToken.renounceRole(VOLMEX_PROTOCOL_ROLE, address(this));
 
         volatilityToken.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         volatilityToken.renounceRole(DEFAULT_ADMIN_ROLE, address(this));
