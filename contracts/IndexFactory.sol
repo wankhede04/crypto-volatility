@@ -8,25 +8,54 @@ import "./tokens/VolmexPositionToken.sol";
 import './VolmexProtocol.sol';
 
 contract IndexFactory is Ownable {
-    // Implementation contracts for factory
-    address immutable implementation;
-    address immutable positionTokenImplementation;
-
-    mapping(uint256 => address) public getIndex;
-    mapping(uint256 => string) public getIndexName;
-    uint256 public indexCount;
-
     event IndexCreated(string name, address index, uint256 position);
 
+    // Protocol implementation contract for factory
+    address immutable implementation;
+
+    // Position token implementation contract for factory
+    address immutable positionTokenImplementation;
+
+    // To store the address of volatility.
+    mapping(uint256 => address) public getIndex;
+
+    // To store the name of volatility
+    mapping(uint256 => string) public getIndexName;
+
+    // Used to store the address and name of volatility at a particular index (incremental state of 1)
+    uint256 public indexCount;
+
+    /**
+     * @notice Get the address of implementation contracts instance.
+     */
     constructor() {
         implementation = address(new VolmexProtocol());
         positionTokenImplementation = address(new VolmexPositionToken());
     }
 
+    /**
+     * @notice Get the conterfactual address of protocol implementation.
+     */
     function determineIndexAddress(address implementation, bytes32 salt, address deployer) external view returns (address) {
         return Clones.predictDeterministicAddress(implementation, salt, deployer);
     }
-    
+
+    /**
+     * @notice Create new index of volatility
+     *
+     * @dev Increment the indexCount by 1
+     * @dev Clones the volatility and inverse volatility tokens
+     * @dev Clone the protocol implementation with a salt to make it deterministic
+     * @dev Stores the volatility address and name, referenced by index
+     * @dev Grants the VOLMEX_PROTOCOL_ROLE and DEFAULT_ADMIN_ROLE to protocol
+     * @dev Emits event of volatility token name, index address and index count(position)
+     *
+     * @param _collateralTokenAddress is address of collateral token typecasted to IERC20Modified
+     * @param _minimumCollateralQty is the minimum qty of tokens need to mint 0.1 long and short tokens
+     * @param _volatilityCapRatio is the cap for volatility
+     * @param _tokenName is the name for volatility
+     * @param _tokenSymbol is the symbol for volatility
+     */
     function createIndex(
         IERC20Modified _collateralTokenAddress,  
         uint256 _minimumCollateralQty,
@@ -66,6 +95,16 @@ contract IndexFactory is Ownable {
         return address(newIndex);
     }
 
+    /**
+     * @notice Clones the position token - { returns position token address }
+     *
+     * @dev Generates a salt using indexCount, token name and token symbol
+     * @dev Clone the position token implementation with a salt make it deterministic
+     * @dev Initializes the position token
+     *
+     * @param name is the name of volatility token
+     * @param symbol is the symbol of volatility token
+     */
     function clonePositonToken(string memory name, string memory symbol) private returns (address _address) {
         bytes32 salt = keccak256(abi.encodePacked(indexCount, name, symbol));
         // Clone the implementation with a salt so that it is deterministic
