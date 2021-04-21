@@ -70,4 +70,6 @@ interface IVolmexProtocol {
     function approveContractAccess(address _account) external;
 
     function revokeContractAccess(address _account) external;
+
+    function transferOwnership(address newOwner) external;
 }
