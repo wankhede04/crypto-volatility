@@ -16,7 +16,7 @@ import "./interfaces/IVolmexProtocol.sol";
 contract VolmexIndexFactory is Ownable {
     event IndexCreated(
         uint256 indexed indexCount,
-        address indexed index,
+        address indexed _index,
         uint256 minimumCollateralQty,
         uint256 volatilityCapRatio
     );
@@ -41,7 +41,7 @@ contract VolmexIndexFactory is Ownable {
     // To store the name of volatility
     mapping(uint256 => string) public getIndexSymbol;
 
-    // Used to store the address and name of volatility at a particular index (incremental state of 1)
+    // Used to store the address and name of volatility at a particular _index (incremental state of 1)
     uint256 public indexCount;
 
     // These are position token roles
@@ -100,14 +100,14 @@ contract VolmexIndexFactory is Ownable {
     }
 
     /**
-     * @notice Create new index of volatility
+     * @notice Create new _index of volatility
      *
      * @dev Increment the indexCount by 1
      * @dev Clones the volatility and inverse volatility tokens
      * @dev Clone the protocol implementation with a salt to make it deterministic
      * @dev Stores the volatility address and name, referenced by indexCount
      * @dev Grants the VOLMEX_PROTOCOL_ROLE and DEFAULT_ADMIN_ROLE to protocol
-     * @dev Emits event of volatility token name, index address and indexCount(position)
+     * @dev Emits event of volatility token name, _index address and indexCount(position)
      *
      * @param _collateralTokenAddress is address of collateral token typecasted to IERC20Modified
      * @param _minimumCollateralQty is the minimum qty of tokens need to mint 0.1 long and short tokens
@@ -138,10 +138,10 @@ contract VolmexIndexFactory is Ownable {
         bytes32 salt = keccak256(abi.encodePacked(indexCount));
 
         // Clone the implementation with a salt so that it is deterministic
-        address index = Clones.cloneDeterministic(implementation, salt);
+        _index = Clones.cloneDeterministic(implementation, salt);
 
         // Intialize the strategy
-        IVolmexProtocol(index).initialize(
+        IVolmexProtocol(_index).initialize(
             _collateralTokenAddress,
             volatilityToken,
             inverseVolatilityToken,
@@ -149,11 +149,11 @@ contract VolmexIndexFactory is Ownable {
             _volatilityCapRatio
         );
 
-        getIndex[indexCount] = index;
+        getIndex[indexCount] = _index;
         getIndexSymbol[indexCount] = _tokenSymbol;
 
-        volatilityToken.grantRole(VOLMEX_PROTOCOL_ROLE, index);
-        inverseVolatilityToken.grantRole(VOLMEX_PROTOCOL_ROLE, index);
+        volatilityToken.grantRole(VOLMEX_PROTOCOL_ROLE, _index);
+        inverseVolatilityToken.grantRole(VOLMEX_PROTOCOL_ROLE, _index);
 
         volatilityToken.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         volatilityToken.renounceRole(DEFAULT_ADMIN_ROLE, address(this));
@@ -161,11 +161,11 @@ contract VolmexIndexFactory is Ownable {
         inverseVolatilityToken.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         inverseVolatilityToken.renounceRole(DEFAULT_ADMIN_ROLE, address(this));
 
-        IVolmexProtocol(index).transferOwnership(msg.sender);
+        IVolmexProtocol(_index).transferOwnership(msg.sender);
 
         emit IndexCreated(
             indexCount,
-            index,
+            _index,
             _minimumCollateralQty,
             _volatilityCapRatio
         );
@@ -177,8 +177,6 @@ contract VolmexIndexFactory is Ownable {
             _tokenName,
             _tokenSymbol
         );
-
-        return index;
     }
 
     /**
