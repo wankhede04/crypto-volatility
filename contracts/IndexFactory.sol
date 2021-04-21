@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 import "./interfaces/IERC20Modified.sol";
 import "./tokens/VolmexPositionToken.sol";
 import "./VolmexProtocol.sol";
+import "./interfaces/IVolmexProtocol.sol";
 
 /**
  * Factory is used to create respective indexes and position tokens
@@ -15,7 +16,7 @@ import "./VolmexProtocol.sol";
 contract IndexFactory is Ownable {
     event IndexCreated(
         uint256 indexed indexCount,
-        address indexed index,
+        address index,
         uint256 minimumCollateralQty,
         uint256 volatilityCapRatio
     );
@@ -142,7 +143,7 @@ contract IndexFactory is Ownable {
         address index = Clones.cloneDeterministic(implementation, salt);
 
         // Intialize the strategy
-        VolmexProtocol(index).initialize(
+        IVolmexProtocol(index).initialize(
             _collateralTokenAddress,
             volatilityToken,
             inverseVolatilityToken,
@@ -170,8 +171,8 @@ contract IndexFactory is Ownable {
         );
 
         emit PositionTokenCreated(
-            volatilityToken,
-            inverseVolatilityToken,
+            address(volatilityToken),
+            address(inverseVolatilityToken),
             _tokenName,
             _tokenSymbol
         );
