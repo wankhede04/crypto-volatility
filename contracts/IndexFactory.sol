@@ -1,4 +1,6 @@
-pragma solidity 0.8.0;
+// SPDX-License-Identifier: BUSL-1.1
+
+pragma solidity 0.8.2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
@@ -27,6 +29,10 @@ contract IndexFactory is Ownable {
 
     // Used to store the address and name of volatility at a particular index (incremental state of 1)
     uint256 public indexCount;
+
+    bytes32 private constant VOLMEX_PROTOCOL_ROLE =
+        0x33ba6006595f7ad5c59211bde33456cab351f47602fc04f644c8690bc73c4e16;
+    bytes32 private constant DEFAULT_ADMIN_ROLE = 0x00;
 
     /**
      * @notice Get the address of implementation contracts instance.
@@ -103,10 +109,10 @@ contract IndexFactory is Ownable {
         ++indexCount;
 
         IERC20Modified volatilityToken =
-            IERC20Modified(clonePositonToken(_tokenName, _tokenSymbol));
+            IERC20Modified(_clonePositonToken(_tokenName, _tokenSymbol));
         IERC20Modified inverseVolatilityToken =
             IERC20Modified(
-                clonePositonToken(
+                _clonePositonToken(
                     string(abi.encodePacked("Inverse ", _tokenName)),
                     string(abi.encodePacked("i", _tokenSymbol))
                 )
@@ -131,17 +137,17 @@ contract IndexFactory is Ownable {
         getIndex[indexCount] = address(newIndex);
         getIndexSymbol[indexCount] = _tokenSymbol;
 
-        bytes32 VOLMEX_PROTOCOL_ROLE = keccak256("VOLMEX_PROTOCOL_ROLE");
-        bytes32 DEFAULT_ADMIN_ROLE = keccak256("DEFAULT_ADMIN_ROLE");
-
         volatilityToken.grantRole(VOLMEX_PROTOCOL_ROLE, address(newIndex));
         inverseVolatilityToken.grantRole(
             VOLMEX_PROTOCOL_ROLE,
             address(newIndex)
         );
 
-        _collateralTokenAddress.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _collateralTokenAddress.renounceRole(DEFAULT_ADMIN_ROLE, address(this));
+        volatilityToken.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        volatilityToken.renounceRole(DEFAULT_ADMIN_ROLE, address(this));
+
+        inverseVolatilityToken.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        inverseVolatilityToken.renounceRole(DEFAULT_ADMIN_ROLE, address(this));
 
         emit IndexCreated(_tokenName, address(newIndex), indexCount);
 
@@ -158,7 +164,7 @@ contract IndexFactory is Ownable {
      * @param _name is the name of volatility token
      * @param _symbol is the symbol of volatility token
      */
-    function clonePositonToken(string memory _name, string memory _symbol)
+    function _clonePositonToken(string memory _name, string memory _symbol)
         private
         returns (address _address)
     {
