@@ -36,8 +36,8 @@ contract IndexFactory is Ownable {
     /**
      * @notice Get the conterfactual address of protocol implementation.
      */
-    function determineIndexAddress(address implementation, bytes32 salt, address deployer) external view returns (address) {
-        return Clones.predictDeterministicAddress(implementation, salt, deployer);
+    function determineIndexAddress(address _implementation, bytes32 _salt, address _deployer) external view returns (address) {
+        return Clones.predictDeterministicAddress(_implementation, _salt, _deployer);
     }
 
     /**
@@ -105,11 +105,11 @@ contract IndexFactory is Ownable {
      * @param name is the name of volatility token
      * @param symbol is the symbol of volatility token
      */
-    function clonePositonToken(string memory name, string memory symbol) private returns (address _address) {
-        bytes32 salt = keccak256(abi.encodePacked(indexCount, name, symbol));
+    function clonePositonToken(string memory _name, string memory _symbol) private returns (address _address) {
+        bytes32 salt = keccak256(abi.encodePacked(indexCount, _name, _symbol));
         // Clone the implementation with a salt so that it is deterministic
         VolmexPositionToken newPositionToken = VolmexPositionToken(Clones.cloneDeterministic(address(positionTokenImplementation), salt));
-        newPositionToken.initialize(name, symbol);
+        newPositionToken.initialize(_name, _symbol);
 
         return address(newPositionToken);
     }
