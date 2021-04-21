@@ -30,10 +30,10 @@ contract VolmexIndexFactory is Ownable {
     );
 
     // Protocol implementation contract for factory
-    address immutable implementation;
+    address immutable public implementation;
 
     // Position token implementation contract for factory
-    address immutable positionTokenImplementation;
+    address immutable public positionTokenImplementation;
 
     // To store the address of volatility.
     mapping(uint256 => address) public getIndex;
