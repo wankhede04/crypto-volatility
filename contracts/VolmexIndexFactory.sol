@@ -44,6 +44,8 @@ contract VolmexIndexFactory is Ownable {
     // Used to store the address and name of volatility at a particular index (incremental state of 1)
     uint256 public indexCount;
 
+    // These are position token roles
+    // Calculated using keccak256 function
     bytes32 private constant VOLMEX_PROTOCOL_ROLE =
         0x33ba6006595f7ad5c59211bde33456cab351f47602fc04f644c8690bc73c4e16;
     bytes32 private constant DEFAULT_ADMIN_ROLE = 0x00;
@@ -67,7 +69,7 @@ contract VolmexIndexFactory is Ownable {
         bytes32 salt = keccak256(abi.encodePacked(_indexCount));
         return
             Clones.predictDeterministicAddress(
-                getIndex[_indexCount],
+                implementation,
                 salt,
                 address(this)
             );
@@ -77,21 +79,21 @@ contract VolmexIndexFactory is Ownable {
      * @notice Get the counterfactual address of position token implementation
      */
     function determinePositionTokenAddress(
-        address _positionTokenImplementation,
         uint256 _indexCount,
-        string memory _name
+        string memory _name,
+        string memory _symbol
     ) external view returns (address) {
         bytes32 salt =
             keccak256(
                 abi.encodePacked(
                     _indexCount,
                     _name,
-                    getIndexSymbol[_indexCount]
+                    _symbol
                 )
             );
         return
             Clones.predictDeterministicAddress(
-                _positionTokenImplementation,
+                positionTokenImplementation,
                 salt,
                 address(this)
             );
@@ -121,11 +123,6 @@ contract VolmexIndexFactory is Ownable {
         string memory _tokenSymbol
     ) external onlyOwner returns (address _index) {
         ++indexCount;
-
-        require(
-            getIndex[indexCount] == address(0),
-            "Volmex Protocol: Index already exists"
-        );
 
         IERC20Modified volatilityToken =
             IERC20Modified(_clonePositonToken(_tokenName, _tokenSymbol));
@@ -164,7 +161,7 @@ contract VolmexIndexFactory is Ownable {
         inverseVolatilityToken.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         inverseVolatilityToken.renounceRole(DEFAULT_ADMIN_ROLE, address(this));
 
-        transferOwnership(msg.sender);
+        IVolmexProtocol(index).transferOwnership(msg.sender);
 
         emit IndexCreated(
             indexCount,
@@ -174,6 +171,7 @@ contract VolmexIndexFactory is Ownable {
         );
 
         emit PositionTokenCreated(
+            indexCount,
             address(volatilityToken),
             address(inverseVolatilityToken),
             _tokenName,
