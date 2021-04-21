@@ -52,6 +52,15 @@ contract IndexFactory is Ownable {
         getIndex[indexCount] = address(newIndex);
         getIndexName[indexCount] = _tokenName;
 
+        bytes32 VOLMEX_PROTOCOL_ROLE = keccak256("VOLMEX_PROTOCOL_ROLE");
+        bytes32 DEFAULT_ADMIN_ROLE = keccak256("DEFAULT_ADMIN_ROLE");
+
+        volatilityToken.grantRole(VOLMEX_PROTOCOL_ROLE, address(newIndex));
+        inverseVolatilityToken.grantRole(VOLMEX_PROTOCOL_ROLE, address(newIndex));
+
+        _collateralTokenAddress.grantRole(DEFAULT_ADMIN_ROLE, address(newIndex));
+        _collateralTokenAddress.renounceRole(DEFAULT_ADMIN_ROLE, address(this));
+
         emit IndexCreated(_tokenName, address(newIndex), indexCount);
 
         return address(newIndex);
