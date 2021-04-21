@@ -13,7 +13,19 @@ import "./VolmexProtocol.sol";
  * Factory is used to create respective indexes and position tokens
  */
 contract IndexFactory is Ownable {
-    event IndexCreated(string name, address index, uint256 position);
+    event IndexCreated(
+        uint256 indexed indexCount,
+        address indexed index,
+        uint256 minimumCollateralQty,
+        uint256 volatilityCapRatio
+    );
+
+    event PositionTokenCreated(
+        address indexed volatilityToken,
+        address indexed inverseVolatilityToken,
+        string tokenName,
+        string tokenSymbol
+    );
 
     // Protocol implementation contract for factory
     address immutable implementation;
@@ -30,7 +42,8 @@ contract IndexFactory is Ownable {
     // Used to store the address and name of volatility at a particular index (incremental state of 1)
     uint256 public indexCount;
 
-    bytes32 private constant VOLMEX_PROTOCOL_ROLE = 0x33ba6006595f7ad5c59211bde33456cab351f47602fc04f644c8690bc73c4e16;
+    bytes32 private constant VOLMEX_PROTOCOL_ROLE =
+        0x33ba6006595f7ad5c59211bde33456cab351f47602fc04f644c8690bc73c4e16;
     bytes32 private constant DEFAULT_ADMIN_ROLE = 0x00;
 
     /**
@@ -107,7 +120,10 @@ contract IndexFactory is Ownable {
     ) external onlyOwner returns (address _index) {
         ++indexCount;
 
-        require(getIndex[indexCount] == address(0), "Volmex Protocol: Index already exists");
+        require(
+            getIndex[indexCount] == address(0),
+            "Volmex Protocol: Index already exists"
+        );
 
         IERC20Modified volatilityToken =
             IERC20Modified(_clonePositonToken(_tokenName, _tokenSymbol));
@@ -119,7 +135,7 @@ contract IndexFactory is Ownable {
                 )
             );
 
-        // Next we will determine the salt for the current sender
+        // We will determine the salt for the current sender
         bytes32 salt = keccak256(abi.encodePacked(indexCount));
 
         // Clone the implementation with a salt so that it is deterministic
@@ -138,10 +154,7 @@ contract IndexFactory is Ownable {
         getIndexSymbol[indexCount] = _tokenSymbol;
 
         volatilityToken.grantRole(VOLMEX_PROTOCOL_ROLE, index);
-        inverseVolatilityToken.grantRole(
-            VOLMEX_PROTOCOL_ROLE,
-            index
-        );
+        inverseVolatilityToken.grantRole(VOLMEX_PROTOCOL_ROLE, index);
 
         volatilityToken.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         volatilityToken.renounceRole(DEFAULT_ADMIN_ROLE, address(this));
@@ -149,7 +162,19 @@ contract IndexFactory is Ownable {
         inverseVolatilityToken.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         inverseVolatilityToken.renounceRole(DEFAULT_ADMIN_ROLE, address(this));
 
-        emit IndexCreated(_tokenName, index, indexCount);
+        emit IndexCreated(
+            indexCount,
+            index,
+            _minimumCollateralQty,
+            _volatilityCapRatio
+        );
+
+        emit PositionTokenCreated(
+            volatilityToken,
+            inverseVolatilityToken,
+            _tokenName,
+            _tokenSymbol
+        );
 
         return index;
     }
