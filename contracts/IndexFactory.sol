@@ -102,8 +102,8 @@ contract IndexFactory is Ownable {
      * @dev Clone the position token implementation with a salt make it deterministic
      * @dev Initializes the position token
      *
-     * @param name is the name of volatility token
-     * @param symbol is the symbol of volatility token
+     * @param _name is the name of volatility token
+     * @param _symbol is the symbol of volatility token
      */
     function clonePositonToken(string memory _name, string memory _symbol) private returns (address _address) {
         bytes32 salt = keccak256(abi.encodePacked(indexCount, _name, _symbol));
