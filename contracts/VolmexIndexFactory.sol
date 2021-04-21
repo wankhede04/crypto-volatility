@@ -13,7 +13,7 @@ import "./interfaces/IVolmexProtocol.sol";
 /**
  * Factory is used to create respective indexes and position tokens
  */
-contract IndexFactory is Ownable {
+contract VolmexIndexFactory is Ownable {
     event IndexCreated(
         uint256 indexed indexCount,
         address index,
@@ -22,8 +22,8 @@ contract IndexFactory is Ownable {
     );
 
     event PositionTokenCreated(
-        address indexed volatilityToken,
-        address indexed inverseVolatilityToken,
+        address volatilityToken,
+        address inverseVolatilityToken,
         string tokenName,
         string tokenSymbol
     );
@@ -162,6 +162,8 @@ contract IndexFactory is Ownable {
 
         inverseVolatilityToken.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         inverseVolatilityToken.renounceRole(DEFAULT_ADMIN_ROLE, address(this));
+
+        transferOwnership(msg.sender);
 
         emit IndexCreated(
             indexCount,
