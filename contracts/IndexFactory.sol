@@ -12,8 +12,9 @@ contract IndexFactory is Ownable {
     address immutable implementation;
     address immutable positionTokenImplementation;
 
-    mapping(address => address) public getIndex;
-    address[] public allIndex;
+    mapping(uint256 => address) public getIndex;
+    mapping(uint256 => string) public getIndexName;
+    uint256 public indexCount;
 
     event IndexCreated(string name, address token, address index, uint256 position);
 
@@ -22,10 +23,6 @@ contract IndexFactory is Ownable {
         positionTokenImplementation = address(new VolmexPositionToken());
     }
 
-    function allIndexLength() external view returns (uint) {
-        return allIndex.length;
-    }
-    
     function determineIndexAddress(address implementation, bytes32 salt, address deployer) external view returns (address) {
         return Clones.predictDeterministicAddress(implementation, salt, deployer);
     }
@@ -37,12 +34,9 @@ contract IndexFactory is Ownable {
         uint256 _volatilityCapRatio,
         string memory _tokenName,
         string memory _tokenSymbol
-    ) external onlyOwner returns (address index) {        
-        // Make sure that the token isn't a zero address
-        require(_token != address(0), 'Volmex Protocol: Zero address cannot be used as an index');
+    ) external onlyOwner returns (address index) {
 
-        // Make sure the index hasn't been created already
-        require(getIndex[_token] == address(0), 'Volmex Protocol: Index already exists');
+        ++indexCount;
 
         IERC20Modified volatilityToken = IERC20Modified(clonePositonToken(_token, _tokenName, _tokenSymbol));
         IERC20Modified inverseVolatilityToken = IERC20Modified(clonePositonToken(_token, string(abi.encodePacked('Inverse ', _tokenName)), string(abi.encodePacked('i', _tokenSymbol))));
@@ -55,10 +49,11 @@ contract IndexFactory is Ownable {
 
         // Intialize the strategy
         newIndex.initialize(_collateralTokenAddress, volatilityToken, inverseVolatilityToken, _minimumCollateralQty, _volatilityCapRatio);
-        getIndex[_token] = address(newIndex); 
-        allIndex.push(address(newIndex));
 
-        emit IndexCreated(_tokenName, _token, address(newIndex), allIndex.length);
+        getIndex[indexCount] = address(newIndex);
+        getIndexName[indexCount] = _tokenName;
+
+        emit IndexCreated(_tokenName, _token, address(newIndex), indexCount);
 
         return address(newIndex);
     }
