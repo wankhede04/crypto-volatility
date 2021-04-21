@@ -37,7 +37,7 @@ export const decodeEvents = <T extends Contract>(
   return decodedEvents;
 };
 
-describe("Index Factory", function () {
+describe("Volmex Index Factory", function () {
   let accounts: Signer[];
   let CollateralToken: TestCollateralToken;
   let CollateralTokenFactory: TestCollateralToken__factory;
