@@ -5,7 +5,6 @@ import {
   Contract,
   ContractReceipt,
   Event,
-  ContractTransaction,
 } from "ethers";
 import {
   VolmexIndexFactory,
@@ -44,8 +43,6 @@ describe("Index Factory", function () {
   let CollateralTokenFactory: TestCollateralToken__factory;
   let indexFactory: VolmexIndexFactory__factory;
   let factory: VolmexIndexFactory;
-  let deployedIndex: ContractTransaction;
-  let transaction: ContractReceipt;
 
   this.beforeAll(async function () {
     accounts = await ethers.getSigners();
@@ -66,8 +63,10 @@ describe("Index Factory", function () {
     factory = await indexFactory
       .deploy()
       .then((f: VolmexIndexFactory) => f.deployed());
+  });
 
-    deployedIndex = await factory.createIndex(
+  it("should deploy index from a factory", async () => {
+    const deployedIndex = await factory.createIndex(
       CollateralToken.address,
       "20000000000000000000",
       "200",
@@ -75,10 +74,8 @@ describe("Index Factory", function () {
       "ETH"
     );
 
-    transaction = await deployedIndex.wait();
-  });
+    const transaction = await deployedIndex.wait();
 
-  it("should deploy index from a factory", async () => {
     const indexCreatedEvent = decodeEvents(
       factory,
       filterEvents(transaction, "IndexCreated")
@@ -103,5 +100,56 @@ describe("Index Factory", function () {
       instance = null;
     }
     expect(instance).not.equal(null);
+  });
+
+  it("Should deploy position token from factory", async () => {
+    const deployedIndex = await factory.createIndex(
+      CollateralToken.address,
+      "20000000000000000000",
+      "200",
+      "Ethereum",
+      "ETHV"
+    );
+
+    const transaction = await deployedIndex.wait();
+
+    const positionTokenCreatedEvent = decodeEvents(
+      factory,
+      filterEvents(transaction, "PositionTokenCreated")
+    );
+
+    const volatilityToken = positionTokenCreatedEvent[0].volatilityToken;
+    const inverseVolatilityToken = positionTokenCreatedEvent[0].inverseVolatilityToken;
+
+    expect(volatilityToken).not.equal(null);
+    expect(inverseVolatilityToken).not.equal(null);
+  });
+
+  it("should determine index address", async () => {
+    const determineIndex = await factory.determineIndexAddress(1);
+
+    expect(determineIndex).not.equal(null);
+  });
+
+  it("should determine position token address", async () => {
+    const deployedIndex = await factory.createIndex(
+      CollateralToken.address,
+      "20000000000000000000",
+      "200",
+      "Ethereum",
+      "ETHV"
+    );
+
+    const transaction = await deployedIndex.wait();
+
+    const positionTokenCreatedEvent = decodeEvents(
+      factory,
+      filterEvents(transaction, "PositionTokenCreated")
+    );
+
+    const volatilityToken = positionTokenCreatedEvent[0].volatilityToken;
+    const determinePositionToken = await factory.determinePositionTokenAddress(volatilityToken, 1, "Ethereum");
+
+    expect(determinePositionToken).not.equal(null);
   });
 });
