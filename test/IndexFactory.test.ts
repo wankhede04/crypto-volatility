@@ -2,7 +2,7 @@ const expectEvent = require("@openzeppelin/test-helpers/src/expectEvent");
 const { expect } = require("chai");
 const { ethers, upgrades } = require("hardhat");
 import { Signer, utils, Contract, ContractReceipt, Event } from 'ethers';
-import { IndexFactory, IndexFactory__factory, TestCollateralToken, TestCollateralToken__factory, VolmexPositionToken, VolmexPositionToken__factory, VolmexProtocol, VolmexProtocol__factory } from '../types';
+import { VolmexIndexFactory, VolmexIndexFactory__factory, TestCollateralToken, TestCollateralToken__factory, VolmexPositionToken, VolmexPositionToken__factory, VolmexProtocol, VolmexProtocol__factory } from '../types';
 import { Result } from '@ethersproject/abi';
 
 export const filterEvents = (blockEvents: ContractReceipt, name: String): Array<Event> => {
@@ -42,9 +42,9 @@ describe("Index Factory", function () {
     await tokenToMakeIndexOf.deployed();
     await tokenToMakeIndexOf.initialize("Uniswap", "UNI");
 
-    const indexFactory = await ethers.getContractFactory('IndexFactory') as IndexFactory__factory;
+    const indexFactory = await ethers.getContractFactory('VolmexIndexFactory') as VolmexIndexFactory__factory;
 
-    const factory = await indexFactory.deploy().then((f: IndexFactory) => f.deployed());
+    const factory = await indexFactory.deploy().then((f: VolmexIndexFactory) => f.deployed());
 
     const deployedIndex = await factory.createIndex(CollateralToken.address, "20000000000000000000", "200",'Ethereum', 'ETH');
     
