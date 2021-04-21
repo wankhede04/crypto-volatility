@@ -1,12 +1,15 @@
-pragma solidity ^0.8.0;
+pragma solidity 0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
 import "./interfaces/IERC20Modified.sol";
 import "./tokens/VolmexPositionToken.sol";
-import './VolmexProtocol.sol';
+import "./VolmexProtocol.sol";
 
+/**
+ * Factory is used to create respective indexes and position tokens
+ */
 contract IndexFactory is Ownable {
     event IndexCreated(string name, address index, uint256 position);
 
@@ -20,7 +23,7 @@ contract IndexFactory is Ownable {
     mapping(uint256 => address) public getIndex;
 
     // To store the name of volatility
-    mapping(uint256 => string) public getIndexName;
+    mapping(uint256 => string) public getIndexSymbol;
 
     // Used to store the address and name of volatility at a particular index (incremental state of 1)
     uint256 public indexCount;
@@ -34,10 +37,44 @@ contract IndexFactory is Ownable {
     }
 
     /**
-     * @notice Get the conterfactual address of protocol implementation.
+     * @notice Get the counterfactual address of protocol implementation.
      */
-    function determineIndexAddress(address _implementation, bytes32 _salt, address _deployer) external view returns (address) {
-        return Clones.predictDeterministicAddress(_implementation, _salt, _deployer);
+    function determineIndexAddress(uint256 _indexCount)
+        external
+        view
+        returns (address)
+    {
+        bytes32 salt = keccak256(abi.encodePacked(_indexCount));
+        return
+            Clones.predictDeterministicAddress(
+                getIndex[_indexCount],
+                salt,
+                address(this)
+            );
+    }
+
+    /**
+     * @notice Get the counterfactual address of position token implementation
+     */
+    function determinePositionTokenAddress(
+        address _positionTokenImplementation,
+        uint256 _indexCount,
+        string memory _name
+    ) external view returns (address) {
+        bytes32 salt =
+            keccak256(
+                abi.encodePacked(
+                    _indexCount,
+                    _name,
+                    getIndexSymbol[_indexCount]
+                )
+            );
+        return
+            Clones.predictDeterministicAddress(
+                _positionTokenImplementation,
+                salt,
+                address(this)
+            );
     }
 
     /**
@@ -57,37 +94,53 @@ contract IndexFactory is Ownable {
      * @param _tokenSymbol is the symbol for volatility
      */
     function createIndex(
-        IERC20Modified _collateralTokenAddress,  
+        IERC20Modified _collateralTokenAddress,
         uint256 _minimumCollateralQty,
         uint256 _volatilityCapRatio,
         string memory _tokenName,
         string memory _tokenSymbol
     ) external onlyOwner returns (address index) {
-
         ++indexCount;
 
-        IERC20Modified volatilityToken = IERC20Modified(clonePositonToken(_tokenName, _tokenSymbol));
-        IERC20Modified inverseVolatilityToken = IERC20Modified(clonePositonToken(string(abi.encodePacked('Inverse ', _tokenName)), string(abi.encodePacked('i', _tokenSymbol))));
-        
+        IERC20Modified volatilityToken =
+            IERC20Modified(clonePositonToken(_tokenName, _tokenSymbol));
+        IERC20Modified inverseVolatilityToken =
+            IERC20Modified(
+                clonePositonToken(
+                    string(abi.encodePacked("Inverse ", _tokenName)),
+                    string(abi.encodePacked("i", _tokenSymbol))
+                )
+            );
+
         // Next we will determine the salt for the current sender
         bytes32 salt = keccak256(abi.encodePacked(indexCount));
-        
+
         // Clone the implementation with a salt so that it is deterministic
-        VolmexProtocol newIndex = VolmexProtocol(Clones.cloneDeterministic(address(implementation), salt));
+        VolmexProtocol newIndex =
+            VolmexProtocol(Clones.cloneDeterministic(implementation, salt));
 
         // Intialize the strategy
-        newIndex.initialize(_collateralTokenAddress, volatilityToken, inverseVolatilityToken, _minimumCollateralQty, _volatilityCapRatio);
+        newIndex.initialize(
+            _collateralTokenAddress,
+            volatilityToken,
+            inverseVolatilityToken,
+            _minimumCollateralQty,
+            _volatilityCapRatio
+        );
 
         getIndex[indexCount] = address(newIndex);
-        getIndexName[indexCount] = _tokenName;
+        getIndexSymbol[indexCount] = _tokenSymbol;
 
         bytes32 VOLMEX_PROTOCOL_ROLE = keccak256("VOLMEX_PROTOCOL_ROLE");
         bytes32 DEFAULT_ADMIN_ROLE = keccak256("DEFAULT_ADMIN_ROLE");
 
         volatilityToken.grantRole(VOLMEX_PROTOCOL_ROLE, address(newIndex));
-        inverseVolatilityToken.grantRole(VOLMEX_PROTOCOL_ROLE, address(newIndex));
+        inverseVolatilityToken.grantRole(
+            VOLMEX_PROTOCOL_ROLE,
+            address(newIndex)
+        );
 
-        _collateralTokenAddress.grantRole(DEFAULT_ADMIN_ROLE, address(newIndex));
+        _collateralTokenAddress.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _collateralTokenAddress.renounceRole(DEFAULT_ADMIN_ROLE, address(this));
 
         emit IndexCreated(_tokenName, address(newIndex), indexCount);
@@ -105,10 +158,16 @@ contract IndexFactory is Ownable {
      * @param _name is the name of volatility token
      * @param _symbol is the symbol of volatility token
      */
-    function clonePositonToken(string memory _name, string memory _symbol) private returns (address _address) {
+    function clonePositonToken(string memory _name, string memory _symbol)
+        private
+        returns (address _address)
+    {
         bytes32 salt = keccak256(abi.encodePacked(indexCount, _name, _symbol));
-        // Clone the implementation with a salt so that it is deterministic
-        VolmexPositionToken newPositionToken = VolmexPositionToken(Clones.cloneDeterministic(address(positionTokenImplementation), salt));
+
+        VolmexPositionToken newPositionToken =
+            VolmexPositionToken(
+                Clones.cloneDeterministic(positionTokenImplementation, salt)
+            );
         newPositionToken.initialize(_name, _symbol);
 
         return address(newPositionToken);
