@@ -111,7 +111,7 @@ contract VolmexIndexFactory is Ownable {
      * @dev Emits event of volatility token name, _index address and indexCount(position)
      *
      * @param _collateralTokenAddress is address of collateral token typecasted to IERC20Modified
-     * @param _minimumCollateralQty is the minimum qty of tokens need to mint 0.1 long and short tokens
+     * @param _minimumCollateralQty is the minimum qty of tokens need to mint 0.1 volatility and inverse volatility tokens
      * @param _volatilityCapRatio is the cap for volatility
      * @param _tokenName is the name for volatility
      * @param _tokenSymbol is the symbol for volatility

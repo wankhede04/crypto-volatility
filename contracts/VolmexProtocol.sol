@@ -21,7 +21,7 @@ contract VolmexProtocol is
     using VolmexSafeERC20 for IERC20Modified;
 
     event ToggleActivated(bool isActive);
-    event UpdatedPositionToken(address indexed positionToken, bool isLong);
+    event UpdatedPositionToken(address indexed positionToken, bool isVolatilityIndexToken);
     event UpdatedFees(uint256 issuanceFees, uint256 redeemFees);
     event UpdatedMinimumCollateral(uint256 newMinimumCollateralQty);
     event ClaimedFees(uint256 fees);
@@ -39,8 +39,8 @@ contract VolmexProtocol is
     event Redeemed(
         address indexed sender,
         uint256 collateralReleased,
-        uint256 longTokenBurned,
-        uint256 shortTokenBurned,
+        uint256 volatilityIndexTokenBurned,
+        uint256 inverseVolatilityIndexTokenBurned,
         uint256 fees
     );
 
@@ -77,7 +77,7 @@ contract VolmexProtocol is
     // No need to add 18 decimals, because they are already considered in respective token qty arguments.
     uint256 public volatilityCapRatio;
 
-    // This is the price of long volatility, ranges from 0 to volatilityCapRatio,
+    // This is the price of volatility index, ranges from 0 to volatilityCapRatio,
     // and the inverse can be calculated by subtracting volatilityCapRatio by settlementPrice.
     uint256 public settlementPrice;
 
@@ -141,9 +141,9 @@ contract VolmexProtocol is
      * @dev Sets the `volatilityCapRatio`
      *
      * @param _collateralTokenAddress is address of collateral token typecasted to IERC20Modified
-     * @param _volatilityToken is address of long position token typecasted to IERC20Modified
-     * @param _inverseVolatilityToken is address of short position token typecasted to IERC20Modified
-     * @param _minimumCollateralQty is the minimum qty of tokens need to mint 0.1 long and short tokens
+     * @param _volatilityToken is address of volatility index token typecasted to IERC20Modified
+     * @param _inverseVolatilityToken is address of inverse volatility index token typecasted to IERC20Modified
+     * @param _minimumCollateralQty is the minimum qty of tokens need to mint 0.1 volatility and inverse volatility tokens
      * @param _volatilityCapRatio is the cap for volatility
      */
     function initialize(
@@ -196,16 +196,16 @@ contract VolmexProtocol is
     /**
      * @notice Update the {Position Token}
      * @param _positionToken Address of the new position token
-     * @param _isLong Type of the postion token, { Long: true, Short: false }
+     * @param _isVolatilityIndexToken Type of the position token, { VolatilityIndexToken: true, InverseVolatilityIndexToken: false }
      */
-    function updatePositionToken(address _positionToken, bool _isLong)
+    function updatePositionToken(address _positionToken, bool _isVolatilityIndexToken)
         external
         onlyOwner
     {
-        _isLong
+        _isVolatilityIndexToken
             ? volatilityToken = IERC20Modified(_positionToken)
             : inverseVolatilityToken = IERC20Modified(_positionToken);
-        emit UpdatedPositionToken(_positionToken, _isLong);
+        emit UpdatedPositionToken(_positionToken, _isVolatilityIndexToken);
     }
 
     /**
@@ -276,16 +276,16 @@ contract VolmexProtocol is
     /**
      * @notice Redeem the collateral from the protocol after settlement
      *
-     * @param _longTokenQty Quantity of the long position token that the user is surrendering
-     * @param _shortTokenQty Quantity of the short position token that the user is surrendering
+     * @param _volatilityIndexTokenQty Quantity of the volatility index token that the user is surrendering
+     * @param _inverseVolatilityIndexTokenQty Quantity of the inverse volatility index token that the user is surrendering
      *
-     * Amount of collateral is `_longTokenQty` by the settlementPrice and `_shortTokenQty`
+     * Amount of collateral is `_volatilityIndexTokenQty` by the settlementPrice and `_inverseVolatilityIndexTokenQty`
      * by volatilityCapRatio - settlementPrice
      * Burn the position token
      *
      * Safely transfer the collateral to `msg.sender`
      */
-    function redeemSettled(uint256 _longTokenQty, uint256 _shortTokenQty)
+    function redeemSettled(uint256 _volatilityIndexTokenQty, uint256 _inverseVolatilityIndexTokenQty)
         external
         onlyActive
         onlySettled
@@ -293,18 +293,18 @@ contract VolmexProtocol is
         _lockForBlock();
 
         uint256 collQtyToBeRedeemed =
-            (_longTokenQty * settlementPrice) +
-                (_shortTokenQty * (volatilityCapRatio - settlementPrice));
+            (_volatilityIndexTokenQty * settlementPrice) +
+                (_inverseVolatilityIndexTokenQty * (volatilityCapRatio - settlementPrice));
 
-        _redeem(collQtyToBeRedeemed, _longTokenQty, _shortTokenQty);
+        _redeem(collQtyToBeRedeemed, _volatilityIndexTokenQty, _inverseVolatilityIndexTokenQty);
     }
 
     /**
      * @notice Settle the contract, preventing new minting and providing individual token redemption
      *
-     * @param _settlementPrice The price of the long after settlement
+     * @param _settlementPrice The price of the volatility index after settlement
      *
-     * The short token at settlement is worth volatilityCapRatio - long settlement price
+     * The inverse volatility index token at settlement is worth volatilityCapRatio - volatility index settlement price
      */
     function settle(uint256 _settlementPrice) external onlyOwner {
         require(
@@ -399,8 +399,8 @@ contract VolmexProtocol is
 
     function _redeem(
         uint256 _collateralQtyRedeemed,
-        uint256 _longTokenQty,
-        uint256 _shortTokenQty
+        uint256 _volatilityIndexTokenQty,
+        uint256 _inverseVolatilityIndexTokenQty
     ) internal {
         uint256 fee;
         if (redeemFees > 0) {
@@ -409,16 +409,16 @@ contract VolmexProtocol is
             accumulatedFees = accumulatedFees + fee;
         }
 
-        volatilityToken.burn(msg.sender, _longTokenQty);
-        inverseVolatilityToken.burn(msg.sender, _shortTokenQty);
+        volatilityToken.burn(msg.sender, _volatilityIndexTokenQty);
+        inverseVolatilityToken.burn(msg.sender, _inverseVolatilityIndexTokenQty);
 
         collateral.safeTransfer(msg.sender, _collateralQtyRedeemed);
 
         emit Redeemed(
             msg.sender,
             _collateralQtyRedeemed,
-            _longTokenQty,
-            _shortTokenQty,
+            _volatilityIndexTokenQty,
+            _inverseVolatilityIndexTokenQty,
             fee
         );
     }

@@ -45,13 +45,13 @@ interface IVolmexProtocol {
 
     function updateMinimumCollQty(uint256 _newMinimumCollQty) external;
 
-    function updatePositionToken(address _positionToken, bool _isLong) external;
+    function updatePositionToken(address _positionToken, bool _isVolatilityIndex) external;
 
     function collateralize(uint256 _collateralQty) external;
 
     function redeem(uint256 _positionTokenQty) external;
 
-    function redeemSettled(uint256 _longTokenQty, uint256 _shortTokenQty) external;
+    function redeemSettled(uint256 _volatilityIndexTokenQty, uint256 _inverseVolatilityIndexTokenQty) external;
 
     function settle(uint256 _settlementPrice) external;
 

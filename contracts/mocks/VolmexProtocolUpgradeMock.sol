@@ -21,7 +21,7 @@ contract VolmexProtocolUpgradeMock is
     using VolmexSafeERC20 for IERC20Modified;
 
     event ToggleActivated(bool isActive);
-    event UpdatedPositionToken(address indexed positionToken, bool isLong);
+    event UpdatedPositionToken(address indexed positionToken, bool isVolatilityIndexToken);
     event Collateralized(
         address indexed sender,
         uint256 collateralLock,
@@ -67,7 +67,7 @@ contract VolmexProtocolUpgradeMock is
     // No need to add 18 decimals, because they are already considered in respective token qty arguments.
     uint256 public volatilityCapRatio;
 
-    // This is the price of long volatility, ranges from 0 to volatilityCapRatio,
+    // This is the price of volatility index, ranges from 0 to volatilityCapRatio,
     // and the inverse can be calculated using volatilityCapRatio
     uint256 public settlementPrice;
 
@@ -103,8 +103,8 @@ contract VolmexProtocolUpgradeMock is
      * @dev Makes the collateral token as `collateral`
      *
      * @param _collateralTokenAddress is address of collateral token typecasted to IERC20Modified
-     * @param _volatilityToken is address of long position token typecasted to IERC20Modified
-     * @param _inverseVolatilityToken is address of short position token typecasted to IERC20Modified
+     * @param _volatilityToken is address of volatility index token typecasted to IERC20Modified
+     * @param _inverseVolatilityToken is address of inverse volatility index token typecasted to IERC20Modified
      */
     function initialize(
         IERC20Modified _collateralTokenAddress,
@@ -151,16 +151,16 @@ contract VolmexProtocolUpgradeMock is
     /**
      * @notice Update the {Position Token}
      * @param _positionToken Address of the new position token
-     * @param _isLong Type of the postion token, { Long: true, Short: false }
+     * @param _isVolatilityIndexToken Type of the postion token, { VolatilityIndexToken: true, InverseVolatilityIndexToken: false }
      */
-    function updatePositionToken(address _positionToken, bool _isLong)
+    function updatePositionToken(address _positionToken, bool _isVolatilityIndexToken)
         external
         onlyOwner
     {
-        _isLong
+        _isVolatilityIndexToken
             ? volatilityToken = IERC20Modified(_positionToken)
             : inverseVolatilityToken = IERC20Modified(_positionToken);
-        emit UpdatedPositionToken(_positionToken, _isLong);
+        emit UpdatedPositionToken(_positionToken, _isVolatilityIndexToken);
     }
 
     /**
