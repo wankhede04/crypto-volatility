@@ -170,7 +170,7 @@ contract VolmexProtocolUpgradeMock is
      * NOTE: Collateral quantity should be at least required minimum collateral quantity
      *
      * Calculation: Get the quantity for position token
-     * Mint the position token for `_msgSender`
+     * Mint the position token for `msg.sender`
      *
      */
     function collateralize(uint256 _collateralQty)
@@ -211,7 +211,7 @@ contract VolmexProtocolUpgradeMock is
      * Amount of collateral is `_positionTokenQty` by the constant 200.
      * Burn the position token
      *
-     * Safely transfer the collateral to `_msgSender`
+     * Safely transfer the collateral to `msg.sender`
      */
     function redeem(uint256 _positionTokenQty) external onlyActive blockLocked {
         uint256 collQtyToBeRedeemed = _positionTokenQty * 200;

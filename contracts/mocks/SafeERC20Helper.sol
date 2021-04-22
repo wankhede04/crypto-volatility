@@ -61,7 +61,7 @@ contract ERC20ReturnTrueMock is Context {
     }
 
     function setAllowance(uint256 allowance_) public {
-        _allowances[_msgSender()] = allowance_;
+        _allowances[msg.sender] = allowance_;
     }
 
     function allowance(address owner, address) public view returns (uint256) {
@@ -93,7 +93,7 @@ contract ERC20NoReturnMock is Context {
     }
 
     function setAllowance(uint256 allowance_) public {
-        _allowances[_msgSender()] = allowance_;
+        _allowances[msg.sender] = allowance_;
     }
 
     function allowance(address owner, address) public view returns (uint256) {
