@@ -31,7 +31,7 @@ export const decodeEvents = <T extends Contract>(
   for (const event of events) {
     const getEventInterface = token.interface.getEvent(event.event || "");
     decodedEvents.push(
-      token.interface.decodeEventLog(getEventInterface, event.data)
+      token.interface.decodeEventLog(getEventInterface, event.data, event.topics)
     );
   }
   return decodedEvents;
@@ -132,23 +132,7 @@ describe("Volmex Index Factory", function () {
   });
 
   it("should determine position token address", async () => {
-    const deployedIndex = await factory.createIndex(
-      CollateralToken.address,
-      "20000000000000000000",
-      "200",
-      "Ethereum",
-      "ETHV"
-    );
-
-    const transaction = await deployedIndex.wait();
-
-    const positionTokenCreatedEvent = decodeEvents(
-      factory,
-      filterEvents(transaction, "PositionTokenCreated")
-    );
-
-    const volatilityToken = positionTokenCreatedEvent[0].volatilityToken;
-    const determinePositionToken = await factory.determinePositionTokenAddress(volatilityToken, 1, "Ethereum");
+    const determinePositionToken = await factory.determinePositionTokenAddress(1, "Ethereum", "ETH");
 
     expect(determinePositionToken).not.equal(null);
   });
