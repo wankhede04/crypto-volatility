@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 import "./interfaces/IERC20Modified.sol";
 import "./tokens/VolmexPositionToken.sol";
 import "./VolmexProtocol.sol";
-import "./interfaces/IVolmexProtocol.sol";
 
 /**
  * Factory is used to create respective indexes and position tokens
@@ -45,9 +44,11 @@ contract VolmexIndexFactory is Ownable {
     uint256 public indexCount;
 
     // These are position token roles
-    // Calculated using keccak256 function
+    // Calculated as keccak256("VOLMEX_PROTOCOL_ROLE").
     bytes32 private constant VOLMEX_PROTOCOL_ROLE =
         0x33ba6006595f7ad5c59211bde33456cab351f47602fc04f644c8690bc73c4e16;
+
+    // Referenced from Openzepplin AccessControl.sol
     bytes32 private constant DEFAULT_ADMIN_ROLE = 0x00;
 
     /**
@@ -141,7 +142,7 @@ contract VolmexIndexFactory is Ownable {
         _index = Clones.cloneDeterministic(implementation, salt);
 
         // Intialize the strategy
-        IVolmexProtocol(_index).initialize(
+        VolmexProtocol(_index).initialize(
             _collateralTokenAddress,
             volatilityToken,
             inverseVolatilityToken,
@@ -164,7 +165,7 @@ contract VolmexIndexFactory is Ownable {
         inverseVolatilityToken.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         inverseVolatilityToken.renounceRole(DEFAULT_ADMIN_ROLE, address(this));
 
-        IVolmexProtocol(_index).transferOwnership(msg.sender);
+        VolmexProtocol(_index).transferOwnership(msg.sender);
 
         emit IndexCreated(
             indexCount,
@@ -194,7 +195,7 @@ contract VolmexIndexFactory is Ownable {
      */
     function _clonePositonToken(string memory _name, string memory _symbol)
         private
-        returns (address _address)
+        returns (address)
     {
         bytes32 salt = keccak256(abi.encodePacked(indexCount, _name, _symbol));
 
