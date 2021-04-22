@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 
-pragma solidity 0.8.2;
+pragma solidity =0.8.2;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
@@ -25,8 +25,8 @@ contract VolmexPositionToken is Initializable, AccessControlUpgradeable, ERC20Pa
         __ERC20Pausable_init();
         __ERC165_init();
 
-        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-        _setupRole(VOLMEX_PROTOCOL_ROLE, _msgSender());
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(VOLMEX_PROTOCOL_ROLE, msg.sender);
     }
 
     /**
@@ -40,7 +40,7 @@ contract VolmexPositionToken is Initializable, AccessControlUpgradeable, ERC20Pa
      */
     function mint(address to, uint256 amount) public virtual {
         require(
-            hasRole(VOLMEX_PROTOCOL_ROLE, _msgSender()),
+            hasRole(VOLMEX_PROTOCOL_ROLE, msg.sender),
             "VolmexPositionToken: must have volmex protocol role to mint"
         );
         _mint(to, amount);
@@ -53,7 +53,7 @@ contract VolmexPositionToken is Initializable, AccessControlUpgradeable, ERC20Pa
      */
     function burn(address from, uint256 amount) public virtual {
         require(
-            hasRole(VOLMEX_PROTOCOL_ROLE, _msgSender()),
+            hasRole(VOLMEX_PROTOCOL_ROLE, msg.sender),
             "VolmexPositionToken: must have volmex protocol role to burn"
         );
         _burn(from, amount);
@@ -70,7 +70,7 @@ contract VolmexPositionToken is Initializable, AccessControlUpgradeable, ERC20Pa
      */
     function pause() public virtual {
         require(
-            hasRole(VOLMEX_PROTOCOL_ROLE, _msgSender()),
+            hasRole(VOLMEX_PROTOCOL_ROLE, msg.sender),
             "VolmexPositionToken: must have volmex protocol role to pause"
         );
         _pause();
@@ -87,7 +87,7 @@ contract VolmexPositionToken is Initializable, AccessControlUpgradeable, ERC20Pa
      */
     function unpause() public virtual {
         require(
-            hasRole(VOLMEX_PROTOCOL_ROLE, _msgSender()),
+            hasRole(VOLMEX_PROTOCOL_ROLE, msg.sender),
             "VolmexPositionToken: must have volmex protocol role to unpause"
         );
         _unpause();

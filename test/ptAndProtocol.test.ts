@@ -300,11 +300,11 @@ describe("Protocol contract", function () {
 
   it("on deployment the constructor arguments are successfully stored", async function () {
     const collateralAddress = await this.protcolInstance.collateral();
-    const longPositionAddress = await this.protcolInstance.volatilityToken();
-    const shortPositionAddress = await this.protcolInstance.inverseVolatilityToken();
+    const volatilityTokenAddress = await this.protcolInstance.volatilityToken();
+    const inverseVolatilityTokenAddress = await this.protcolInstance.inverseVolatilityToken();
     expect(collateralAddress).to.be.equal(this.DummyERC20Instance.address);
-    expect(longPositionAddress).to.be.equal(this.ethVLongInstance.address);
-    expect(shortPositionAddress).to.be.equal(this.ethVShortInstance.address);
+    expect(volatilityTokenAddress).to.be.equal(this.ethVLongInstance.address);
+    expect(inverseVolatilityTokenAddress).to.be.equal(this.ethVShortInstance.address);
   });
 
   it("only the owner can toggle the contract's active status", async function () {

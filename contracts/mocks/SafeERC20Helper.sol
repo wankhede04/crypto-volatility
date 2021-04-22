@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 
-pragma solidity 0.8.2;
+pragma solidity =0.8.2;
 
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -61,7 +61,7 @@ contract ERC20ReturnTrueMock is Context {
     }
 
     function setAllowance(uint256 allowance_) public {
-        _allowances[_msgSender()] = allowance_;
+        _allowances[msg.sender] = allowance_;
     }
 
     function allowance(address owner, address) public view returns (uint256) {
@@ -93,7 +93,7 @@ contract ERC20NoReturnMock is Context {
     }
 
     function setAllowance(uint256 allowance_) public {
-        _allowances[_msgSender()] = allowance_;
+        _allowances[msg.sender] = allowance_;
     }
 
     function allowance(address owner, address) public view returns (uint256) {
