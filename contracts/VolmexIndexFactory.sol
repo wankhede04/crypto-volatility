@@ -16,7 +16,7 @@ import "./interfaces/IVolmexProtocol.sol";
 contract VolmexIndexFactory is Ownable {
     event IndexCreated(
         uint256 indexed indexCount,
-        address indexed _index,
+        address indexed index,
         uint256 minimumCollateralQty,
         uint256 volatilityCapRatio
     );
