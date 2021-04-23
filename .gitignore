@@ -62,3 +62,6 @@ types
 
 # vs code
 .history
+
+# openzeppelin's logs
+.openzeppelin
