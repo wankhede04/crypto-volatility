@@ -16,11 +16,8 @@
     "lint:sol": "echo 'solidity linter currently disabled' # solhint --max-warnings 0 \"contracts/**/*.sol\"",
     "test": "hardhat test",
     "gas-report": "env ENABLE_GAS_REPORT=1 npm run test",
-    "deploy:factory": "npx hardhat run --network kovan scripts/deployFactory.ts",
-    "deploy:protocol": "npx hardhat run --network kovan scripts/deployProtocol.ts",
-    "deploy:protocol:collateral": "env COLLATERAL_TOKEN_ADDRESS=0xF763853761436Fd4B0baB5812f9dA721b42543f6 npx hardhat run --network kovan scripts/deployProtocol.ts",
-    "create:index": "env FACTORY_ADDRESS=0xE96b970d0716FA5FdAACD41eEEB2cB83F366A1B0 npx hardhat run --network kovan scripts/createIndex.ts",
-    "create:index:collateral": "env FACTORY_ADDRESS=0xE96b970d0716FA5FdAACD41eEEB2cB83F366A1B0 COLLATERAL_TOKEN_ADDRESS=0xF763853761436Fd4B0baB5812f9dA721b42543f6 npx hardhat run --network kovan scripts/createIndex.ts"
+    "deploy:factory": "yarn hardhat --network kovan deploy --tags Factory",
+    "deploy:protocol": "yarn hardhat --network kovan deploy --tags Protocol"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",
