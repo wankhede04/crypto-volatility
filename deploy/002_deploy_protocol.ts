@@ -59,4 +59,4 @@ const protocol: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 };
 
 export default protocol;
-protocol.tags = ["VolmexIndexFactory"];
+protocol.tags = ["Protocol"];

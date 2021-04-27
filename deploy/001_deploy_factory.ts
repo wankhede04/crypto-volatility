@@ -16,4 +16,4 @@ const factory: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 }
 
 export default factory;
-factory.tags = ["VolmexIndexFactory"];
+factory.tags = ["Factory"];
