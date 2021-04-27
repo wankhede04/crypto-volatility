@@ -34,17 +34,18 @@ async function main() {
   await testCollateralInstance.deployed();
 
   // deploying the PositionTokenContracts
-  const ethvLongToken = await VolmexPositionTokenFactory.deploy(
+  const ethvLongToken = await VolmexPositionTokenFactory.deploy();
+  await ethvLongToken.deployed();
+  await ethvLongToken.initialize(
     "Ethereum Volatility Index Token",
     "ETHV"
   );
-  await ethvLongToken.deployed();
-  const ethvShortToken = await VolmexPositionTokenFactory.deploy(
+  const ethvShortToken = await VolmexPositionTokenFactory.deploy();
+  await ethvShortToken.deployed();
+  await ethvShortToken.initialize(
     "Inverse Ethereum Volatility Index Token",
     "iETHV"
   );
-  await ethvShortToken.deployed();
-
   const VolmexProtocolFactoryUpgradesInstance = await hre.upgrades.deployProxy(
     VolmexProtocolFactory,
     [
@@ -69,17 +70,6 @@ async function main() {
     "Volmex Protocol deployed to:",
     VolmexProtocolFactoryUpgradesInstance.address
   );
-
-  // granting VOLMEX_PROTOCOL_ROLE to the protocol contract
-  // We need to manually grant the role until we switch to hardhat-deploy.
-  // await ethvLongToken.grantRole(
-  //   ethers.utils.keccak256(ethers.utils.toUtf8Bytes("VOLMEX_PROTOCOL_ROLE")),
-  //   VolmexProtocolFactoryUpgradesInstance.address
-  // );
-  // await ethvShortToken.grantRole(
-  //   ethers.utils.keccak256(ethers.utils.toUtf8Bytes("VOLMEX_PROTOCOL_ROLE")),
-  //   VolmexProtocolFactoryUpgradesInstance.address
-  // );
 
   // verifying the contracts only if deployed to etherscan compatible network
   if (
