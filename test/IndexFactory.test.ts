@@ -66,9 +66,8 @@ describe("Volmex Index Factory", function () {
     CollateralToken = (await CollateralTokenFactory.deploy()) as TestCollateralToken;
     await CollateralToken.deployed();
 
-    factory = await indexFactory
-      .deploy()
-      .then((factory: VolmexIndexFactory) => factory.deployed());
+    factory = await upgrades.deployProxy(indexFactory);
+    await factory.deployed();
 
     const clonedPositionTokens = await factory.createVolatilityTokens(
       "Ethereum Volatility Index Token",
