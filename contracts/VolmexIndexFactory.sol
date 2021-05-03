@@ -2,7 +2,7 @@
 
 pragma solidity =0.8.2;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
 import "./interfaces/IERC20Modified.sol";
@@ -12,7 +12,7 @@ import "./VolmexProtocol.sol";
 /**
  * Factory is used to register respective index and clone position tokens
  */
-contract VolmexIndexFactory is Ownable {
+contract VolmexIndexFactory is OwnableUpgradeable {
     event IndexRegistered(
         uint256 indexed indexCount,
         VolmexProtocol indexed index
@@ -29,7 +29,7 @@ contract VolmexIndexFactory is Ownable {
     enum IndexStates {NotInitialized, PositionsCreated, Completed}
 
     // Position token implementation contract for factory
-    address public immutable positionTokenImplementation;
+    address public positionTokenImplementation;
 
     // To store the address of volatility.
     mapping(uint256 => address) public getIndex;
@@ -53,7 +53,9 @@ contract VolmexIndexFactory is Ownable {
     /**
      * @notice Get the address of implementation contracts instance.
      */
-    constructor() {
+    function initialize() public initializer {
+        __Ownable_init();
+
         positionTokenImplementation = address(new VolmexPositionToken());
     }
 
