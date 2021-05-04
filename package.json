@@ -15,7 +15,9 @@
     "lint:js:fix": "eslint --ignore-path .gitignore . --fix",
     "lint:sol": "echo 'solidity linter currently disabled' # solhint --max-warnings 0 \"contracts/**/*.sol\"",
     "test": "hardhat test",
-    "gas-report": "env ENABLE_GAS_REPORT=1 npm run test"
+    "gas-report": "env ENABLE_GAS_REPORT=1 npm run test",
+    "deploy:factory": "yarn hardhat --network kovan deploy --tags Factory",
+    "deploy:protocol": "yarn hardhat --network kovan deploy --tags Protocol"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",
@@ -45,7 +47,7 @@
     "ethers": "^5.0.19",
     "hardhat": "^2.0.1",
     "hardhat-contract-sizer": "^2.0.1",
-    "hardhat-deploy": "^0.7.0-beta.44",
+    "hardhat-deploy": "^0.7.5",
     "hardhat-deploy-ethers": "^0.3.0-beta.7",
     "hardhat-gas-reporter": "^1.0.4",
     "hardhat-typechain": "^0.3.4",
