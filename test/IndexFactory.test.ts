@@ -8,6 +8,8 @@ import {
   TestCollateralToken__factory,
   VolmexProtocol,
   VolmexProtocol__factory,
+  VolmexPositionToken__factory,
+  VolmexPositionToken,
 } from "../types";
 import { Result } from "@ethersproject/abi";
 
@@ -40,8 +42,10 @@ describe("Volmex Index Factory", function () {
   let accounts: Signer[];
   let CollateralToken: TestCollateralToken;
   let CollateralTokenFactory: TestCollateralToken__factory;
+  let VolmexPositionTokenFactory: VolmexPositionToken__factory;
   let volmexProtocolFactory: VolmexProtocol__factory;
   let VolmexProtocol: VolmexProtocol;
+  let VolmexPositionToken: VolmexPositionToken;
   let indexFactory: any;
   let factory: Contract;
   let positionTokenCreatedEvent: Result[];
@@ -52,6 +56,10 @@ describe("Volmex Index Factory", function () {
     CollateralTokenFactory = (await ethers.getContractFactory(
       "TestCollateralToken"
     )) as TestCollateralToken__factory;
+
+    VolmexPositionTokenFactory = (await ethers.getContractFactory(
+      "VolmexPositionToken"
+    )) as VolmexPositionToken__factory;
 
     volmexProtocolFactory = (await ethers.getContractFactory(
       "VolmexProtocol"
@@ -66,7 +74,11 @@ describe("Volmex Index Factory", function () {
     CollateralToken = (await CollateralTokenFactory.deploy()) as TestCollateralToken;
     await CollateralToken.deployed();
 
-    factory = await upgrades.deployProxy(indexFactory);
+    VolmexPositionToken = (await VolmexPositionTokenFactory.deploy()) as VolmexPositionToken
+
+    factory = await upgrades.deployProxy(indexFactory, [
+      VolmexPositionToken.address
+    ]);
     await factory.deployed();
 
     const clonedPositionTokens = await factory.createVolatilityTokens(
