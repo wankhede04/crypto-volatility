@@ -18,7 +18,7 @@ contract VolmexIndexFactory is OwnableUpgradeable {
         VolmexProtocol indexed index
     );
 
-    event PositionTokenCreated(
+    event VolatilityTokenCreated(
         uint256 indexed indexCount,
         IERC20Modified indexed volatilityToken,
         IERC20Modified indexed inverseVolatilityToken,
@@ -26,9 +26,10 @@ contract VolmexIndexFactory is OwnableUpgradeable {
         string tokenSymbol
     );
 
-    enum IndexStates {NotInitialized, PositionsCreated, Completed}
+    // Used to store the state of index mapped from indexCount.
+    enum IndexStates {NotInitialized, VolatilitysCreated, Completed}
 
-    // Position token implementation contract for factory
+    // Volatility token implementation contract for factory
     address public positionTokenImplementation;
 
     // To store the address of volatility.
@@ -40,6 +41,7 @@ contract VolmexIndexFactory is OwnableUpgradeable {
     // Used to store the address and name of volatility at a particular _index (incremental state of 1)
     uint256 public indexCount;
 
+    // To store the state of index, referenced by indexCount
     mapping(uint256 => IndexStates) public getIndexState;
 
     // These are position token roles
@@ -62,7 +64,7 @@ contract VolmexIndexFactory is OwnableUpgradeable {
     /**
      * @notice Get the counterfactual address of position token implementation
      */
-    function determinePositionTokenAddress(
+    function determineVolatilityTokenAddress(
         uint256 _indexCount,
         string memory _name,
         string memory _symbol
@@ -77,7 +79,7 @@ contract VolmexIndexFactory is OwnableUpgradeable {
     }
 
     /**
-     * @notice Clones new volatility position tokens - { returns position tokens address, typecasted to IERC20Modified }
+     * @notice Clones new volatility tokens - { returns volatility tokens address typecasted to IERC20Modified }
      *
      * @dev Increment the indexCount by 1
      * @dev Check if state is at NotInitialized
@@ -117,9 +119,9 @@ contract VolmexIndexFactory is OwnableUpgradeable {
         );
 
         getIndexSymbol[indexCount] = _tokenSymbol;
-        getIndexState[indexCount] = IndexStates.PositionsCreated;
+        getIndexState[indexCount] = IndexStates.VolatilitysCreated;
 
-        emit PositionTokenCreated(
+        emit VolatilityTokenCreated(
             indexCount,
             volatilityToken,
             inverseVolatilityToken,
@@ -131,7 +133,7 @@ contract VolmexIndexFactory is OwnableUpgradeable {
     /**
      * @notice Registers the Volmex Protocol
      *
-     * @dev Check if state is at PositionsCreated
+     * @dev Check if state is at VolatilitysCreated
      * @dev Stores index address, referenced by indexCount
      * @dev Grants the VOLMEX_PROTOCOL_ROLE and DEFAULT_ADMIN_ROLE to protocol
      * @dev Update index state to Completed
@@ -142,8 +144,8 @@ contract VolmexIndexFactory is OwnableUpgradeable {
         VolmexProtocol _volmexProtocolContract
     ) external onlyOwner {
         require(
-            getIndexState[_indexCount] == IndexStates.PositionsCreated,
-            "IndexFactory: Position tokens are not created yet"
+            getIndexState[_indexCount] == IndexStates.VolatilitysCreated,
+            "IndexFactory: Volatility tokens are not created yet"
         );
 
         getIndex[_indexCount] = address(_volmexProtocolContract);
@@ -195,12 +197,12 @@ contract VolmexIndexFactory is OwnableUpgradeable {
     {
         bytes32 salt = keccak256(abi.encodePacked(indexCount, _name, _symbol));
 
-        VolmexPositionToken newPositionToken =
+        VolmexPositionToken newVolatilityToken =
             VolmexPositionToken(
                 Clones.cloneDeterministic(positionTokenImplementation, salt)
             );
-        newPositionToken.initialize(_name, _symbol);
+        newVolatilityToken.initialize(_name, _symbol);
 
-        return address(newPositionToken);
+        return address(newVolatilityToken);
     }
 }

@@ -140,12 +140,12 @@ describe("Volmex Index Factory", function () {
   });
 
   it("should determine position token address", async () => {
-    const determinePositionToken = await factory.determinePositionTokenAddress(
+    const determineVolatilityToken = await factory.determineVolatilityTokenAddress(
       1,
       "Ethereum",
       "ETH"
     );
 
-    expect(determinePositionToken).not.equal(null);
+    expect(determineVolatilityToken).not.equal(null);
   });
 });

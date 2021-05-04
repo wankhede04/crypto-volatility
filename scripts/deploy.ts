@@ -68,7 +68,7 @@ const main = async () => {
 
   const positionTokenCreatedEvent = decodeEvents(
     volmexIndexFactoryInstance,
-    filterEvents(await volatilityToken.wait(), "PositionTokenCreated")
+    filterEvents(await volatilityToken.wait(), "VolatilityTokenCreated")
   );
 
   console.log("Volatility Index Token deployed to: ", positionTokenCreatedEvent[0].volatilityToken);

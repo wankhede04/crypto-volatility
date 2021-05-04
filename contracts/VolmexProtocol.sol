@@ -21,14 +21,14 @@ contract VolmexProtocol is
     using VolmexSafeERC20 for IERC20Modified;
 
     event ToggleActivated(bool isActive);
-    event UpdatedPositionToken(
+    event UpdatedVolatilityToken(
         address indexed positionToken,
         bool isVolatilityIndexToken
     );
     event UpdatedFees(uint256 issuanceFees, uint256 redeemFees);
     event UpdatedMinimumCollateral(uint256 newMinimumCollateralQty);
     event ClaimedFees(uint256 fees);
-    event ToggledPositionTokenPause(bool isPause);
+    event ToggledVolatilityTokenPause(bool isPause);
     event Settled(uint256 settlementPrice);
     event ContractApproved(address indexed account);
     event ContractRevoked(address indexed account);
@@ -56,7 +56,7 @@ contract VolmexProtocol is
     // Has the boolean state of protocol settlement
     bool public isSettled;
 
-    // Position tokens
+    // Volatility tokens
     IERC20Modified public volatilityToken;
     IERC20Modified public inverseVolatilityToken;
 
@@ -197,18 +197,18 @@ contract VolmexProtocol is
     }
 
     /**
-     * @notice Update the {Position Token}
+     * @notice Update the {Volatility Token}
      * @param _positionToken Address of the new position token
      * @param _isVolatilityIndexToken Type of the position token, { VolatilityIndexToken: true, InverseVolatilityIndexToken: false }
      */
-    function updatePositionToken(
+    function updateVolatilityToken(
         address _positionToken,
         bool _isVolatilityIndexToken
     ) external onlyOwner {
         _isVolatilityIndexToken
             ? volatilityToken = IERC20Modified(_positionToken)
             : inverseVolatilityToken = IERC20Modified(_positionToken);
-        emit UpdatedPositionToken(_positionToken, _isVolatilityIndexToken);
+        emit UpdatedVolatilityToken(_positionToken, _isVolatilityIndexToken);
     }
 
     /**
@@ -391,7 +391,7 @@ contract VolmexProtocol is
             inverseVolatilityToken.unpause();
         }
 
-        emit ToggledPositionTokenPause(_isPause);
+        emit ToggledVolatilityTokenPause(_isPause);
     }
 
     /**
