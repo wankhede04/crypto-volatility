@@ -1,6 +1,7 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction, DeployResult } from "hardhat-deploy/types";
-import { decodeEvents, filterEvents } from "../helper/decodeEvents";
+import { origFilterEvents } from "../helper/decodeEvents";
+import { VolmexIndexFactory } from "../types";
 
 const protocol: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deployments, getNamedAccounts } = hre;
@@ -8,54 +9,80 @@ const protocol: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   const { deployer } = await getNamedAccounts();
 
-  const deployFactory: DeployResult = await deploy("VolmexIndexFactory", {
-    from: deployer,
-    log: true,
-  });
+  const deployFactory = await deployments.get("VolmexIndexFactory");
 
-  let CollateralTokenAddress: string = `${process.env.COLLATERAL_TOKEN_ADDRESS}`;
+  const factory = (await hre.ethers.getContractAt(
+    deployFactory.abi,
+    deployFactory.address
+  )) as VolmexIndexFactory;
 
-  if (!process.env.COLLATERAL_TOKEN_ADDRESS) {
-    const testCollateralToken: DeployResult = await deploy("TestCollateralToken", {
-      from: deployer,
-      log: true
-    });
-
-    CollateralTokenAddress = testCollateralToken.address;
-  }
-
-  const createIndex = await execute(
-    "VolmexIndexFactory",
-    { from: deployer },
-    "createIndex",
-    CollateralTokenAddress,
-    "20000000000000000000",
-    "200",
+  const volatilityToken = await factory.createVolatilityTokens(
     "Ethereum Volatility Index Token",
     "ETHV"
   );
 
-  const indexCreatedEvent = decodeEvents(
-    deployFactory,
-    filterEvents(createIndex, "IndexCreated"),
-    "IndexCreated"
-  );
-  const positionTokenCreatedEvent = decodeEvents(
-    deployFactory,
-    filterEvents(createIndex, "PositionTokenCreated"),
+  const receipt = await volatilityToken.wait();
+
+  const positionTokenCreatedEvent = origFilterEvents(
+    receipt,
     "PositionTokenCreated"
   );
 
-  console.log("Index Factory deployed on: ", deployFactory.address);
-  console.log("Volmex Protocol deployed on: ", indexCreatedEvent[0].index);
+  //@ts-ignore
+  const volatilityTokenAddress = positionTokenCreatedEvent[0].args["volatilityToken"];
+  console.log("Volatility Index Token deployed to: ", volatilityTokenAddress);
+
+  //@ts-ignore
+  const inverseVolatilityTokenAddress = positionTokenCreatedEvent[0].args["inverseVolatilityToken"];
   console.log(
-    "Ethereum Volatility Index Token deployed to:",
-    positionTokenCreatedEvent[0].volatilityToken
+    "Inverse Volatility Index Token deployed to: ",
+    inverseVolatilityTokenAddress
   );
-  console.log(
-    "Inverse Ethereum Volatility Index Token deployed to:",
-    positionTokenCreatedEvent[0].inverseVolatilityToken
-  );
+
+  //@ts-ignore
+  const indexCount = positionTokenCreatedEvent[0].args["indexCount"];
+
+  let CollateralTokenAddress: string = `${process.env.COLLATERAL_TOKEN_ADDRESS}`;
+
+  if (!process.env.COLLATERAL_TOKEN_ADDRESS) {
+    const testCollateralToken: DeployResult = await deploy(
+      "TestCollateralToken",
+      {
+        from: deployer,
+        log: true
+      }
+    );
+
+    CollateralTokenAddress = testCollateralToken.address;
+  }
+
+  const deployProtocol = await deploy("VolmexProtocol", {
+    from: deployer,
+    proxy: {
+      owner: deployer,
+      methodName: "initialize",
+      proxyContract: "OpenZeppelinTransparentProxy",
+    },
+    args: [
+      CollateralTokenAddress,
+      volatilityTokenAddress,
+      inverseVolatilityTokenAddress,
+      "200000000000000000000",
+      "200",
+    ],
+    log: true,
+  });
+
+  //@ts-ignore
+  const protocolImplementation = deployProtocol.args[0];
+
+  await hre.run("verify:verify", {
+    address: protocolImplementation,
+  });
+
+  await factory.registerIndex(indexCount, deployProtocol.address);
+
+  console.log("Volmex Protocol deployed to: ", deployProtocol.address);
 };
 
 export default protocol;
