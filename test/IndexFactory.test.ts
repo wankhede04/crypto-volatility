@@ -89,7 +89,7 @@ describe("Volmex Index Factory", function () {
 
     positionTokenCreatedEvent = decodeEvents(
       factory,
-      filterEvents(transaction, "PositionTokenCreated")
+      filterEvents(transaction, "VolatilityTokenCreated")
     );
 
     VolmexProtocol = await upgrades.deployProxy(volmexProtocolFactory, [
