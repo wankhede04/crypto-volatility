@@ -1,5 +1,5 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { DeployFunction, DeployResult } from "hardhat-deploy/types";
+import { DeployFunction } from "hardhat-deploy/types";
 
 const factory: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deployments, getNamedAccounts } = hre;
@@ -7,9 +7,24 @@ const factory: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   const { deployer } = await getNamedAccounts();
 
-  const deployFactory: DeployResult = await deploy("VolmexIndexFactory", {
+  const DeployedVolmexPositionToken = await deployments.get('VolmexPositionToken');
+
+  const deployFactory = await deploy("VolmexIndexFactory", {
     from: deployer,
+    proxy: {
+      owner: deployer,
+      methodName: 'initialize',
+      proxyContract: 'OpenZeppelinTransparentProxy',
+    },
+    args: [DeployedVolmexPositionToken.address],
     log: true,
+  });
+
+  //@ts-ignore
+  const factoryImplementation = deployFactory.args[0];
+
+  await hre.run("verify:verify", {
+    address: factoryImplementation  
   });
 
   console.log("Index Factory deployed on: ", deployFactory.address);
