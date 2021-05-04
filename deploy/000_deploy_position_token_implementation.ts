@@ -9,20 +9,20 @@ const positionToken: DeployFunction = async (
 
   const { deployer } = await getNamedAccounts();
 
-  const deployPositionImplementation = await deploy("VolmexPositionToken", {
+  const deployVolatilityImplementation = await deploy("VolmexPositionToken", {
     from: deployer,
     log: true
   });
 
   await hre.run("verify:verify", {
-    address: deployPositionImplementation.address
+    address: deployVolatilityImplementation.address
   });
 
   console.log(
-    "Position Token Implementation deployed on: ",
-    deployPositionImplementation.address
+    "Volatility Token Implementation deployed on: ",
+    deployVolatilityImplementation.address
   );
 };
 
 export default positionToken;
-positionToken.tags = ["PositionTokenImplementation"];
+positionToken.tags = ["VolatilityTokenImplementation"];

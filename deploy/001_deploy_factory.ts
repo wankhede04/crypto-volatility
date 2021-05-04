@@ -7,7 +7,7 @@ const factory: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   const { deployer } = await getNamedAccounts();
 
-  const DeployedVolmexPositionToken = await deployments.get('VolmexPositionToken');
+  const DeployedVolmexVolatilityToken = await deployments.get('VolmexPositionToken');
 
   const deployFactory = await deploy("VolmexIndexFactory", {
     from: deployer,
@@ -16,7 +16,7 @@ const factory: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       methodName: 'initialize',
       proxyContract: 'OpenZeppelinTransparentProxy',
     },
-    args: [DeployedVolmexPositionToken.address],
+    args: [DeployedVolmexVolatilityToken.address],
     log: true,
   });
 
@@ -27,7 +27,10 @@ const factory: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     address: factoryImplementation  
   });
 
-  console.log("Index Factory deployed on: ", deployFactory.address);
+  //@ts-ignore
+  console.log("Proxy Admin deployed to: ", deployFactory.args[1])
+  console.log("Index Factory Proxy deployed on: ", deployFactory.address);
+  console.log("Index Factory Implementation deployed to: ", factoryImplementation);
 }
 
 export default factory;

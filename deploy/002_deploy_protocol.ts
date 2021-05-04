@@ -25,7 +25,7 @@ const protocol: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   const positionTokenCreatedEvent = origFilterEvents(
     receipt,
-    "PositionTokenCreated"
+    "VolatilityTokenCreated"
   );
 
   //@ts-ignore
@@ -82,7 +82,10 @@ const protocol: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   await factory.registerIndex(indexCount, deployProtocol.address);
 
-  console.log("Volmex Protocol deployed to: ", deployProtocol.address);
+  //@ts-ignore
+  console.log("Proxy Admin deployed to: ", deployProtocol.args[1])
+  console.log("Volmex Protocol Proxy deployed to: ", deployProtocol.address);
+  console.log("Volmex Protocol Implementation deployed to: ", protocolImplementation);
 };
 
 export default protocol;
