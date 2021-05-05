@@ -235,7 +235,13 @@ contract VolmexProtocol is
 
         _lockForBlock();
 
+        // Mechanism to calculate the collateral qty using the increase in balance
+        // of protocol contract to counter USDT's fee mechanism, which can be enabled in future
+        uint256 initialProtocolBalance = collateral.balanceOf(address(this));
         collateral.safeTransferFrom(msg.sender, address(this), _collateralQty);
+        uint256 finalProtocolBalance = collateral.balanceOf(address(this));
+
+        _collateralQty = finalProtocolBalance - initialProtocolBalance;
 
         uint256 fee;
         if (issuanceFees > 0) {
