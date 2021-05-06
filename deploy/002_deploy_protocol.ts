@@ -71,6 +71,7 @@ const protocol: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       "200",
     ],
     log: true,
+    deterministicDeployment: true
   });
 
   //@ts-ignore

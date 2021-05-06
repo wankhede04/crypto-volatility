@@ -18,6 +18,7 @@ const factory: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     },
     args: [DeployedVolmexVolatilityToken.address],
     log: true,
+    deterministicDeployment: true
   });
 
   //@ts-ignore

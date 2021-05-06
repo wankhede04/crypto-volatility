@@ -11,7 +11,8 @@ const positionToken: DeployFunction = async (
 
   const deployVolatilityImplementation = await deploy("VolmexPositionToken", {
     from: deployer,
-    log: true
+    log: true,
+    deterministicDeployment: true
   });
 
   await hre.run("verify:verify", {
