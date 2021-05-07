@@ -17,8 +17,8 @@ const protocol: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   )) as VolmexIndexFactory;
 
   const volatilityToken = await factory.createVolatilityTokens(
-    "Bitcoin Volatility Index Token",
-    "BTCV"
+    `${process.env.VOLATILITY_TOKEN_NAME}`,
+    `${process.env.VOLATILITY_TOKEN_SYMBOL}`
   );
 
   const receipt = await volatilityToken.wait();
@@ -67,8 +67,8 @@ const protocol: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       CollateralTokenAddress,
       volatilityTokenAddress,
       inverseVolatilityTokenAddress,
-      "200000000000000000000",
-      "200",
+      `${process.env.MINIMUM_COLLATERAL_QTY}`,
+      `${process.env.VOLATILITY_CAP_RATIO}`,
     ],
     log: true
   });
