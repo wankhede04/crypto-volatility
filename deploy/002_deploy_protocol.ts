@@ -5,7 +5,7 @@ import { VolmexIndexFactory } from "../types";
 
 const protocol: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deployments, getNamedAccounts } = hre;
-  const { deploy, execute } = deployments;
+  const { deploy } = deployments;
 
   const { deployer } = await getNamedAccounts();
 
@@ -17,8 +17,8 @@ const protocol: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   )) as VolmexIndexFactory;
 
   const volatilityToken = await factory.createVolatilityTokens(
-    "Ethereum Volatility Index Token",
-    "ETHV"
+    "Bitcoin Volatility Index Token",
+    "BTCV"
   );
 
   const receipt = await volatilityToken.wait();
@@ -70,23 +70,22 @@ const protocol: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       "200000000000000000000",
       "200",
     ],
-    log: true,
-    deterministicDeployment: true
-  });
-
-  //@ts-ignore
-  const protocolImplementation = deployProtocol.args[0];
-
-  await hre.run("verify:verify", {
-    address: protocolImplementation,
+    log: true
   });
 
   await factory.registerIndex(indexCount, deployProtocol.address);
+
+  // @ts-ignore
+  const protocolImplementation = deployProtocol.args[0];
 
   //@ts-ignore
   console.log("Proxy Admin deployed to: ", deployProtocol.args[1])
   console.log("Volmex Protocol Proxy deployed to: ", deployProtocol.address);
   console.log("Volmex Protocol Implementation deployed to: ", protocolImplementation);
+
+  await hre.run("verify:verify", {
+    address: protocolImplementation,
+  });
 };
 
 export default protocol;
