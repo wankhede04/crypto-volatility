@@ -17,7 +17,7 @@ const factory: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       proxyContract: 'OpenZeppelinTransparentProxy',
     },
     args: [DeployedVolmexVolatilityToken.address],
-    log: true,
+    log: true
   });
 
   //@ts-ignore

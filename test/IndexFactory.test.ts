@@ -12,6 +12,7 @@ import {
   VolmexPositionToken,
 } from "../types";
 import { Result } from "@ethersproject/abi";
+const { expectRevert } = require("@openzeppelin/test-helpers");
 
 export const filterEvents = (
   blockEvents: ContractReceipt,
@@ -85,6 +86,7 @@ describe("Volmex Index Factory", function () {
       "Ethereum Volatility Index Token",
       "ETHV"
     );
+
     const transaction = await clonedPositionTokens.wait();
 
     positionTokenCreatedEvent = decodeEvents(
@@ -137,6 +139,14 @@ describe("Volmex Index Factory", function () {
     expect(instance).not.equal(null);
 
     expect(await instance?.active()).to.equal(true);
+
+    await expectRevert(
+      factory.registerIndex(
+        positionTokenCreatedEvent[0].indexCount,
+        VolmexProtocol.address
+      ),
+      "IndexFactory: Volatility tokens are not created yet"
+    );
   });
 
   it("should determine position token address", async () => {

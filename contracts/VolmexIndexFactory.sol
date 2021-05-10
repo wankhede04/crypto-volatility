@@ -103,11 +103,6 @@ contract VolmexIndexFactory is OwnableUpgradeable {
     {
         ++indexCount;
 
-        require(
-            getIndexState[indexCount] == IndexStates.NotInitialized,
-            "VolmexIndexFactory: Volatility tokens already created"
-        );
-
         volatilityToken = IERC20Modified(
             _clonePositonToken(_tokenName, _tokenSymbol)
         );
