@@ -215,16 +215,16 @@ contract VolmexProtocol is
             "Volmex: CollateralQty > minimum qty required"
         );
 
-        require(
-            collateralAdded <= MAX_COLLATERAL,
-            "Volmex: collateralAdded < MAX_COLLATERAL required"
-        );
-
         collateralAdded = blockCheckpoint == block.number
             ? collateralAdded + _collateralQty
             : _collateralQty;
 
         blockCheckpoint = block.number;
+
+        require(
+            collateralAdded <= MAX_COLLATERAL,
+            "Volmex: collateralAdded < MAX_COLLATERAL required"
+        );
 
         // Mechanism to calculate the collateral qty using the increase in balance
         // of protocol contract to counter USDT's fee mechanism, which can be enabled in future
@@ -386,16 +386,16 @@ contract VolmexProtocol is
         uint256 _volatilityIndexTokenQty,
         uint256 _inverseVolatilityIndexTokenQty
     ) internal {
-        require(
-            collateralRedeemed <= MAX_REDEEMED,
-            "Volmex: collateralRedeemed < MAX_REDEEMED required"
-        );
-
         collateralRedeemed = blockCheckpoint == block.number
             ? collateralRedeemed + _collateralQtyRedeemed
             : _collateralQtyRedeemed;
 
         blockCheckpoint = block.number;
+
+        require(
+            collateralRedeemed <= MAX_REDEEMED,
+            "Volmex: collateralRedeemed < MAX_REDEEMED required"
+        );
 
         uint256 fee;
         if (redeemFees > 0) {
