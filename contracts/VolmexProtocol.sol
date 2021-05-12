@@ -155,7 +155,7 @@ contract VolmexProtocol is
         IERC20Modified _inverseVolatilityToken,
         uint256 _minimumCollateralQty,
         uint256 _volatilityCapRatio
-    ) public initializer {
+    ) external initializer {
         __Ownable_init();
         __ReentrancyGuard_init();
 

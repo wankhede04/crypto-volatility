@@ -25,7 +25,7 @@ contract VolmexPositionToken is
      * See {ERC20-constructor}.
      */
     function initialize(string memory name, string memory symbol)
-        public
+        external
         initializer
     {
         __ERC20_init_unchained(name, symbol);

@@ -55,7 +55,7 @@ contract VolmexIndexFactory is OwnableUpgradeable {
     /**
      * @notice Get the address of implementation contracts instance.
      */
-    function initialize(address _implementation) public initializer {
+    function initialize(address _implementation) external initializer {
         __Ownable_init();
 
         positionTokenImplementation = _implementation;
