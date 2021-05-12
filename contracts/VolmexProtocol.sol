@@ -30,9 +30,6 @@ contract VolmexProtocol is
     event ClaimedFees(uint256 fees);
     event ToggledVolatilityTokenPause(bool isPause);
     event Settled(uint256 settlementPrice);
-    event ContractApproved(address indexed account);
-    event ContractRevoked(address indexed account);
-    event BlockLocked(address indexed account, uint256 blockNumber);
     event Collateralized(
         address indexed sender,
         uint256 collateralLock,
@@ -84,39 +81,26 @@ contract VolmexProtocol is
     // and the inverse can be calculated by subtracting volatilityCapRatio by settlementPrice.
     uint256 public settlementPrice;
 
-    // Stores the block number of caller.
-    mapping(address => uint256) public blockLock;
+    // Used to store the block number of latest collateralize
+    uint256 private blockCheckpoint;
 
-    // Contract approve to interact with the protocol.
-    mapping(address => bool) public approved;
+    // Used to check the collateral added on a particular block number
+    uint256 private collateralAdded;
+
+    // Used to track the redeemed collateral on a particular block number
+    uint256 private collateralRedeemed;
+
+    // Store the maximum collateral qty to be collateralize
+    uint256 constant MAX_COLLATERAL = 10000000000000000000000;
+
+    // Store the maximum collateral qty to be redeemed
+    uint256 constant MAX_REDEEMED = 10000000000000000000000;
 
     /**
      * @notice Used to check contract is active
      */
     modifier onlyActive() {
         require(active, "Volmex: Protocol not active");
-        _;
-    }
-
-    /**
-     * @notice Used to secure our functions from flash loans attack.
-     */
-    modifier blockLocked() {
-        require(
-            blockLock[msg.sender] < block.number,
-            "Volmex: Operations are locked for current block"
-        );
-        _;
-    }
-
-    /**
-     * @notice Used to check callee is not a contract
-     */
-    modifier defend() {
-        require(
-            approved[msg.sender] || msg.sender == tx.origin,
-            "Volmex: Access denied for caller"
-        );
         _;
     }
 
@@ -224,16 +208,23 @@ contract VolmexProtocol is
     function collateralize(uint256 _collateralQty)
         external
         onlyActive
-        defend
-        blockLocked
         onlyNotSettled
     {
         require(
             _collateralQty >= minimumCollateralQty,
-            "Volmex: CollateralQty < minimum qty required"
+            "Volmex: CollateralQty > minimum qty required"
         );
 
-        _lockForBlock();
+        require(
+            collateralAdded <= MAX_COLLATERAL,
+            "Volmex: collateralAdded < MAX_COLLATERAL required"
+        );
+
+        collateralAdded = blockCheckpoint == block.number
+            ? collateralAdded + _collateralQty
+            : _collateralQty;
+
+        blockCheckpoint = block.number;
 
         // Mechanism to calculate the collateral qty using the increase in balance
         // of protocol contract to counter USDT's fee mechanism, which can be enabled in future
@@ -271,12 +262,8 @@ contract VolmexProtocol is
     function redeem(uint256 _positionTokenQty)
         external
         onlyActive
-        defend
-        blockLocked
         onlyNotSettled
     {
-        _lockForBlock();
-
         uint256 collQtyToBeRedeemed = _positionTokenQty * volatilityCapRatio;
 
         _redeem(collQtyToBeRedeemed, _positionTokenQty, _positionTokenQty);
@@ -297,9 +284,7 @@ contract VolmexProtocol is
     function redeemSettled(
         uint256 _volatilityIndexTokenQty,
         uint256 _inverseVolatilityIndexTokenQty
-    ) external onlyActive defend blockLocked onlySettled {
-        _lockForBlock();
-
+    ) external onlyActive onlySettled {
         uint256 collQtyToBeRedeemed =
             (_volatilityIndexTokenQty * settlementPrice) +
                 (_inverseVolatilityIndexTokenQty *
@@ -340,11 +325,7 @@ contract VolmexProtocol is
         address _token,
         address _toWhom,
         uint256 _howMuch
-    )
-        external
-        nonReentrant
-        onlyOwner
-    {
+    ) external nonReentrant onlyOwner {
         require(
             _token != address(collateral),
             "Volmex: Collateral token not allowed"
@@ -400,29 +381,22 @@ contract VolmexProtocol is
         emit ToggledVolatilityTokenPause(_isPause);
     }
 
-    /**
-     * @notice Used to grant the contract's access from account
-     */
-    function approveContractAccess(address _account) external onlyOwner {
-        approved[_account] = true;
-
-        emit ContractApproved(_account);
-    }
-
-    /**
-     * @notice Used to revoke the contract's access from account
-     */
-    function revokeContractAccess(address _account) external onlyOwner {
-        approved[_account] = false;
-
-        emit ContractRevoked(_account);
-    }
-
     function _redeem(
         uint256 _collateralQtyRedeemed,
         uint256 _volatilityIndexTokenQty,
         uint256 _inverseVolatilityIndexTokenQty
     ) internal {
+        require(
+            collateralRedeemed <= MAX_REDEEMED,
+            "Volmex: collateralRedeemed < MAX_REDEEMED required"
+        );
+
+        collateralRedeemed = blockCheckpoint == block.number
+            ? collateralRedeemed + _collateralQtyRedeemed
+            : _collateralQtyRedeemed;
+
+        blockCheckpoint = block.number;
+
         uint256 fee;
         if (redeemFees > 0) {
             fee = (_collateralQtyRedeemed * redeemFees) / 10000;
@@ -445,11 +419,5 @@ contract VolmexProtocol is
             _inverseVolatilityIndexTokenQty,
             fee
         );
-    }
-
-    function _lockForBlock() private {
-        blockLock[msg.sender] = block.number;
-
-        emit BlockLocked(msg.sender, block.number);
     }
 }
