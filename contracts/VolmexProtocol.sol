@@ -81,21 +81,6 @@ contract VolmexProtocol is
     // and the inverse can be calculated by subtracting volatilityCapRatio by settlementPrice.
     uint256 public settlementPrice;
 
-    // Used to store the block number of latest collateralize
-    uint256 private blockCheckpoint;
-
-    // Used to check the collateral added on a particular block number
-    uint256 private collateralAdded;
-
-    // Used to track the redeemed collateral on a particular block number
-    uint256 private collateralRedeemed;
-
-    // Store the maximum collateral qty to be collateralize
-    uint256 constant MAX_COLLATERAL = 10000000000000000000000;
-
-    // Store the maximum collateral qty to be redeemed
-    uint256 constant MAX_REDEEMED = 10000000000000000000000;
-
     /**
      * @notice Used to check contract is active
      */
@@ -213,17 +198,6 @@ contract VolmexProtocol is
         require(
             _collateralQty >= minimumCollateralQty,
             "Volmex: CollateralQty > minimum qty required"
-        );
-
-        collateralAdded = blockCheckpoint == block.number
-            ? collateralAdded + _collateralQty
-            : _collateralQty;
-
-        blockCheckpoint = block.number;
-
-        require(
-            collateralAdded <= MAX_COLLATERAL,
-            "Volmex: collateralAdded < MAX_COLLATERAL required"
         );
 
         // Mechanism to calculate the collateral qty using the increase in balance
@@ -386,17 +360,6 @@ contract VolmexProtocol is
         uint256 _volatilityIndexTokenQty,
         uint256 _inverseVolatilityIndexTokenQty
     ) internal {
-        collateralRedeemed = blockCheckpoint == block.number
-            ? collateralRedeemed + _collateralQtyRedeemed
-            : _collateralQtyRedeemed;
-
-        blockCheckpoint = block.number;
-
-        require(
-            collateralRedeemed <= MAX_REDEEMED,
-            "Volmex: collateralRedeemed < MAX_REDEEMED required"
-        );
-
         uint256 fee;
         if (redeemFees > 0) {
             fee = (_collateralQtyRedeemed * redeemFees) / 10000;
