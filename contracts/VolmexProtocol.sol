@@ -332,10 +332,12 @@ contract VolmexProtocol is
      * @notice Safely transfer the accumulated fees to owner
      */
     function claimAccumulatedFees() external onlyOwner {
-        collateral.safeTransfer(owner(), accumulatedFees);
+        uint256 claimedAccumulatedFees = accumulatedFees;
         delete accumulatedFees;
 
-        emit ClaimedFees(accumulatedFees);
+        collateral.safeTransfer(owner(), claimedAccumulatedFees);
+
+        emit ClaimedFees(claimedAccumulatedFees);
     }
 
     /**
