@@ -53,6 +53,18 @@ export default {
       throwOnTransactionFailures: true,
       loggingEnabled: true,
     },
+    goerli: {
+      url: `https://eth-goerli.alchemyapi.io/v2/${process.env.GOERLI_ALCHEMY_API_KEY}`,
+      accounts: [`0x${process.env.PRIVATE_KEY}`],
+      throwOnTransactionFailures: true,
+      loggingEnabled: true,
+    },
+    mumbai: {
+      url: `https://rpc-mumbai.maticvigil.com/v1/${process.env.MATIC_API_KEY}`,
+      accounts: [`0x${process.env.PRIVATE_KEY}`],
+      throwOnTransactionFailures: true,
+      loggingEnabled: true,
+    }
   },
   namedAccounts: {
     deployer: 0,
