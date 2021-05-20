@@ -2,10 +2,10 @@
 
 pragma solidity =0.8.2;
 
-contract CustomInitializable {
+contract Initializable {
     bool inited = false;
 
-    modifier customInitializer() {
+    modifier initializer() {
         require(!inited, "already inited");
         _;
         inited = true;
