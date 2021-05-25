@@ -58,6 +58,10 @@ export default {
       accounts: [`0x${process.env.PRIVATE_KEY}`],
       throwOnTransactionFailures: true,
       loggingEnabled: true,
+      gas: 5000000,
+      gasPrice: 200000000000,
+      blockGasLimit: 8000000,
+      timeout: 10800000
     },
     mumbai: {
       url: `https://rpc-mumbai.maticvigil.com/v1/${process.env.MATIC_API_KEY}`,
