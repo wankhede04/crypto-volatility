@@ -1489,7 +1489,7 @@ abstract contract ContextMixin {
  * This contract is used to deploy volatility and inverse volatility tokens on Matic
  * with access to Deposit to child chain manager
  */
-contract MaticVolatilityToken is
+contract VolatilityTokenMatic is
     ERC20Pausable,
     IChildToken,
     AccessControlMixin,
@@ -1506,7 +1506,7 @@ contract MaticVolatilityToken is
         string memory symbol_,
         address childChainManager
     ) ERC20(name_, symbol_) {
-        _setupContractId("MaticVolatilityToken");
+        _setupContractId("VolatilityTokenMatic");
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(VOLMEX_PROTOCOL_ROLE, _msgSender());
         _setupRole(DEPOSITOR_ROLE, childChainManager);
