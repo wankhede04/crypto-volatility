@@ -1467,7 +1467,7 @@ contract NativeMetaTransaction is EIP712Base {
  * Custom Context contract of Openzeppelin
  */
 abstract contract ContextMixin {
-    function msgSender() internal view returns (address payable sender) {
+    function msgSender() internal view returns (address sender) {
         if (msg.sender == address(this)) {
             bytes memory array = msg.data;
             uint256 index = msg.data.length;
@@ -1479,7 +1479,7 @@ abstract contract ContextMixin {
                 )
             }
         } else {
-            sender = payable(msg.sender);
+            sender = msg.sender;
         }
         return sender;
     }
@@ -1496,8 +1496,11 @@ contract VolatilityTokenMatic is
     NativeMetaTransaction,
     ContextMixin
 {
+    // Calculated using keccak256("DEPOSITOR_ROLE")
     bytes32 public constant DEPOSITOR_ROLE =
         0x8f4f2da22e8ac8f11e15f9fc141cddbb5deea8800186560abb6e68c5496619a9;
+
+    // Calculated using keccak256("VOLMEX_PROTOCOL_ROLE")
     bytes32 public constant VOLMEX_PROTOCOL_ROLE =
         0x33ba6006595f7ad5c59211bde33456cab351f47602fc04f644c8690bc73c4e16;
 
