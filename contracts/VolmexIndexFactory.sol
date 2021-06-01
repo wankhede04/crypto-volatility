@@ -120,6 +120,9 @@ contract VolmexIndexFactory is OwnableUpgradeable {
      * @dev Grants the VOLMEX_PROTOCOL_ROLE and DEFAULT_ADMIN_ROLE to protocol
      * @dev Update index state to Completed
      * @dev Emit event of index registered with indexCount and index address
+     *
+     * @param _volmexProtocolContract Address of VolmexProtocol typecasted to VolmexProtocol
+     * @param _collateralSymbol Symbol of collateral used
      */
     function registerIndex(
         VolmexProtocol _volmexProtocolContract,
@@ -135,7 +138,7 @@ contract VolmexIndexFactory is OwnableUpgradeable {
             _volmexProtocolContract.inverseVolatilityToken();
 
         getIndexSymbol[indexCount] = string(
-            abi.encodePacked(_collateralSymbol, volatilityToken.symbol())
+            abi.encodePacked(volatilityToken.symbol(), _collateralSymbol)
         );
 
         volatilityToken.grantRole(
