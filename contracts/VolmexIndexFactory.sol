@@ -142,22 +142,15 @@ contract VolmexIndexFactory is OwnableUpgradeable {
             VOLMEX_PROTOCOL_ROLE,
             address(_volmexProtocolContract)
         );
-        volatilityToken.renounceRole(VOLMEX_PROTOCOL_ROLE, address(this));
 
         inverseVolatilityToken.grantRole(
             VOLMEX_PROTOCOL_ROLE,
             address(_volmexProtocolContract)
         );
-        inverseVolatilityToken.renounceRole(
-            VOLMEX_PROTOCOL_ROLE,
-            address(this)
-        );
 
         volatilityToken.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        volatilityToken.renounceRole(DEFAULT_ADMIN_ROLE, address(this));
 
         inverseVolatilityToken.grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        inverseVolatilityToken.renounceRole(DEFAULT_ADMIN_ROLE, address(this));
 
         emit IndexRegistered(indexCount, _volmexProtocolContract);
     }
