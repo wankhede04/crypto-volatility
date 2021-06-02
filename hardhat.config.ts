@@ -47,8 +47,18 @@ export default {
       gasLimit: 8000000,
       gasPrice: 1,
     },
+    mainnet: {
+      url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.MAINNET_ALCHEMY_API_KEY}`,
+      accounts: [`0x${process.env.PRIVATE_KEY}`],
+      throwOnTransactionFailures: true,
+      loggingEnabled: true,
+      gas: 5000000,
+      gasPrice: 20000000000, // 20 gwei, ref: https://etherscan.io/gastracker
+      blockGasLimit: 8000000,
+      timeout: 3600000
+    },
     kovan: {
-      url: `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
+      url: `https://eth-kovan.alchemyapi.io/v2/${process.env.KOVAN_ALCHEMY_API_KEY}`,
       accounts: [`0x${process.env.PRIVATE_KEY}`],
       throwOnTransactionFailures: true,
       loggingEnabled: true,
@@ -62,6 +72,13 @@ export default {
       gasPrice: 200000000000,
       blockGasLimit: 8000000,
       timeout: 10800000
+    },
+    rinkeby: {
+      url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
+      accounts: [`0x${process.env.PRIVATE_KEY}`],
+      throwOnTransactionFailures: true,
+      loggingEnabled: true,
+      gasPrice: 10000000000
     }
   },
   namedAccounts: {
