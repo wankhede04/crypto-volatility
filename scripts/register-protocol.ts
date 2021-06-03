@@ -27,10 +27,12 @@ const registerProtocol = async () => {
 
   console.log("Volmex Protocol Proxy deployed to: ", volmexProtocolInstance.address);
 
-  await volmexIndexFactoryInstance.registerIndex(
+  const registerVolmexProtocol = await volmexIndexFactoryInstance.registerIndex(
     volmexProtocolInstance.address,
     `${process.env.COLLATERAL_TOKEN_SYMBOL}`
   );
+
+  await registerVolmexProtocol.wait();
 
   const protocolImplementation = await proxyAdmin.getProxyImplementation(volmexProtocolInstance.address);
 

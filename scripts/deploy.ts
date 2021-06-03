@@ -84,9 +84,11 @@ const deploy = async () => {
     `${process.env.VOLATILITY_TOKEN_SYMBOL}`
   );
 
+  const receipt = await volatilityToken.wait();
+
   const positionTokenCreatedEvent = decodeEvents(
     volmexIndexFactoryInstance,
-    filterEvents(await volatilityToken.wait(), "VolatilityTokenCreated")
+    filterEvents(receipt, "VolatilityTokenCreated")
   );
 
   console.log("Volatility Index Token deployed to: ", positionTokenCreatedEvent[0].volatilityToken);
@@ -112,10 +114,12 @@ const deploy = async () => {
     address: protocolImplementation
   });
 
-  await volmexIndexFactoryInstance.registerIndex(
+  const registerVolmexProtocol = await volmexIndexFactoryInstance.registerIndex(
     volmexProtocolInstance.address,
     `${process.env.COLLATERAL_TOKEN_SYMBOL}`
   );
+
+  await registerVolmexProtocol.wait();
 };
 
 deploy()
