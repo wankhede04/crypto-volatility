@@ -27,7 +27,11 @@ export const decodeEvents = <T extends Contract>(
   return decodedEvents;
 };
 
-const main = async () => {
+const deploy = async () => {
+  const VolmexPositionTokenFactory = await ethers.getContractFactory(
+    "VolmexPositionToken"
+  );
+
   const VolmexProtocolFactory = await ethers.getContractFactory(
     "VolmexProtocol"
   );
@@ -43,10 +47,24 @@ const main = async () => {
     CollateralTokenAddress = (await TestCollateralFactoryInstance.deployed()).address;
 
     console.log("Test Collateral Token deployed to: ", CollateralTokenAddress);
+
+    await run("verify:verify", {
+      address: CollateralTokenAddress
+    });
   }
 
+  const volmexPositionTokenFactoryInstance = await VolmexPositionTokenFactory.deploy();
+  await volmexPositionTokenFactoryInstance.deployed();
+
+  await run("verify:verify", {
+    address: volmexPositionTokenFactoryInstance.address
+  });
+
   const volmexIndexFactoryInstance = await upgrades.deployProxy(
-    VolmexIndexFactory
+    VolmexIndexFactory,
+    [
+      volmexPositionTokenFactoryInstance.address
+    ]
   );
   await volmexIndexFactoryInstance.deployed();
 
@@ -62,8 +80,8 @@ const main = async () => {
   });
 
   const volatilityToken = await volmexIndexFactoryInstance.createVolatilityTokens(
-    "Ethereum Volatility Index Token",
-    "ETHV"
+    `${process.env.VOLATILITY_TOKEN_NAME}`,
+    `${process.env.VOLATILITY_TOKEN_SYMBOL}`
   );
 
   const positionTokenCreatedEvent = decodeEvents(
@@ -74,28 +92,19 @@ const main = async () => {
   console.log("Volatility Index Token deployed to: ", positionTokenCreatedEvent[0].volatilityToken);
   console.log("Inverse Volatility Index Token deployed to: ", positionTokenCreatedEvent[0].inverseVolatilityToken);
 
-  const volatilityImplementation = await proxyAdmin.getProxyImplementation(positionTokenCreatedEvent[0].volatilityToken.address);
-  const inverseVolatilityImplementation = await proxyAdmin.getProxyImplementation(positionTokenCreatedEvent[0].inverseVolatilityToken.address);
-
-  await run("verify:verify", {
-    address: volatilityImplementation
-  });
-
-  await run("verify:verify", {
-    address: inverseVolatilityImplementation
-  });
-
   const volmexProtocolInstance = await upgrades.deployProxy(
     VolmexProtocolFactory,
     [
       CollateralTokenAddress,
       positionTokenCreatedEvent[0].volatilityToken,
       positionTokenCreatedEvent[0].inverseVolatilityToken,
-      "200000000000000000000",
-      "200"
+      `${process.env.MINIMUM_COLLATERAL_QTY}`,
+      `${process.env.VOLATILITY_CAP_RATIO}`,
     ]
   );
   await volmexProtocolInstance.deployed();
+
+  console.log("Volmex Protocol Proxy deployed to: ", volmexProtocolInstance.address);
 
   const protocolImplementation = await proxyAdmin.getProxyImplementation(volmexProtocolInstance.address);
 
@@ -104,12 +113,12 @@ const main = async () => {
   });
 
   await volmexIndexFactoryInstance.registerIndex(
-    positionTokenCreatedEvent[0].indexCount,
-    volmexProtocolInstance.address
+    volmexProtocolInstance.address,
+    `${process.env.COLLATERAL_TOKEN_SYMBOL}`
   );
 };
 
-main()
+deploy()
   .then(() => process.exit(0))
   .catch((error) => {
     console.error("Error: ", error);
