@@ -28,10 +28,6 @@ interface IVolmexProtocol {
 
     function settlementPrice() external view returns (uint256);
 
-    function blockLock(address account) external view returns (uint256);
-
-    function approved(address account) external view returns (bool);
-
     // External functions
     function initialize(
         IERC20Modified _collateralTokenAddress,
@@ -66,10 +62,4 @@ interface IVolmexProtocol {
     function claimAccumulatedFees() external;
 
     function togglePause(bool _isPause) external;
-
-    function approveContractAccess(address _account) external;
-
-    function revokeContractAccess(address _account) external;
-
-    function transferOwnership(address newOwner) external;
 }

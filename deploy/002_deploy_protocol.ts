@@ -39,9 +39,6 @@ const protocol: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     inverseVolatilityTokenAddress
   );
 
-  //@ts-ignore
-  const indexCount = positionTokenCreatedEvent[0].args["indexCount"];
-
   let CollateralTokenAddress: string = `${process.env.COLLATERAL_TOKEN_ADDRESS}`;
 
   if (!process.env.COLLATERAL_TOKEN_ADDRESS) {
@@ -73,7 +70,10 @@ const protocol: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     log: true
   });
 
-  await factory.registerIndex(indexCount, deployProtocol.address);
+  await factory.registerIndex(
+    deployProtocol.address,
+    `${process.env.COLLATERAL_TOKEN_SYMBOL}`
+  );
 
   // @ts-ignore
   const protocolImplementation = deployProtocol.args[0];
