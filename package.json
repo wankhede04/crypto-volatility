@@ -62,6 +62,8 @@
   },
   "dependencies": {
     "@maticnetwork/maticjs": "^2.0.38",
-    "@openzeppelin/contracts": "^4.0.0"
+    "@openzeppelin/contracts": "^4.0.0",
+    "@openzeppelin/hardhat-defender": "^1.5.0",
+    "save": "^2.4.0"
   }
 }
