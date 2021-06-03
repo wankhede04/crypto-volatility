@@ -2,6 +2,7 @@ require("dotenv").config();
 import "@nomiclabs/hardhat-truffle5";
 import "@nomiclabs/hardhat-ethers";
 import "@openzeppelin/hardhat-upgrades";
+import "@openzeppelin/hardhat-defender";
 
 import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
@@ -26,6 +27,10 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
 });
 
 export default {
+  defender: {
+    apiKey: process.env.DEFENDER_TEAM_API_KEY,
+    apiSecret: process.env.DEFENDER_TEAM_API_SECRET_KEY,
+  },
   contractSizer: {
     alphaSort: true,
     runOnCompile: true,
@@ -74,7 +79,7 @@ export default {
       timeout: 10800000
     },
     rinkeby: {
-      url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
+      url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.RINKEBY_ALCHEMY_API_KEY}`,
       accounts: [`0x${process.env.PRIVATE_KEY}`],
       throwOnTransactionFailures: true,
       loggingEnabled: true,
