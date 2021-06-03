@@ -16,10 +16,11 @@
     "lint:sol": "echo 'solidity linter currently disabled' # solhint --max-warnings 0 \"contracts/**/*.sol\"",
     "test": "hardhat test",
     "gas-report": "env ENABLE_GAS_REPORT=1 npm run test",
-    "deploy:volatility-token": "yarn hardhat --network kovan deploy --tags VolatilityTokenImplementation",
-    "deploy:factory": "yarn hardhat --network kovan deploy --tags Factory",
-    "deploy:protocol": "yarn hardhat --network kovan deploy --tags Protocol",
-    "deploy": "yarn hardhat --network kovan deploy"
+    "deploy": "npx hardhat run --network rinkeby scripts/deploy.ts",
+    "transfer-ownership": "npx hardhat run --network rinkeby scripts/transfer-ownership.ts",
+    "propose-upgrade": "npx hardhat run --network rinkeby scripts/propose-upgrade.ts",
+    "register-protocol": "npx hardhat run --network rinkeby scripts/register-protocol.ts",
+    "verify-impl": "npx hardhat run --network rinkeby scripts/verify-implementation.ts"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",
