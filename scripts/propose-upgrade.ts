@@ -1,5 +1,5 @@
 const { defender } = require("hardhat");
-import { ethers, run } from "hardhat";
+import { ethers } from "hardhat";
 
 const upgrade = async () => {
   const proxyAddress = `${process.env.PROXY_ADDRESS}`;
