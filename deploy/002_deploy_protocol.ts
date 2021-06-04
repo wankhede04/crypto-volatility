@@ -51,6 +51,10 @@ const protocol: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     );
 
     CollateralTokenAddress = testCollateralToken.address;
+
+    await hre.run("verify:verify", {
+      address: CollateralTokenAddress,
+    });
   }
 
   const deployProtocol = await deploy("VolmexProtocol", {
