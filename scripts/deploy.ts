@@ -42,47 +42,62 @@ const deploy = async () => {
   let CollateralTokenAddress: string = `${process.env.COLLATERAL_TOKEN_ADDRESS}`;
 
   if (!process.env.COLLATERAL_TOKEN_ADDRESS) {
-    const TestCollateralFactory = await ethers.getContractFactory("TestCollateralToken");
+    const TestCollateralFactory = await ethers.getContractFactory(
+      "TestCollateralToken"
+    );
     const TestCollateralFactoryInstance = await TestCollateralFactory.deploy();
-    CollateralTokenAddress = (await TestCollateralFactoryInstance.deployed()).address;
+    CollateralTokenAddress = (await TestCollateralFactoryInstance.deployed())
+      .address;
 
     console.log("Test Collateral Token deployed to: ", CollateralTokenAddress);
 
     await run("verify:verify", {
-      address: CollateralTokenAddress
+      address: CollateralTokenAddress,
     });
   }
 
-  const volmexPositionTokenFactoryInstance = await VolmexPositionTokenFactory.deploy();
-  await volmexPositionTokenFactoryInstance.deployed();
+  let volmexIndexFactoryInstance, proxyAdmin;
+  if (process.env.FACTORY_ADDRESS) {
+    volmexIndexFactoryInstance = VolmexIndexFactory.attach(
+      `${process.env.FACTORY_ADDRESS}`
+    );
+  } else {
+    const volmexPositionTokenFactoryInstance =
+      await VolmexPositionTokenFactory.deploy();
+    await volmexPositionTokenFactoryInstance.deployed();
 
-  await run("verify:verify", {
-    address: volmexPositionTokenFactoryInstance.address
-  });
+    await run("verify:verify", {
+      address: volmexPositionTokenFactoryInstance.address,
+    });
 
-  const volmexIndexFactoryInstance = await upgrades.deployProxy(
-    VolmexIndexFactory,
-    [
-      volmexPositionTokenFactoryInstance.address
-    ]
-  );
-  await volmexIndexFactoryInstance.deployed();
+    volmexIndexFactoryInstance = await upgrades.deployProxy(
+      VolmexIndexFactory,
+      [volmexPositionTokenFactoryInstance.address]
+    );
+    await volmexIndexFactoryInstance.deployed();
 
-  console.log("Index Factory proxy deployed to: ", volmexIndexFactoryInstance.address);
+    console.log(
+      "Index Factory proxy deployed to: ",
+      volmexIndexFactoryInstance.address
+    );
 
-  const proxyAdmin = await upgrades.admin.getInstance();
-  console.log('Proxy Admin deployed to:', proxyAdmin.address);
+    proxyAdmin = await upgrades.admin.getInstance();
+    console.log("Proxy Admin deployed to:", proxyAdmin.address);
 
-  const factoryImplementation = await proxyAdmin.getProxyImplementation(volmexIndexFactoryInstance.address);
+    const factoryImplementation = await proxyAdmin.getProxyImplementation(
+      volmexIndexFactoryInstance.address
+    );
 
-  await run("verify:verify", {
-    address: factoryImplementation
-  });
+    await run("verify:verify", {
+      address: factoryImplementation,
+    });
+  }
 
-  const volatilityToken = await volmexIndexFactoryInstance.createVolatilityTokens(
-    `${process.env.VOLATILITY_TOKEN_NAME}`,
-    `${process.env.VOLATILITY_TOKEN_SYMBOL}`
-  );
+  const volatilityToken =
+    await volmexIndexFactoryInstance.createVolatilityTokens(
+      `${process.env.VOLATILITY_TOKEN_NAME}`,
+      `${process.env.VOLATILITY_TOKEN_SYMBOL}`
+    );
 
   const receipt = await volatilityToken.wait();
 
@@ -91,8 +106,14 @@ const deploy = async () => {
     filterEvents(receipt, "VolatilityTokenCreated")
   );
 
-  console.log("Volatility Index Token deployed to: ", positionTokenCreatedEvent[0].volatilityToken);
-  console.log("Inverse Volatility Index Token deployed to: ", positionTokenCreatedEvent[0].inverseVolatilityToken);
+  console.log(
+    "Volatility Index Token deployed to: ",
+    positionTokenCreatedEvent[0].volatilityToken
+  );
+  console.log(
+    "Inverse Volatility Index Token deployed to: ",
+    positionTokenCreatedEvent[0].inverseVolatilityToken
+  );
 
   const volmexProtocolInstance = await upgrades.deployProxy(
     VolmexProtocolFactory,
@@ -106,13 +127,21 @@ const deploy = async () => {
   );
   await volmexProtocolInstance.deployed();
 
-  console.log("Volmex Protocol Proxy deployed to: ", volmexProtocolInstance.address);
+  console.log(
+    "Volmex Protocol Proxy deployed to: ",
+    volmexProtocolInstance.address
+  );
 
-  const protocolImplementation = await proxyAdmin.getProxyImplementation(volmexProtocolInstance.address);
+  if ((await volmexIndexFactoryInstance.indexCount()) > 0) {
+    // @ts-ignore
+    const protocolImplementation = await proxyAdmin.getProxyImplementation(
+      volmexProtocolInstance.address
+    );
 
-  await run("verify:verify", {
-    address: protocolImplementation
-  });
+    await run("verify:verify", {
+      address: protocolImplementation,
+    });
+  }
 
   const registerVolmexProtocol = await volmexIndexFactoryInstance.registerIndex(
     volmexProtocolInstance.address,
