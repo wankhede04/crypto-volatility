@@ -5,7 +5,7 @@ const transferOwnership = async () => {
 
   await upgrades.admin.transferProxyAdminOwnership(gnosisSafe);
   console.log("Transferred ownership of ProxyAdmin to: ", gnosisSafe);
-}
+};
 
 transferOwnership()
   .then(() => process.exit(0))
