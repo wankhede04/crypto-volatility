@@ -1,0 +1,354 @@
+ayush@blockchain   ~/work/projects/volmex/volmex-development     main    NETWORK=mainnet yarn deploy                                                                     1 ↵  856  12:29:29  
+yarn run v1.22.10
+$ npx hardhat run --network $NETWORK scripts/deploy.ts
+ ·-----------------------------|-------------·
+ |  Contract Name              ·  Size (Kb)  │
+ ······························|··············
+ |  Clones                     ·       0.08  │
+ ······························|··············
+ |  EnumerableSet              ·       0.08  │
+ ······························|··············
+ |  ERC20                      ·       2.23  │
+ ······························|··············
+ |  ERC20NoReturnMock          ·       0.48  │
+ ······························|··············
+ |  ERC20PresetMinterPauser    ·       6.56  │
+ ······························|··············
+ |  ERC20ReturnFalseMock       ·       0.30  │
+ ······························|··············
+ |  ERC20ReturnTrueMock        ·       0.50  │
+ ······························|··············
+ |  ERC20Upgradeable           ·       2.23  │
+ ······························|··············
+ |  NonCollateral              ·       2.23  │
+ ······························|··············
+ |  SafeERC20Wrapper           ·       2.10  │
+ ······························|··············
+ |  Strings                    ·       0.08  │
+ ······························|··············
+ |  StringsUpgradeable         ·       0.08  │
+ ······························|··············
+ |  TestCollateralToken        ·       6.56  │
+ ······························|··············
+ |  VolmexIndexFactory         ·       4.67  │
+ ······························|··············
+ |  VolmexPositionToken        ·       6.77  │
+ ······························|··············
+ |  VolmexPositionTokenMock    ·       6.88  │
+ ······························|··············
+ |  VolmexProtocol             ·       7.02  │
+ ······························|··············
+ |  VolmexProtocolUpgradeMock  ·       6.00  │
+ ······························|··············
+ |  VolmexSafeERC20            ·       0.08  │
+ ·-----------------------------|-------------·
+Creating Typechain artifacts in directory types for target ethers-v5
+Successfully generated Typechain artifacts!
+Nothing to compile
+ ·-----------------------------|-------------·
+ |  Contract Name              ·  Size (Kb)  │
+ ······························|··············
+ |  Clones                     ·       0.08  │
+ ······························|··············
+ |  EnumerableSet              ·       0.08  │
+ ······························|··············
+ |  ERC20                      ·       2.23  │
+ ······························|··············
+ |  ERC20NoReturnMock          ·       0.48  │
+ ······························|··············
+ |  ERC20PresetMinterPauser    ·       6.56  │
+ ······························|··············
+ |  ERC20ReturnFalseMock       ·       0.30  │
+ ······························|··············
+ |  ERC20ReturnTrueMock        ·       0.50  │
+ ······························|··············
+ |  ERC20Upgradeable           ·       2.23  │
+ ······························|··············
+ |  NonCollateral              ·       2.23  │
+ ······························|··············
+ |  SafeERC20Wrapper           ·       2.10  │
+ ······························|··············
+ |  Strings                    ·       0.08  │
+ ······························|··············
+ |  StringsUpgradeable         ·       0.08  │
+ ······························|··············
+ |  TestCollateralToken        ·       6.56  │
+ ······························|··············
+ |  VolmexIndexFactory         ·       4.67  │
+ ······························|··············
+ |  VolmexPositionToken        ·       6.77  │
+ ······························|··············
+ |  VolmexPositionTokenMock    ·       6.88  │
+ ······························|··············
+ |  VolmexProtocol             ·       7.02  │
+ ······························|··············
+ |  VolmexProtocolUpgradeMock  ·       6.00  │
+ ······························|··············
+ |  VolmexSafeERC20            ·       0.08  │
+ ·-----------------------------|-------------·
+Creating Typechain artifacts in directory types for target ethers-v5
+Successfully generated Typechain artifacts!
+Compiling 1 file with 0.8.4
+Successfully submitted source code for contract
+contracts/tokens/VolmexPositionToken.sol:VolmexPositionToken at 0xAe514b60CC3b64B64eF92710A3Bd04BEFA693746
+for verification on Etherscan. Waiting for verification result...
+
+Successfully verified contract VolmexPositionToken on Etherscan.
+https://etherscan.io/address/0xAe514b60CC3b64B64eF92710A3Bd04BEFA693746#code
+Index Factory proxy deployed to:  0x253D8efF20F58E7a237A371D1B9e99fbA6688106
+Proxy Admin deployed to: 0x54C342aC00727ce9943e9993790706E1346679c3
+Compiling 39 files with 0.8.4
+Compilation finished successfully
+ ·-----------------------------|-------------·
+ |  Contract Name              ·  Size (Kb)  │
+ ······························|··············
+ |  Clones                     ·       0.08  │
+ ······························|··············
+ |  EnumerableSet              ·       0.08  │
+ ······························|··············
+ |  ERC20                      ·       2.23  │
+ ······························|··············
+ |  ERC20NoReturnMock          ·       0.48  │
+ ······························|··············
+ |  ERC20PresetMinterPauser    ·       6.56  │
+ ······························|··············
+ |  ERC20ReturnFalseMock       ·       0.30  │
+ ······························|··············
+ |  ERC20ReturnTrueMock        ·       0.50  │
+ ······························|··············
+ |  ERC20Upgradeable           ·       2.23  │
+ ······························|··············
+ |  NonCollateral              ·       2.23  │
+ ······························|··············
+ |  SafeERC20Wrapper           ·       2.10  │
+ ······························|··············
+ |  Strings                    ·       0.08  │
+ ······························|··············
+ |  StringsUpgradeable         ·       0.08  │
+ ······························|··············
+ |  TestCollateralToken        ·       6.56  │
+ ······························|··············
+ |  VolmexIndexFactory         ·       4.67  │
+ ······························|··············
+ |  VolmexPositionToken        ·       6.77  │
+ ······························|··············
+ |  VolmexPositionTokenMock    ·       6.88  │
+ ······························|··············
+ |  VolmexProtocol             ·       7.02  │
+ ······························|··············
+ |  VolmexProtocolUpgradeMock  ·       6.00  │
+ ······························|··············
+ |  VolmexSafeERC20            ·       0.08  │
+ ·-----------------------------|-------------·
+Creating Typechain artifacts in directory types for target ethers-v5
+Successfully generated Typechain artifacts!
+Compiling 1 file with 0.8.4
+Successfully submitted source code for contract
+contracts/VolmexIndexFactory.sol:VolmexIndexFactory at 0x0D6c507f272baFc1311950C0D8bB289DBA76539C
+for verification on Etherscan. Waiting for verification result...
+
+Successfully verified contract VolmexIndexFactory on Etherscan.
+https://etherscan.io/address/0x0D6c507f272baFc1311950C0D8bB289DBA76539C#code
+Volatility Index Token deployed to:  0x9E4130C472EaB167d6f3E02e469E186120C80ed9
+Inverse Volatility Index Token deployed to:  0xBC54c10D031eaA1a6e623345891dB7111B8accac
+Volmex Protocol Proxy deployed to:  0x86396EC6a667AF61BB21030C6E2D9EC8c06B80E5
+Nothing to compile
+ ·-----------------------------|-------------·
+ |  Contract Name              ·  Size (Kb)  │
+ ······························|··············
+ |  Clones                     ·       0.08  │
+ ······························|··············
+ |  EnumerableSet              ·       0.08  │
+ ······························|··············
+ |  ERC20                      ·       2.23  │
+ ······························|··············
+ |  ERC20NoReturnMock          ·       0.48  │
+ ······························|··············
+ |  ERC20PresetMinterPauser    ·       6.56  │
+ ······························|··············
+ |  ERC20ReturnFalseMock       ·       0.30  │
+ ······························|··············
+ |  ERC20ReturnTrueMock        ·       0.50  │
+ ······························|··············
+ |  ERC20Upgradeable           ·       2.23  │
+ ······························|··············
+ |  NonCollateral              ·       2.23  │
+ ······························|··············
+ |  SafeERC20Wrapper           ·       2.10  │
+ ······························|··············
+ |  Strings                    ·       0.08  │
+ ······························|··············
+ |  StringsUpgradeable         ·       0.08  │
+ ······························|··············
+ |  TestCollateralToken        ·       6.56  │
+ ······························|··············
+ |  VolmexIndexFactory         ·       4.67  │
+ ······························|··············
+ |  VolmexPositionToken        ·       6.77  │
+ ······························|··············
+ |  VolmexPositionTokenMock    ·       6.88  │
+ ······························|··············
+ |  VolmexProtocol             ·       7.02  │
+ ······························|··············
+ |  VolmexProtocolUpgradeMock  ·       6.00  │
+ ······························|··············
+ |  VolmexSafeERC20            ·       0.08  │
+ ·-----------------------------|-------------·
+Creating Typechain artifacts in directory types for target ethers-v5
+Successfully generated Typechain artifacts!
+Compiling 1 file with 0.8.4
+Successfully submitted source code for contract
+contracts/VolmexProtocol.sol:VolmexProtocol at 0xB71024f02556E65aF2E45383dA58F50C588495FC
+for verification on Etherscan. Waiting for verification result...
+
+Successfully verified contract VolmexProtocol on Etherscan.
+https://etherscan.io/address/0xB71024f02556E65aF2E45383dA58F50C588495FC#code
+Done in 332.20s.
+ ayush@blockchain   ~/work/projects/volmex/volmex-development     main     NETWORK=mainnet yarn register-protocol                                                            856  12:36:37  
+yarn run v1.22.10
+$ npx hardhat run --network $NETWORK scripts/register-protocol.ts
+Compiling 39 files with 0.8.4
+Compilation finished successfully
+ ·-----------------------------|-------------·
+ |  Contract Name              ·  Size (Kb)  │
+ ······························|··············
+ |  Clones                     ·       0.08  │
+ ······························|··············
+ |  EnumerableSet              ·       0.08  │
+ ······························|··············
+ |  ERC20                      ·       2.23  │
+ ······························|··············
+ |  ERC20NoReturnMock          ·       0.48  │
+ ······························|··············
+ |  ERC20PresetMinterPauser    ·       6.56  │
+ ······························|··············
+ |  ERC20ReturnFalseMock       ·       0.30  │
+ ······························|··············
+ |  ERC20ReturnTrueMock        ·       0.50  │
+ ······························|··············
+ |  ERC20Upgradeable           ·       2.23  │
+ ······························|··············
+ |  NonCollateral              ·       2.23  │
+ ······························|··············
+ |  SafeERC20Wrapper           ·       2.10  │
+ ······························|··············
+ |  Strings                    ·       0.08  │
+ ······························|··············
+ |  StringsUpgradeable         ·       0.08  │
+ ······························|··············
+ |  TestCollateralToken        ·       6.56  │
+ ······························|··············
+ |  VolmexIndexFactory         ·       4.67  │
+ ······························|··············
+ |  VolmexPositionToken        ·       6.77  │
+ ······························|··············
+ |  VolmexPositionTokenMock    ·       6.88  │
+ ······························|··············
+ |  VolmexProtocol             ·       7.02  │
+ ······························|··············
+ |  VolmexProtocolUpgradeMock  ·       6.00  │
+ ······························|··············
+ |  VolmexSafeERC20            ·       0.08  │
+ ·-----------------------------|-------------·
+Creating Typechain artifacts in directory types for target ethers-v5
+Successfully generated Typechain artifacts!
+Volmex Protocol Proxy deployed to:  0x3a314D2beC9c529D39c24Ec10B6040493a280A33
+Done in 83.70s.
+ ayush@blockchain   ~/work/projects/volmex/volmex-development     main     NETWORK=mainnet yarn deploy                                                                       857  12:45:27  
+yarn run v1.22.10
+$ npx hardhat run --network $NETWORK scripts/deploy.ts
+ ·-----------------------------|-------------·
+ |  Contract Name              ·  Size (Kb)  │
+ ······························|··············
+ |  Clones                     ·       0.08  │
+ ······························|··············
+ |  EnumerableSet              ·       0.08  │
+ ······························|··············
+ |  ERC20                      ·       2.23  │
+ ······························|··············
+ |  ERC20NoReturnMock          ·       0.48  │
+ ······························|··············
+ |  ERC20PresetMinterPauser    ·       6.56  │
+ ······························|··············
+ |  ERC20ReturnFalseMock       ·       0.30  │
+ ······························|··············
+ |  ERC20ReturnTrueMock        ·       0.50  │
+ ······························|··············
+ |  ERC20Upgradeable           ·       2.23  │
+ ······························|··············
+ |  NonCollateral              ·       2.23  │
+ ······························|··············
+ |  SafeERC20Wrapper           ·       2.10  │
+ ······························|··············
+ |  Strings                    ·       0.08  │
+ ······························|··············
+ |  StringsUpgradeable         ·       0.08  │
+ ······························|··············
+ |  TestCollateralToken        ·       6.56  │
+ ······························|··············
+ |  VolmexIndexFactory         ·       4.67  │
+ ······························|··············
+ |  VolmexPositionToken        ·       6.77  │
+ ······························|··············
+ |  VolmexPositionTokenMock    ·       6.88  │
+ ······························|··············
+ |  VolmexProtocol             ·       7.02  │
+ ······························|··············
+ |  VolmexProtocolUpgradeMock  ·       6.00  │
+ ······························|··············
+ |  VolmexSafeERC20            ·       0.08  │
+ ·-----------------------------|-------------·
+Creating Typechain artifacts in directory types for target ethers-v5
+Successfully generated Typechain artifacts!
+Volatility Index Token deployed to:  0x73C821c28051B7d14A24C3FFA45E560aD347B3c2
+Inverse Volatility Index Token deployed to:  0xB902A27352b317c7757af0f8C691a941437826B5
+Volmex Protocol Proxy deployed to:  0x9A1b05A031423Ed0A2265d73B8fEAc8292847436
+Done in 74.75s.
+ ayush@blockchain   ~/work/projects/volmex/volmex-development     main     NETWORK=mainnet yarn register-protocol                                                            858  12:49:32  
+yarn run v1.22.10
+$ npx hardhat run --network $NETWORK scripts/register-protocol.ts
+ ·-----------------------------|-------------·
+ |  Contract Name              ·  Size (Kb)  │
+ ······························|··············
+ |  Clones                     ·       0.08  │
+ ······························|··············
+ |  EnumerableSet              ·       0.08  │
+ ······························|··············
+ |  ERC20                      ·       2.23  │
+ ······························|··············
+ |  ERC20NoReturnMock          ·       0.48  │
+ ······························|··············
+ |  ERC20PresetMinterPauser    ·       6.56  │
+ ······························|··············
+ |  ERC20ReturnFalseMock       ·       0.30  │
+ ······························|··············
+ |  ERC20ReturnTrueMock        ·       0.50  │
+ ······························|··············
+ |  ERC20Upgradeable           ·       2.23  │
+ ······························|··············
+ |  NonCollateral              ·       2.23  │
+ ······························|··············
+ |  SafeERC20Wrapper           ·       2.10  │
+ ······························|··············
+ |  Strings                    ·       0.08  │
+ ······························|··············
+ |  StringsUpgradeable         ·       0.08  │
+ ······························|··············
+ |  TestCollateralToken        ·       6.56  │
+ ······························|··············
+ |  VolmexIndexFactory         ·       4.67  │
+ ······························|··············
+ |  VolmexPositionToken        ·       6.77  │
+ ······························|··············
+ |  VolmexPositionTokenMock    ·       6.88  │
+ ······························|··············
+ |  VolmexProtocol             ·       7.02  │
+ ······························|··············
+ |  VolmexProtocolUpgradeMock  ·       6.00  │
+ ······························|··············
+ |  VolmexSafeERC20            ·       0.08  │
+ ·-----------------------------|-------------·
+Creating Typechain artifacts in directory types for target ethers-v5
+Successfully generated Typechain artifacts!
+Volmex Protocol Proxy deployed to:  0xA7a640dF09BA37bCF3f664e6241eFAb78078a7D4
+Done in 69.33s.
