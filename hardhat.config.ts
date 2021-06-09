@@ -58,7 +58,7 @@ export default {
       throwOnTransactionFailures: true,
       loggingEnabled: true,
       gas: 5000000,
-      gasPrice: 20000000000, // 20 gwei, ref: https://etherscan.io/gastracker
+      gasPrice: 50000000000, // 50 gwei, ref: https://etherscan.io/gastracker
       blockGasLimit: 8000000,
       timeout: 3600000
     },

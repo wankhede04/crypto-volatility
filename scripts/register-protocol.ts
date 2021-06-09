@@ -9,9 +9,9 @@ const registerProtocol = async () => {
     "VolmexProtocol"
   );
 
-  const proxyAdmin = await upgrades.admin.getInstance();
-
-  const volmexIndexFactoryInstance = VolmexIndexFactory.attach(`${process.env.FACTORY_ADDRESS}`);
+  const volmexIndexFactoryInstance = VolmexIndexFactory.attach(
+    `${process.env.FACTORY_ADDRESS}`
+  );
 
   const volmexProtocolInstance = await upgrades.deployProxy(
     VolmexProtocolFactory,
@@ -20,12 +20,15 @@ const registerProtocol = async () => {
       `${process.env.VOLATILITY_TOKEN_ADDRESS}`,
       `${process.env.INVERSE_VOLATILITY_TOKEN_ADDRESS}`,
       `${process.env.MINIMUM_COLLATERAL_QTY}`,
-      `${process.env.VOLATILITY_CAP_RATIO}`
+      `${process.env.VOLATILITY_CAP_RATIO}`,
     ]
   );
   await volmexProtocolInstance.deployed();
 
-  console.log("Volmex Protocol Proxy deployed to: ", volmexProtocolInstance.address);
+  console.log(
+    "Volmex Protocol Proxy deployed to: ",
+    volmexProtocolInstance.address
+  );
 
   const registerVolmexProtocol = await volmexIndexFactoryInstance.registerIndex(
     volmexProtocolInstance.address,
@@ -33,13 +36,7 @@ const registerProtocol = async () => {
   );
 
   await registerVolmexProtocol.wait();
-
-  const protocolImplementation = await proxyAdmin.getProxyImplementation(volmexProtocolInstance.address);
-
-  await run("verify:verify", {
-    address: protocolImplementation
-  });
-}
+};
 
 registerProtocol()
   .then(() => process.exit(0))

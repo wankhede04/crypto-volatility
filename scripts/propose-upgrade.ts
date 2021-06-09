@@ -8,13 +8,16 @@ const upgrade = async () => {
     "VolmexProtocolUpgradeMock"
   );
 
-  const proposal = await defender.proposeUpgrade(proxyAddress, VolmexProtocolV2Factory);
+  const proposal = await defender.proposeUpgrade(
+    proxyAddress,
+    VolmexProtocolV2Factory
+  );
   console.log("Upgrade proposal created at:", proposal.url);
-}
+};
 
 upgrade()
   .then(() => process.exit(0))
-  .catch(error => {
+  .catch((error) => {
     console.error(error);
     process.exit(1);
   });

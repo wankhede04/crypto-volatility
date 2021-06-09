@@ -10,7 +10,7 @@ const upgrade = async () => {
   await upgrades.upgradeProxy(proxyAddress, VolmexProtocolV2Factory);
 
   console.log("Volmex Protocol implementation upgraded");
-}
+};
 
 upgrade()
   .then(() => process.exit(0))
