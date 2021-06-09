@@ -132,7 +132,7 @@ const deploy = async () => {
     volmexProtocolInstance.address
   );
 
-  if ((await volmexIndexFactoryInstance.indexCount()) > 0) {
+  if ((await volmexIndexFactoryInstance.indexCount()) === 0) {
     // @ts-ignore
     const protocolImplementation = await proxyAdmin.getProxyImplementation(
       volmexProtocolInstance.address
