@@ -16,10 +16,11 @@
     "lint:sol": "echo 'solidity linter currently disabled' # solhint --max-warnings 0 \"contracts/**/*.sol\"",
     "test": "hardhat test",
     "gas-report": "env ENABLE_GAS_REPORT=1 npm run test",
-    "deploy:volatility-token": "yarn hardhat --network kovan deploy --tags VolatilityTokenImplementation",
-    "deploy:factory": "yarn hardhat --network kovan deploy --tags Factory",
-    "deploy:protocol": "yarn hardhat --network kovan deploy --tags Protocol",
-    "deploy": "yarn hardhat --network kovan deploy"
+    "deploy": "npx hardhat run --network $NETWORK scripts/deploy.ts",
+    "transfer-ownership": "npx hardhat run --network $NETWORK scripts/transfer-ownership.ts",
+    "propose-upgrade": "npx hardhat run --network $NETWORK scripts/propose-upgrade.ts",
+    "register-protocol": "npx hardhat run --network $NETWORK scripts/register-protocol.ts",
+    "verify-impl": "npx hardhat run --network $NETWORK scripts/verify-implementation.ts"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",
@@ -37,31 +38,33 @@
     "@typechain/web3-v1": "^2.0.0",
     "@types/mocha": "^8.2.0",
     "chai": "^4.2.0",
-    "dotenv": "^8.2.0",
-    "eslint": "^7.23.0",
+    "dotenv": "^10.0.0",
+    "eslint": "^7.28.0",
     "eslint-config-standard": "^16.0.2",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-mocha-no-only": "^1.1.1",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.3.1",
+    "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-standard": "^5.0.0",
     "ethereum-waffle": "^3.1.2",
     "ethers": "^5.3.0",
     "hardhat": "^2.0.1",
     "hardhat-contract-sizer": "^2.0.1",
     "hardhat-deploy": "^0.7.5",
-    "hardhat-deploy-ethers": "^0.3.0-beta.7",
+    "hardhat-deploy-ethers": "^0.3.0-beta.8",
     "hardhat-gas-reporter": "^1.0.4",
     "hardhat-typechain": "^0.3.4",
     "solidity-coverage": "^0.7.16",
     "ts-generator": "^0.1.1",
-    "ts-node": "^9.1.1",
-    "typechain": "^4.0.1",
+    "ts-node": "^10.0.0",
+    "typechain": "4.0.1",
     "typescript": "^4.1.5",
     "web3": "^1.3.4"
   },
   "dependencies": {
     "@maticnetwork/maticjs": "^2.0.38",
-    "@openzeppelin/contracts": "^4.0.0"
+    "@openzeppelin/contracts": "^4.0.0",
+    "@openzeppelin/hardhat-defender": "^1.5.0",
+    "save": "^2.4.0"
   }
 }
