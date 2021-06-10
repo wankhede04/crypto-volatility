@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PausableUpgradeable.sol";
 
 /**
- * @title Protocol Contract
+ * @title Token Contract
  * @author volmex.finance [security@volmexlabs.com]
  */
 contract VolmexPositionToken is
