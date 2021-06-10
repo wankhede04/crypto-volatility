@@ -3,6 +3,8 @@ import { upgrades } from "hardhat";
 const transferOwnership = async () => {
   const gnosisSafe = `${process.env.GNOSIS_SAFE_ADDRESS}`;
 
+  console.log("Transferring ownership of ProxyAdmin...");
+
   await upgrades.admin.transferProxyAdminOwnership(gnosisSafe);
   console.log("Transferred ownership of ProxyAdmin to: ", gnosisSafe);
 };
