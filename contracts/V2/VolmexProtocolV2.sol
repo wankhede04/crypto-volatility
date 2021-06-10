@@ -180,48 +180,48 @@ contract VolmexProtocolV2 is
         emit UpdatedVolatilityToken(_positionToken, _isVolatilityIndexToken);
     }
 
-    /**
-     * @notice Add collateral to the protocol and mint the position tokens
-     * @param _collateralQty Quantity of the collateral being deposited
-     *
-     * NOTE: Collateral quantity should be at least required minimum collateral quantity
-     *
-     * Calculation: Get the quantity for position token
-     * Mint the position token for `msg.sender`
-     *
-     */
-    function collateralize(uint256 _collateralQty)
-        external
-        onlyActive
-        onlyNotSettled
-    {
-        require(
-            _collateralQty >= minimumCollateralQty,
-            "Volmex: CollateralQty > minimum qty required"
-        );
+    // /**
+    //  * @notice Add collateral to the protocol and mint the position tokens
+    //  * @param _collateralQty Quantity of the collateral being deposited
+    //  *
+    //  * NOTE: Collateral quantity should be at least required minimum collateral quantity
+    //  *
+    //  * Calculation: Get the quantity for position token
+    //  * Mint the position token for `msg.sender`
+    //  *
+    //  */
+    // function collateralize(uint256 _collateralQty)
+    //     external
+    //     onlyActive
+    //     onlyNotSettled
+    // {
+    //     require(
+    //         _collateralQty >= minimumCollateralQty,
+    //         "Volmex: CollateralQty > minimum qty required"
+    //     );
 
-        // Mechanism to calculate the collateral qty using the increase in balance
-        // of protocol contract to counter USDT's fee mechanism, which can be enabled in future
-        uint256 initialProtocolBalance = collateral.balanceOf(address(this));
-        collateral.safeTransferFrom(msg.sender, address(this), _collateralQty);
-        uint256 finalProtocolBalance = collateral.balanceOf(address(this));
+    //     // Mechanism to calculate the collateral qty using the increase in balance
+    //     // of protocol contract to counter USDT's fee mechanism, which can be enabled in future
+    //     uint256 initialProtocolBalance = collateral.balanceOf(address(this));
+    //     collateral.safeTransferFrom(msg.sender, address(this), _collateralQty);
+    //     uint256 finalProtocolBalance = collateral.balanceOf(address(this));
 
-        _collateralQty = finalProtocolBalance - initialProtocolBalance;
+    //     _collateralQty = finalProtocolBalance - initialProtocolBalance;
 
-        uint256 fee;
-        if (issuanceFees > 0) {
-            fee = (_collateralQty * issuanceFees) / 10000;
-            _collateralQty = _collateralQty - fee;
-            accumulatedFees = accumulatedFees + fee;
-        }
+    //     uint256 fee;
+    //     if (issuanceFees > 0) {
+    //         fee = (_collateralQty * issuanceFees) / 10000;
+    //         _collateralQty = _collateralQty - fee;
+    //         accumulatedFees = accumulatedFees + fee;
+    //     }
 
-        uint256 qtyToBeMinted = _collateralQty / volatilityCapRatio;
+    //     uint256 qtyToBeMinted = _collateralQty / volatilityCapRatio;
 
-        volatilityToken.mint(msg.sender, qtyToBeMinted);
-        inverseVolatilityToken.mint(msg.sender, qtyToBeMinted);
+    //     volatilityToken.mint(msg.sender, qtyToBeMinted);
+    //     inverseVolatilityToken.mint(msg.sender, qtyToBeMinted);
 
-        emit Collateralized(msg.sender, _collateralQty, qtyToBeMinted, fee);
-    }
+    //     emit Collateralized(msg.sender, _collateralQty, qtyToBeMinted, fee);
+    // }
 
     /**
      * @notice Redeem the collateral from the protocol by providing the position token
@@ -233,15 +233,15 @@ contract VolmexProtocolV2 is
      *
      * Safely transfer the collateral to `msg.sender`
      */
-    function redeem(uint256 _positionTokenQty)
-        external
-        onlyActive
-        onlyNotSettled
-    {
-        uint256 collQtyToBeRedeemed = _positionTokenQty * volatilityCapRatio;
+    // function redeem(uint256 _positionTokenQty)
+    //     external
+    //     onlyActive
+    //     onlyNotSettled
+    // {
+    //     uint256 collQtyToBeRedeemed = _positionTokenQty * volatilityCapRatio;
 
-        _redeem(collQtyToBeRedeemed, _positionTokenQty, _positionTokenQty);
-    }
+    //     _redeem(collQtyToBeRedeemed, _positionTokenQty, _positionTokenQty);
+    // }
 
     /**
      * @notice Redeem the collateral from the protocol after settlement
@@ -255,21 +255,21 @@ contract VolmexProtocolV2 is
      *
      * Safely transfer the collateral to `msg.sender`
      */
-    function redeemSettled(
-        uint256 _volatilityIndexTokenQty,
-        uint256 _inverseVolatilityIndexTokenQty
-    ) external onlyActive onlySettled {
-        uint256 collQtyToBeRedeemed =
-            (_volatilityIndexTokenQty * settlementPrice) +
-                (_inverseVolatilityIndexTokenQty *
-                    (volatilityCapRatio - settlementPrice));
+    // function redeemSettled(
+    //     uint256 _volatilityIndexTokenQty,
+    //     uint256 _inverseVolatilityIndexTokenQty
+    // ) external onlyActive onlySettled {
+    //     uint256 collQtyToBeRedeemed =
+    //         (_volatilityIndexTokenQty * settlementPrice) +
+    //             (_inverseVolatilityIndexTokenQty *
+    //                 (volatilityCapRatio - settlementPrice));
 
-        _redeem(
-            collQtyToBeRedeemed,
-            _volatilityIndexTokenQty,
-            _inverseVolatilityIndexTokenQty
-        );
-    }
+    //     _redeem(
+    //         collQtyToBeRedeemed,
+    //         _volatilityIndexTokenQty,
+    //         _inverseVolatilityIndexTokenQty
+    //     );
+    // }
 
     /**
      * @notice Settle the contract, preventing new minting and providing individual token redemption
@@ -386,7 +386,7 @@ contract VolmexProtocolV2 is
         );
     }
 
-    // ------------VolmexProtocol Upgrades --------------
+    // ------------ VolmexProtocol Upgrades --------------
 
     uint256 public precisionRatio;
     bool internal _v2Initialized;
@@ -398,7 +398,7 @@ contract VolmexProtocolV2 is
         _v2Initialized = true;
     }
 
-    function collateralizeV2(uint256 _collateralQty)
+    function collateralize(uint256 _collateralQty)
         external
         onlyActive
         onlyNotSettled
@@ -433,7 +433,7 @@ contract VolmexProtocolV2 is
         emit Collateralized(msg.sender, _collateralQty, qtyToBeMinted, fee);
     }
 
-    function redeemV2(uint256 _positionTokenQty)
+    function redeem(uint256 _positionTokenQty)
         external
         onlyActive
         onlyNotSettled
@@ -450,7 +450,7 @@ contract VolmexProtocolV2 is
         _redeem(effectiveCollateralQty, _positionTokenQty, _positionTokenQty);
     }
 
-    function redeemSettledV2(
+    function redeemSettled(
         uint256 _volatilityIndexTokenQty,
         uint256 _inverseVolatilityIndexTokenQty
     ) external onlyActive onlySettled {
