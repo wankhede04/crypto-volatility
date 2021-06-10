@@ -20,7 +20,9 @@
     "transfer-ownership": "npx hardhat run --network $NETWORK scripts/transfer-ownership.ts",
     "propose-upgrade": "npx hardhat run --network $NETWORK scripts/propose-upgrade.ts",
     "register-protocol": "npx hardhat run --network $NETWORK scripts/register-protocol.ts",
-    "verify-impl": "npx hardhat run --network $NETWORK scripts/verify-implementation.ts"
+    "verify-impl": "npx hardhat run --network $NETWORK scripts/verify-implementation.ts",
+    "transfer-ownership:role": "npx hardhat run --network $NETWORK scripts/transfer-ownership-role.ts",
+    "upgrade": "npx hardhat run --network $NETWORK scripts/upgrade.ts"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",
