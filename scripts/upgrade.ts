@@ -4,7 +4,7 @@ const upgrade = async () => {
   const proxyAddress = `${process.env.PROXY_ADDRESS}`;
 
   const VolmexProtocolV2Factory = await ethers.getContractFactory(
-    "VolmexProtocolUpgradeMock"
+    "VolmexProtocolV2"
   );
 
   await upgrades.upgradeProxy(proxyAddress, VolmexProtocolV2Factory);
