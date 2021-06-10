@@ -1,6 +1,8 @@
 import { ethers } from "hardhat";
 
 const transferRole = async () => {
+  const [ owner ] = await ethers.getSigners();
+
   const gnosisSafe = `${process.env.GNOSIS_SAFE_ADDRESS}`;
   const DEFAULT_ADMIN_ROLE =
     "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -35,13 +37,25 @@ const transferRole = async () => {
   );
   await receipt.wait();
 
+  receipt = await volmexPositionTokenInstance.renounceRole(
+    DEFAULT_ADMIN_ROLE,
+    owner.address
+  );
+  await receipt.wait();
+
   receipt = await inverseVolmexPositionTokenInstance.grantRole(
     DEFAULT_ADMIN_ROLE,
     gnosisSafe
   );
   await receipt.wait();
 
-  console.log("Grant DEFAULT_ADMIN_ROLE of volatility tokens to: ", gnosisSafe);
+  receipt = await inverseVolmexPositionTokenInstance.renounceRole(
+    DEFAULT_ADMIN_ROLE,
+    owner.address
+  );
+  await receipt.wait();
+
+  console.log("Granted DEFAULT_ADMIN_ROLE of volatility tokens to: ", gnosisSafe);
 };
 
 transferRole()
