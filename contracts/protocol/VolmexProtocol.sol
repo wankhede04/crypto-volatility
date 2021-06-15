@@ -6,8 +6,8 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import "./interfaces/IERC20Modified.sol";
-import "./library/VolmexSafeERC20.sol";
+import "../interfaces/IERC20Modified.sol";
+import "../library/VolmexSafeERC20.sol";
 
 /**
  * @title Protocol Contract
