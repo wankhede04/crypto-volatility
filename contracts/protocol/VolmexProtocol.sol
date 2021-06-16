@@ -124,7 +124,7 @@ contract VolmexProtocol is
         IERC20Modified _inverseVolatilityToken,
         uint256 _minimumCollateralQty,
         uint256 _volatilityCapRatio
-    ) external initializer {
+    ) internal initializer {
         __Ownable_init();
         __ReentrancyGuard_init();
 
@@ -192,6 +192,7 @@ contract VolmexProtocol is
      */
     function collateralize(uint256 _collateralQty)
         external
+        virtual
         onlyActive
         onlyNotSettled
     {
@@ -361,7 +362,7 @@ contract VolmexProtocol is
         uint256 _collateralQtyRedeemed,
         uint256 _volatilityIndexTokenQty,
         uint256 _inverseVolatilityIndexTokenQty
-    ) internal {
+    ) internal virtual {
         uint256 fee;
         if (redeemFees > 0) {
             fee = (_collateralQtyRedeemed * redeemFees) / 10000;
