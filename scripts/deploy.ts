@@ -33,7 +33,7 @@ const deploy = async () => {
   );
 
   const VolmexProtocolFactory = await ethers.getContractFactory(
-    "VolmexProtocol"
+    `${process.env.VOLMEX_PROTOCOL_CONTRACT}`
   );
   const VolmexIndexFactory = await ethers.getContractFactory(
     "VolmexIndexFactory"
@@ -123,15 +123,24 @@ const deploy = async () => {
 
   console.log("Deploying VolmexProtocol...");
 
+  let protocolInitializeArgs = [
+    CollateralTokenAddress,
+    positionTokenCreatedEvent[0].volatilityToken,
+    positionTokenCreatedEvent[0].inverseVolatilityToken,
+    `${process.env.MINIMUM_COLLATERAL_QTY}`,
+    `${process.env.VOLATILITY_CAP_RATIO}`,
+  ];
+
+  if (process.env.PRECISION_RATIO) {
+    protocolInitializeArgs.push(`${process.env.PRECISION_RATIO}`);
+  }
+
   const volmexProtocolInstance = await upgrades.deployProxy(
     VolmexProtocolFactory,
-    [
-      CollateralTokenAddress,
-      positionTokenCreatedEvent[0].volatilityToken,
-      positionTokenCreatedEvent[0].inverseVolatilityToken,
-      `${process.env.MINIMUM_COLLATERAL_QTY}`,
-      `${process.env.VOLATILITY_CAP_RATIO}`,
-    ]
+    protocolInitializeArgs,
+    {
+      initializer: process.env.PRECISION_RATIO ? "initializePrecision" : "initialize",
+    }
   );
   await volmexProtocolInstance.deployed();
 

@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 
 import "./interfaces/IERC20Modified.sol";
 import "./tokens/VolmexPositionToken.sol";
-import "./VolmexProtocol.sol";
+import "./protocol/VolmexProtocol.sol";
 
 /**
  * @title Factory Contract
