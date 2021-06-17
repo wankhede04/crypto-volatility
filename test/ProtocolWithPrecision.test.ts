@@ -108,7 +108,7 @@ describe("Volmex Protocol With Precision", function () {
         `${process.env.PRECISION_RATIO}`,
       ],
       {
-        initializer: "initializeWithPrecision",
+        initializer: "initializePrecision",
       }
     );
 

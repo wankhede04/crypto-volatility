@@ -32,7 +32,7 @@ contract VolmexProtocolWithPrecision is VolmexProtocol {
      * @param _volatilityCapRatio is the cap for volatility
      * @param _ratio Ratio of standard ERC20 token decimals (18) by custom token
      */
-    function initializeWithPrecision(
+    function initializePrecision(
         IERC20Modified _collateralTokenAddress,
         IERC20Modified _volatilityToken,
         IERC20Modified _inverseVolatilityToken,
