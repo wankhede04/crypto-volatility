@@ -55,7 +55,7 @@ contract VolmexProtocolWithPrecision is VolmexProtocol {
      * @notice Add collateral to the protocol and mint the position tokens
      * @param _collateralQty Quantity of the collateral being deposited
      *
-     * @dev Added precision ratio to calculate the collateral qty with 18 decimals
+     * @dev Added precision ratio to calculate the effective collateral qty
      *
      * NOTE: Collateral quantity should be at least required minimum collateral quantity
      *
