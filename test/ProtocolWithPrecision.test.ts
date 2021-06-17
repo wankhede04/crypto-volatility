@@ -105,10 +105,10 @@ describe("Volmex Protocol With Precision", function () {
         positionTokenCreatedEvent[0].inverseVolatilityToken,
         "25000000",
         "250",
-        `${process.env.PRECISION_RATIO}`
+        `${process.env.PRECISION_RATIO}`,
       ],
       {
-        initializer: 'initializeWithPrecision'
+        initializer: "initializeWithPrecision",
       }
     );
 
@@ -149,7 +149,7 @@ describe("Volmex Protocol With Precision", function () {
     expect((await receipt.wait()).confirmations).not.equal(0);
   });
 
-  it ("Should redeem the collateralized amount", async () => {
+  it("Should redeem the collateralized amount", async () => {
     await CollateralToken.connect(accounts[0]).approve(
       VolmexProtocolWithPrecision.address,
       "2500000000"
@@ -160,9 +160,9 @@ describe("Volmex Protocol With Precision", function () {
     ).collateralize("2500000000");
     await receipt.wait();
 
-    receipt = await VolmexProtocolWithPrecision.connect(
-      accounts[0]
-    ).redeem("1000000000000000000");
+    receipt = await VolmexProtocolWithPrecision.connect(accounts[0]).redeem(
+      "1000000000000000000"
+    );
 
     const redeemEvent = decodeEvents(
       VolmexProtocolWithPrecision,
@@ -172,23 +172,19 @@ describe("Volmex Protocol With Precision", function () {
     expect(redeemEvent[0].collateralReleased).equal("249250000");
 
     await expectRevert(
-      VolmexProtocolWithPrecision.connect(
-        accounts[0]
-      ).redeem("1000000"),
+      VolmexProtocolWithPrecision.connect(accounts[0]).redeem("1000000"),
       "Volmex: Collateral qty is less"
     );
   });
 
-  it ("Should not collateralize amount less than minimum collateral qty", async () => {
+  it("Should not collateralize amount less than minimum collateral qty", async () => {
     await CollateralToken.connect(accounts[0]).approve(
       VolmexProtocolWithPrecision.address,
       "250000000"
     );
 
     await expectRevert(
-      VolmexProtocolWithPrecision.connect(
-        accounts[0]
-      ).collateralize("250000"),
+      VolmexProtocolWithPrecision.connect(accounts[0]).collateralize("250000"),
       "Volmex: CollateralQty > minimum qty required"
     );
   });
