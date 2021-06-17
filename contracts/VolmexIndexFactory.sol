@@ -10,7 +10,8 @@ import "./tokens/VolmexPositionToken.sol";
 import "./VolmexProtocol.sol";
 
 /**
- * Factory is used to register respective index and clone position tokens
+ * @title Factory Contract
+ * @author volmex.finance [security@volmexlabs.com]
  */
 contract VolmexIndexFactory is OwnableUpgradeable {
     event IndexRegistered(

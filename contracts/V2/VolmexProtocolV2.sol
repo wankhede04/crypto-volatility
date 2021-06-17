@@ -6,14 +6,14 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import "./interfaces/IERC20Modified.sol";
-import "./library/VolmexSafeERC20.sol";
+import "../interfaces/IERC20Modified.sol";
+import "../library/VolmexSafeERC20.sol";
 
 /**
  * @title Protocol Contract
  * @author volmex.finance [security@volmexlabs.com]
  */
-contract VolmexProtocol is
+contract VolmexProtocolV2 is
     Initializable,
     OwnableUpgradeable,
     ReentrancyGuardUpgradeable
@@ -181,97 +181,6 @@ contract VolmexProtocol is
     }
 
     /**
-     * @notice Add collateral to the protocol and mint the position tokens
-     * @param _collateralQty Quantity of the collateral being deposited
-     *
-     * NOTE: Collateral quantity should be at least required minimum collateral quantity
-     *
-     * Calculation: Get the quantity for position token
-     * Mint the position token for `msg.sender`
-     *
-     */
-    function collateralize(uint256 _collateralQty)
-        external
-        onlyActive
-        onlyNotSettled
-    {
-        require(
-            _collateralQty >= minimumCollateralQty,
-            "Volmex: CollateralQty > minimum qty required"
-        );
-
-        // Mechanism to calculate the collateral qty using the increase in balance
-        // of protocol contract to counter USDT's fee mechanism, which can be enabled in future
-        uint256 initialProtocolBalance = collateral.balanceOf(address(this));
-        collateral.safeTransferFrom(msg.sender, address(this), _collateralQty);
-        uint256 finalProtocolBalance = collateral.balanceOf(address(this));
-
-        _collateralQty = finalProtocolBalance - initialProtocolBalance;
-
-        uint256 fee;
-        if (issuanceFees > 0) {
-            fee = (_collateralQty * issuanceFees) / 10000;
-            _collateralQty = _collateralQty - fee;
-            accumulatedFees = accumulatedFees + fee;
-        }
-
-        uint256 qtyToBeMinted = _collateralQty / volatilityCapRatio;
-
-        volatilityToken.mint(msg.sender, qtyToBeMinted);
-        inverseVolatilityToken.mint(msg.sender, qtyToBeMinted);
-
-        emit Collateralized(msg.sender, _collateralQty, qtyToBeMinted, fee);
-    }
-
-    /**
-     * @notice Redeem the collateral from the protocol by providing the position token
-     *
-     * @param _positionTokenQty Quantity of the position token that the user is surrendering
-     *
-     * Amount of collateral is `_positionTokenQty` by the volatilityCapRatio.
-     * Burn the position token
-     *
-     * Safely transfer the collateral to `msg.sender`
-     */
-    function redeem(uint256 _positionTokenQty)
-        external
-        onlyActive
-        onlyNotSettled
-    {
-        uint256 collQtyToBeRedeemed = _positionTokenQty * volatilityCapRatio;
-
-        _redeem(collQtyToBeRedeemed, _positionTokenQty, _positionTokenQty);
-    }
-
-    /**
-     * @notice Redeem the collateral from the protocol after settlement
-     *
-     * @param _volatilityIndexTokenQty Quantity of the volatility index token that the user is surrendering
-     * @param _inverseVolatilityIndexTokenQty Quantity of the inverse volatility index token that the user is surrendering
-     *
-     * Amount of collateral is `_volatilityIndexTokenQty` by the settlementPrice and `_inverseVolatilityIndexTokenQty`
-     * by volatilityCapRatio - settlementPrice
-     * Burn the position token
-     *
-     * Safely transfer the collateral to `msg.sender`
-     */
-    function redeemSettled(
-        uint256 _volatilityIndexTokenQty,
-        uint256 _inverseVolatilityIndexTokenQty
-    ) external onlyActive onlySettled {
-        uint256 collQtyToBeRedeemed =
-            (_volatilityIndexTokenQty * settlementPrice) +
-                (_inverseVolatilityIndexTokenQty *
-                    (volatilityCapRatio - settlementPrice));
-
-        _redeem(
-            collQtyToBeRedeemed,
-            _volatilityIndexTokenQty,
-            _inverseVolatilityIndexTokenQty
-        );
-    }
-
-    /**
      * @notice Settle the contract, preventing new minting and providing individual token redemption
      *
      * @param _settlementPrice The price of the volatility index after settlement
@@ -383,6 +292,130 @@ contract VolmexProtocol is
             _volatilityIndexTokenQty,
             _inverseVolatilityIndexTokenQty,
             fee
+        );
+    }
+
+    // ------------ VolmexProtocol Upgrades --------------
+
+    uint256 public precisionRatio;
+    bool internal _v2Initialized;
+
+    /**
+     * @notice Sets the precisionRatio
+     *
+     * @param _ratio Ratio of standard ERC20 token decimals (18) by custom token
+     */
+    function intitializeV2(uint256 _ratio) external {
+        require(!_v2Initialized, "Volmex: V2 already initialized");
+        precisionRatio = _ratio;
+
+        _v2Initialized = true;
+    }
+
+    /**
+     * @notice Add collateral to the protocol and mint the position tokens
+     * @param _collateralQty Quantity of the collateral being deposited
+     *
+     * NOTE: Collateral quantity should be at least required minimum collateral quantity
+     *
+     * Calculation: Get the quantity for position token
+     * Mint the position token for `msg.sender`
+     *
+     */
+    function collateralize(uint256 _collateralQty)
+        external
+        onlyActive
+        onlyNotSettled
+    {
+        require(
+            _collateralQty >= minimumCollateralQty,
+            "Volmex: CollateralQty > minimum qty required"
+        );
+
+        // Mechanism to calculate the collateral qty using the increase in balance
+        // of protocol contract to counter USDT's fee mechanism, which can be enabled in future
+        uint256 initialProtocolBalance = collateral.balanceOf(address(this));
+        collateral.safeTransferFrom(msg.sender, address(this), _collateralQty);
+        uint256 finalProtocolBalance = collateral.balanceOf(address(this));
+
+        _collateralQty = finalProtocolBalance - initialProtocolBalance;
+
+        uint256 fee;
+        if (issuanceFees > 0) {
+            fee = (_collateralQty * issuanceFees) / 10000;
+            _collateralQty = _collateralQty - fee;
+            accumulatedFees = accumulatedFees + fee;
+        }
+
+        uint256 effectiveCollateralQty = _collateralQty * precisionRatio;
+
+        uint256 qtyToBeMinted = effectiveCollateralQty / volatilityCapRatio;
+
+        volatilityToken.mint(msg.sender, qtyToBeMinted);
+        inverseVolatilityToken.mint(msg.sender, qtyToBeMinted);
+
+        emit Collateralized(msg.sender, _collateralQty, qtyToBeMinted, fee);
+    }
+
+    /**
+     * @notice Redeem the collateral from the protocol by providing the position token
+     *
+     * @param _positionTokenQty Quantity of the position token that the user is surrendering
+     *
+     * Amount of collateral is `_positionTokenQty` by the volatilityCapRatio.
+     * Burn the position token
+     *
+     * Safely transfer the collateral to `msg.sender`
+     */
+    function redeem(uint256 _positionTokenQty)
+        external
+        onlyActive
+        onlyNotSettled
+    {
+        uint256 collQtyToBeRedeemed = _positionTokenQty * volatilityCapRatio;
+
+        require(
+            collQtyToBeRedeemed > precisionRatio,
+            "Volmex: Collateral qty is less"
+        );
+
+        uint256 effectiveCollateralQty = collQtyToBeRedeemed / precisionRatio;
+
+        _redeem(effectiveCollateralQty, _positionTokenQty, _positionTokenQty);
+    }
+
+    /**
+     * @notice Redeem the collateral from the protocol after settlement
+     *
+     * @param _volatilityIndexTokenQty Quantity of the volatility index token that the user is surrendering
+     * @param _inverseVolatilityIndexTokenQty Quantity of the inverse volatility index token that the user is surrendering
+     *
+     * Amount of collateral is `_volatilityIndexTokenQty` by the settlementPrice and `_inverseVolatilityIndexTokenQty`
+     * by volatilityCapRatio - settlementPrice
+     * Burn the position token
+     *
+     * Safely transfer the collateral to `msg.sender`
+     */
+    function redeemSettled(
+        uint256 _volatilityIndexTokenQty,
+        uint256 _inverseVolatilityIndexTokenQty
+    ) external onlyActive onlySettled {
+        uint256 collQtyToBeRedeemed =
+            (_volatilityIndexTokenQty * settlementPrice) +
+                (_inverseVolatilityIndexTokenQty *
+                    (volatilityCapRatio - settlementPrice));
+
+        require(
+            collQtyToBeRedeemed > precisionRatio,
+            "Volmex: Collateral qty is less"
+        );
+
+        uint256 effectiveCollateralQty = collQtyToBeRedeemed / precisionRatio;
+
+        _redeem(
+            effectiveCollateralQty,
+            _volatilityIndexTokenQty,
+            _inverseVolatilityIndexTokenQty
         );
     }
 }

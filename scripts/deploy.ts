@@ -62,6 +62,8 @@ const deploy = async () => {
       `${process.env.FACTORY_ADDRESS}`
     );
   } else {
+    console.log("Deploying VolmexPositionToken implementation...");
+
     const volmexPositionTokenFactoryInstance =
       await VolmexPositionTokenFactory.deploy();
     await volmexPositionTokenFactoryInstance.deployed();
@@ -69,6 +71,8 @@ const deploy = async () => {
     await run("verify:verify", {
       address: volmexPositionTokenFactoryInstance.address,
     });
+
+    console.log("Deploying VolmexIndexFactory...");
 
     volmexIndexFactoryInstance = await upgrades.deployProxy(
       VolmexIndexFactory,
@@ -87,6 +91,8 @@ const deploy = async () => {
     const factoryImplementation = await proxyAdmin.getProxyImplementation(
       volmexIndexFactoryInstance.address
     );
+
+    console.log("Verifying VolmexIndexFactory on etherscan...");
 
     await run("verify:verify", {
       address: factoryImplementation,
@@ -115,6 +121,8 @@ const deploy = async () => {
     positionTokenCreatedEvent[0].inverseVolatilityToken
   );
 
+  console.log("Deploying VolmexProtocol...");
+
   const volmexProtocolInstance = await upgrades.deployProxy(
     VolmexProtocolFactory,
     [
@@ -132,16 +140,30 @@ const deploy = async () => {
     volmexProtocolInstance.address
   );
 
+  console.log("Updating Issueance and Redeem fees...");
+
+  const feeReceipt = await volmexProtocolInstance.updateFees(
+    process.env.ISSUE_FEES || 10,
+    process.env.REDEEM_FEES || 30
+  );
+  await feeReceipt.wait();
+
+  console.log("Updated Issueance and Redeem fees");
+
   if ((await volmexIndexFactoryInstance.indexCount()) === 0) {
     // @ts-ignore
     const protocolImplementation = await proxyAdmin.getProxyImplementation(
       volmexProtocolInstance.address
     );
 
+    console.log("Verifying VolmexProtocol...");
+
     await run("verify:verify", {
       address: protocolImplementation,
     });
   }
+
+  console.log("Registering VolmexProtocol...");
 
   const registerVolmexProtocol = await volmexIndexFactoryInstance.registerIndex(
     volmexProtocolInstance.address,
@@ -149,6 +171,8 @@ const deploy = async () => {
   );
 
   await registerVolmexProtocol.wait();
+
+  console.log("Registered VolmexProtocol!");
 };
 
 deploy()
