@@ -18,9 +18,6 @@ contract VolmexProtocolWithPrecision is VolmexProtocol {
     // Calculate for USDC as 10^18 / 10^6 = 10^12
     uint256 public precisionRatio;
 
-    // To prevent protocol from multiple intialization
-    bool internal _initialized;
-
     /**
      * @dev Makes the protocol `active` at deployment
      * @dev Sets the `minimumCollateralQty`
@@ -42,12 +39,7 @@ contract VolmexProtocolWithPrecision is VolmexProtocol {
         uint256 _minimumCollateralQty,
         uint256 _volatilityCapRatio,
         uint256 _ratio
-    ) external {
-        require(
-            !_initialized,
-            "Volmex with Precision: Contract already initialized"
-        );
-
+    ) external initializer {
         initialize(
             _collateralTokenAddress,
             _volatilityToken,
@@ -57,7 +49,6 @@ contract VolmexProtocolWithPrecision is VolmexProtocol {
         );
 
         precisionRatio = _ratio;
-        _initialized = true;
     }
 
     /**
@@ -74,6 +65,7 @@ contract VolmexProtocolWithPrecision is VolmexProtocol {
      */
     function collateralize(uint256 _collateralQty)
         external
+        virtual
         override
         onlyActive
         onlyNotSettled
@@ -112,7 +104,7 @@ contract VolmexProtocolWithPrecision is VolmexProtocol {
         uint256 _collateralQtyRedeemed,
         uint256 _volatilityIndexTokenQty,
         uint256 _inverseVolatilityIndexTokenQty
-    ) internal override {
+    ) internal virtual override {
         require(
             _collateralQtyRedeemed > precisionRatio,
             "Volmex: Collateral qty is less"

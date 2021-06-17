@@ -98,19 +98,23 @@ describe("Volmex Protocol With Precision", function () {
     );
 
     VolmexProtocolWithPrecision = await upgrades.deployProxy(
-      VolmexProtocolWithPrecisionFactory
+      VolmexProtocolWithPrecisionFactory,
+      [
+        CollateralToken.address,
+        positionTokenCreatedEvent[0].volatilityToken,
+        positionTokenCreatedEvent[0].inverseVolatilityToken,
+        "25000000",
+        "250",
+        `${process.env.PRECISION_RATIO}`
+      ],
+      {
+        initializer: 'initializeWithPrecision'
+      }
     );
 
     await VolmexProtocolWithPrecision.deployed();
 
-    const receipt = await VolmexProtocolWithPrecision.initializeWithPrecision(
-      CollateralToken.address,
-      positionTokenCreatedEvent[0].volatilityToken,
-      positionTokenCreatedEvent[0].inverseVolatilityToken,
-      "25000000",
-      "250",
-      `${process.env.PRECISION_RATIO}`
-    );
+    const receipt = await VolmexProtocolWithPrecision.updateFees(10, 30);
     await receipt.wait();
 
     const volmexProtocolRegister = await factory.registerIndex(
@@ -124,20 +128,6 @@ describe("Volmex Protocol With Precision", function () {
   it("Should deploy the protocol", async () => {
     const receipt = await VolmexProtocolWithPrecision.deployed();
     expect(receipt.confirmations).not.equal(0);
-  });
-
-  it("Should not be initialized again", async () => {
-    await expectRevert(
-      VolmexProtocolWithPrecision.initializeWithPrecision(
-        CollateralToken.address,
-        positionTokenCreatedEvent[0].volatilityToken,
-        positionTokenCreatedEvent[0].inverseVolatilityToken,
-        "25000000",
-        "200",
-        `${process.env.PRECISION_RATIO}`
-      ),
-      "Volmex with Precision: Contract already initialized"
-    )
   });
 
   it("Should set the precision ratio", async () => {
@@ -162,12 +152,12 @@ describe("Volmex Protocol With Precision", function () {
   it ("Should redeem the collateralized amount", async () => {
     await CollateralToken.connect(accounts[0]).approve(
       VolmexProtocolWithPrecision.address,
-      "250000000"
+      "2500000000"
     );
     // @ts-ignore
     let receipt = await VolmexProtocolWithPrecision.connect(
       accounts[0]
-    ).collateralize("250000000");
+    ).collateralize("2500000000");
     await receipt.wait();
 
     receipt = await VolmexProtocolWithPrecision.connect(
@@ -179,6 +169,27 @@ describe("Volmex Protocol With Precision", function () {
       filterEvents(await receipt.wait(), "Redeemed")
     );
 
-    expect(redeemEvent[0].collateralReleased).equal("250000000");
+    expect(redeemEvent[0].collateralReleased).equal("249250000");
+
+    await expectRevert(
+      VolmexProtocolWithPrecision.connect(
+        accounts[0]
+      ).redeem("1000000"),
+      "Volmex: Collateral qty is less"
+    );
+  });
+
+  it ("Should not collateralize amount less than minimum collateral qty", async () => {
+    await CollateralToken.connect(accounts[0]).approve(
+      VolmexProtocolWithPrecision.address,
+      "250000000"
+    );
+
+    await expectRevert(
+      VolmexProtocolWithPrecision.connect(
+        accounts[0]
+      ).collateralize("250000"),
+      "Volmex: CollateralQty > minimum qty required"
+    );
   });
 });
