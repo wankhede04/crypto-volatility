@@ -6,7 +6,7 @@ import "./VolmexProtocol.sol";
 import "../library/VolmexSafeERC20.sol";
 
 /**
- * @title Protocol Contract
+ * @title Protocol Contract with Precision
  * @author volmex.finance [security@volmexlabs.com]
  *
  * This protocol is used for decimal values less than 18.
@@ -15,7 +15,8 @@ contract VolmexProtocolWithPrecision is VolmexProtocol {
     using VolmexSafeERC20 for IERC20Modified;
 
     // This is the ratio of standard ERC20 tokens decimals by custom token decimals
-    // Calculate for USDC as 10^18 / 10^6 = 10^12
+    // Calculation for USDC: 10^18 / 10^6 = 10^12
+    // Where 10^18 represent precision of volatility token decimals and 10^6 represent USDT (collateral) decimals
     uint256 public precisionRatio;
 
     /**
