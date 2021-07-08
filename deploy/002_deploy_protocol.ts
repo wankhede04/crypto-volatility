@@ -86,6 +86,7 @@ const protocol: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   console.log("Proxy Admin deployed to: ", deployProtocol.args[1])
   console.log("Volmex Protocol Proxy deployed to: ", deployProtocol.address);
   console.log("Volmex Protocol Implementation deployed to: ", protocolImplementation);
+  console.log("Volmex Protocol register index at: ", indexCount);
 
   await hre.run("verify:verify", {
     address: protocolImplementation,
