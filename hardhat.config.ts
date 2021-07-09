@@ -86,7 +86,13 @@ export default {
       gasPrice: 10000000000
     },
     mumbai: {
-      url: `https://rpc-mumbai.maticvigil.com/v1/${process.env.MATIC_API_KEY}`,
+      url: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.POLYGON_TESTNET_ALCHEMY_API_KEY}`,
+      accounts: [`0x${process.env.PRIVATE_KEY}`],
+      throwOnTransactionFailures: true,
+      loggingEnabled: true,
+    },
+    polygon: {
+      url: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.POLYGON_MAINNET_ALCHEMY_API_KEY}`,
       accounts: [`0x${process.env.PRIVATE_KEY}`],
       throwOnTransactionFailures: true,
       loggingEnabled: true,
