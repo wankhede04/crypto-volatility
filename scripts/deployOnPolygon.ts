@@ -75,6 +75,27 @@ const deployPolygon = async () => {
 
   console.log("Protocol fees updated!");
 
+  console.log("Granting VOLMEX_PROTOCOL_ROLE of volatility tokens to VolmexProtocol contract");
+
+  const volatilityProtocolRole = await volatilityToken.grantRole(
+    VOLMEX_PROTOCOL_ROLE,
+    `${volmexProtocolInstance.address}`
+  );
+
+  await volatilityProtocolRole.wait();
+
+  console.log("Role of volatility token granted");
+
+  const inverseVolatilityProtocolRole = await inverseVolatilityToken.grantRole(
+    VOLMEX_PROTOCOL_ROLE,
+    `${volmexProtocolInstance.address}`
+  );
+
+  await volatilityProtocolRole.wait();
+
+  console.log("Role of inverse volatility token granted");
+
+  console.log("\n Transaction successful");
 };
 
 deployPolygon()
