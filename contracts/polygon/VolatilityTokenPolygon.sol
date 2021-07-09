@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL - 1.1
 
-pragma solidity =0.8.2;
+pragma solidity =0.8.4;
 
 abstract contract Context {
     function _msgSender() internal view virtual returns (address) {
@@ -1486,10 +1486,13 @@ abstract contract ContextMixin {
 }
 
 /**
- * This contract is used to deploy volatility and inverse volatility tokens on Matic
+ * @title Token Contract for Polygon
+ * @author volmex.finance [security@volmexlabs.com]
+ *
+ * This contract is used to deploy volatility and inverse volatility tokens on Polygon
  * with access to Deposit to child chain manager
  */
-contract VolatilityTokenMatic is
+contract VolatilityTokenPolygon is
     ERC20Pausable,
     IChildToken,
     AccessControlMixin,
@@ -1509,7 +1512,7 @@ contract VolatilityTokenMatic is
         string memory symbol_,
         address childChainManager
     ) ERC20(name_, symbol_) {
-        _setupContractId("VolatilityTokenMatic");
+        _setupContractId("VolatilityTokenPolygon");
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(VOLMEX_PROTOCOL_ROLE, _msgSender());
         _setupRole(DEPOSITOR_ROLE, childChainManager);
