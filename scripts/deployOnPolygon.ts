@@ -44,6 +44,26 @@ const deployPolygon = async () => {
     inverseVolatilityToken.address
   );
 
+  console.log("Deploying Volmex Protocol...");
+
+  const volmexProtocolInstance = await upgrades.deployProxy(
+    VolmexProtocolFactory,
+    [
+      `${CollateralTokenAddress}`,
+      `${volatilityToken.address}`,
+      `${inverseVolatilityToken.address}`,
+      `${process.env.MINIMUM_COLLATERAL_QTY}`,
+      `${process.env.VOLATILITY_CAP_RATIO}`,
+    ]
+  );
+
+  await volmexProtocolInstance.deployed();
+
+  console.log(
+    "Volmex Protocol Proxy deployed at: ",
+    volmexProtocolInstance.address
+  );
+
 };
 
 deployPolygon()
