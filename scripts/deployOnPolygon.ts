@@ -64,6 +64,17 @@ const deployPolygon = async () => {
     volmexProtocolInstance.address
   );
 
+  console.log("Updating fees...");
+
+  const feesReceipt = await volmexProtocolInstance.updateFees(
+    `${process.env.ISSUE_FEES}`,
+    `${process.env.REDEEM_FEES}`
+  );
+
+  await feesReceipt.wait();
+
+  console.log("Protocol fees updated!");
+
 };
 
 deployPolygon()
