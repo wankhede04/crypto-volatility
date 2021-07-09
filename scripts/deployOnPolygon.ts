@@ -11,6 +11,39 @@ const deployPolygon = async () => {
 
   const VOLMEX_PROTOCOL_ROLE =
     "0x33ba6006595f7ad5c59211bde33456cab351f47602fc04f644c8690bc73c4e16";
+
+  const CollateralTokenAddress: string = `${process.env.COLLATERAL_TOKEN_ADDRESS}`;
+
+  console.log(`Deploying ${process.env.VOLATILITY_TOKEN_NAME} token`);
+
+  const volatilityToken = await VolatilityTokenFactory.deploy(
+    `${process.env.VOLATILITY_TOKEN_NAME}`,
+    `${process.env.VOLATILITY_TOKEN_SYMBOL}`,
+    `${process.env.CHILD_CHAIN_MANAGER}`
+  );
+
+  await volatilityToken.deployed();
+
+  console.log(
+    `Deployed ${process.env.VOLATILITY_TOKEN_NAME} token at: `,
+    volatilityToken.address
+  );
+
+  console.log(`Deploying inverse ${process.env.VOLATILITY_TOKEN_NAME} token`);
+
+  const inverseVolatilityToken = await VolatilityTokenFactory.deploy(
+    `Inverse ${process.env.VOLATILITY_TOKEN_NAME}`,
+    `i${process.env.VOLATILITY_TOKEN_SYMBOL}`,
+    `${process.env.CHILD_CHAIN_MANAGER}`
+  );
+
+  await inverseVolatilityToken.deployed();
+
+  console.log(
+    `Deployed Inverse ${process.env.VOLATILITY_TOKEN_NAME} token at: `,
+    inverseVolatilityToken.address
+  );
+
 };
 
 deployPolygon()
