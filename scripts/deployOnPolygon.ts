@@ -91,7 +91,7 @@ const deployPolygon = async () => {
     `${volmexProtocolInstance.address}`
   );
 
-  await volatilityProtocolRole.wait();
+  await inverseVolatilityProtocolRole.wait();
 
   console.log("Role of inverse volatility token granted");
 
