@@ -8,7 +8,7 @@ import "../interfaces/IERC20Modified.sol";
 import "../protocol/VolmexProtocol.sol";
 
 /**
- * @title Factory Contract
+ * @title Factory Contract for Polygon
  * @author volmex.finance [security@volmexlabs.com]
  */
 contract IndexFactoryPolygon is OwnableUpgradeable {
@@ -35,7 +35,7 @@ contract IndexFactoryPolygon is OwnableUpgradeable {
     bytes32 private constant DEFAULT_ADMIN_ROLE = 0x00;
 
     /**
-     * @notice Get the address of implementation contracts instance.
+     * @notice Initializes the intializer of Ownable
      */
     function initialize() external initializer {
         __Ownable_init();
@@ -44,10 +44,9 @@ contract IndexFactoryPolygon is OwnableUpgradeable {
     /**
      * @notice Registers the Volmex Protocol
      *
-     * @dev Check if state is at VolatilitysCreated
      * @dev Stores index address, referenced by indexCount
-     * @dev Grants the VOLMEX_PROTOCOL_ROLE and DEFAULT_ADMIN_ROLE to protocol
-     * @dev Update index state to Completed
+     * @dev Stores the symbol mapping of used collateral and volatility token
+     * @dev Grants the VOLMEX_PROTOCOL_ROLE and DEFAULT_ADMIN_ROLE of volatility tokens
      * @dev Emit event of index registered with indexCount and index address
      *
      * @param _volmexProtocolContract Address of VolmexProtocol typecasted to VolmexProtocol
