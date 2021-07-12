@@ -95,29 +95,4 @@ contract IndexFactoryPolygon is OwnableUpgradeable {
 
         emit IndexRegistered(indexCount, _volmexProtocolContract);
     }
-
-    /**
-     * @notice Clones the position token - { returns position token address }
-     *
-     * @dev Generates a salt using indexCount, token name and token symbol
-     * @dev Clone the position token implementation with a salt make it deterministic
-     * @dev Initializes the position token
-     *
-     * @param _name is the name of volatility token
-     * @param _symbol is the symbol of volatility token
-     */
-    function _clonePositonToken(string memory _name, string memory _symbol)
-        private
-        returns (address)
-    {
-        bytes32 salt = keccak256(abi.encodePacked(indexCount, _name, _symbol));
-
-        VolatilityTokenPolygon newVolatilityToken =
-            VolatilityTokenPolygon(
-                Clones.cloneDeterministic(positionTokenImplementation, salt)
-            );
-        newVolatilityToken.initialize(_name, _symbol);
-
-        return address(newVolatilityToken);
-    }
 }
