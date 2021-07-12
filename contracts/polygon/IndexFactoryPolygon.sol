@@ -26,9 +26,6 @@ contract IndexFactoryPolygon is OwnableUpgradeable {
         string tokenSymbol
     );
 
-    // Volatility token implementation contract for factory
-    address public positionTokenImplementation;
-
     // To store the address of volatility.
     mapping(uint256 => address) public getIndex;
 
@@ -49,10 +46,8 @@ contract IndexFactoryPolygon is OwnableUpgradeable {
     /**
      * @notice Get the address of implementation contracts instance.
      */
-    function initialize(address _implementation) external initializer {
+    function initialize() external initializer {
         __Ownable_init();
-
-        positionTokenImplementation = _implementation;
     }
 
     /**
