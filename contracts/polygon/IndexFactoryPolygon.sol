@@ -19,13 +19,6 @@ contract IndexFactoryPolygon is OwnableUpgradeable {
         VolmexProtocol indexed index
     );
 
-    event VolatilityTokenCreated(
-        IERC20Modified indexed volatilityToken,
-        IERC20Modified indexed inverseVolatilityToken,
-        string tokenName,
-        string tokenSymbol
-    );
-
     // To store the address of volatility.
     mapping(uint256 => address) public getIndex;
 
@@ -35,7 +28,7 @@ contract IndexFactoryPolygon is OwnableUpgradeable {
     // Used to store the address and name of volatility at a particular _index (incremental state of 1)
     uint256 public indexCount;
 
-    // These are position token roles
+    // These are volatility token roles
     // Calculated as keccak256("VOLMEX_PROTOCOL_ROLE").
     bytes32 private constant VOLMEX_PROTOCOL_ROLE =
         0x33ba6006595f7ad5c59211bde33456cab351f47602fc04f644c8690bc73c4e16;
