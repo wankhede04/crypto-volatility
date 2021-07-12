@@ -51,47 +51,6 @@ contract IndexFactoryPolygon is OwnableUpgradeable {
     }
 
     /**
-     * @notice Clones new volatility tokens - { returns volatility tokens address typecasted to IERC20Modified }
-     *
-     * @dev Increment the indexCount by 1
-     * @dev Check if state is at NotInitialized
-     * @dev Clones the volatility and inverse volatility tokens
-     * @dev Stores the volatility name, referenced by indexCount
-     * @dev Emits event of volatility token name & symbol, indexCount(position), position tokens address
-     *
-     * @param _tokenName is the name for volatility
-     * @param _tokenSymbol is the symbol for volatility
-     */
-    function createVolatilityTokens(
-        string memory _tokenName,
-        string memory _tokenSymbol
-    )
-        external
-        onlyOwner
-        returns (
-            IERC20Modified volatilityToken,
-            IERC20Modified inverseVolatilityToken
-        )
-    {
-        volatilityToken = IERC20Modified(
-            _clonePositonToken(_tokenName, _tokenSymbol)
-        );
-        inverseVolatilityToken = IERC20Modified(
-            _clonePositonToken(
-                string(abi.encodePacked("Inverse ", _tokenName)),
-                string(abi.encodePacked("i", _tokenSymbol))
-            )
-        );
-
-        emit VolatilityTokenCreated(
-            volatilityToken,
-            inverseVolatilityToken,
-            _tokenName,
-            _tokenSymbol
-        );
-    }
-
-    /**
      * @notice Registers the Volmex Protocol
      *
      * @dev Check if state is at VolatilitysCreated
