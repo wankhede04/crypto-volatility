@@ -3,10 +3,8 @@
 pragma solidity =0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts/proxy/Clones.sol";
 
 import "../interfaces/IERC20Modified.sol";
-import "./VolatilityTokenPolygon.sol";
 import "../protocol/VolmexProtocol.sol";
 
 /**
