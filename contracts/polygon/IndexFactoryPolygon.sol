@@ -51,23 +51,6 @@ contract IndexFactoryPolygon is OwnableUpgradeable {
     }
 
     /**
-     * @notice Get the counterfactual address of position token implementation
-     */
-    function determineVolatilityTokenAddress(
-        uint256 _indexCount,
-        string memory _name,
-        string memory _symbol
-    ) external view returns (address) {
-        bytes32 salt = keccak256(abi.encodePacked(_indexCount, _name, _symbol));
-        return
-            Clones.predictDeterministicAddress(
-                positionTokenImplementation,
-                salt,
-                address(this)
-            );
-    }
-
-    /**
      * @notice Clones new volatility tokens - { returns volatility tokens address typecasted to IERC20Modified }
      *
      * @dev Increment the indexCount by 1
