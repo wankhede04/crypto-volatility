@@ -9,8 +9,12 @@ const deployPolygon = async () => {
     "VolatilityTokenPolygon"
   );
 
-  const VOLMEX_PROTOCOL_ROLE =
-    "0x33ba6006595f7ad5c59211bde33456cab351f47602fc04f644c8690bc73c4e16";
+  const IndexFactory = await ethers.getContractFactory(
+    "IndexFactoryPolygon"
+  );
+
+  const DEFAULT_ADMIN_ROLE =
+    "0x0000000000000000000000000000000000000000000000000000000000000000";
 
   const CollateralTokenAddress: string = `${process.env.COLLATERAL_TOKEN_ADDRESS}`;
 
@@ -44,6 +48,45 @@ const deployPolygon = async () => {
     inverseVolatilityToken.address
   );
 
+  let volmexIndexFactoryInstance;
+  if (process.env.FACTORY_ADDRESS) {
+    volmexIndexFactoryInstance = IndexFactory.attach(
+      `${process.env.FACTORY_ADDRESS}`
+    );
+  } else {
+    console.log("Deploying IndexFactoryPolygon...");
+
+    volmexIndexFactoryInstance = await upgrades.deployProxy(
+      IndexFactory
+    );
+    await volmexIndexFactoryInstance.deployed();
+
+    console.log(
+      "Index Factory proxy deployed at: ",
+      volmexIndexFactoryInstance.address
+    );
+  }
+
+  console.log("Granting DEFAULT_ADMIN_ROLE of volatility tokens to IndexFactory contract");
+
+  const volatilityProtocolRole = await volatilityToken.grantRole(
+    DEFAULT_ADMIN_ROLE,
+    `${volmexIndexFactoryInstance.address}`
+  );
+
+  await volatilityProtocolRole.wait();
+
+  console.log("Role of volatility token granted");
+
+  const inverseVolatilityProtocolRole = await inverseVolatilityToken.grantRole(
+    DEFAULT_ADMIN_ROLE,
+    `${volmexIndexFactoryInstance.address}`
+  );
+
+  await inverseVolatilityProtocolRole.wait();
+
+  console.log("Role of inverse volatility token granted");
+
   console.log("Deploying Volmex Protocol...");
 
   const volmexProtocolInstance = await upgrades.deployProxy(
@@ -75,25 +118,16 @@ const deployPolygon = async () => {
 
   console.log("Protocol fees updated!");
 
-  console.log("Granting VOLMEX_PROTOCOL_ROLE of volatility tokens to VolmexProtocol contract");
+  console.log("Registering VolmexProtocol...");
 
-  const volatilityProtocolRole = await volatilityToken.grantRole(
-    VOLMEX_PROTOCOL_ROLE,
-    `${volmexProtocolInstance.address}`
+  const registerVolmexProtocol = await volmexIndexFactoryInstance.registerIndex(
+    volmexProtocolInstance.address,
+    `${process.env.COLLATERAL_TOKEN_SYMBOL}`
   );
 
-  await volatilityProtocolRole.wait();
+  await registerVolmexProtocol.wait();
 
-  console.log("Role of volatility token granted");
-
-  const inverseVolatilityProtocolRole = await inverseVolatilityToken.grantRole(
-    VOLMEX_PROTOCOL_ROLE,
-    `${volmexProtocolInstance.address}`
-  );
-
-  await inverseVolatilityProtocolRole.wait();
-
-  console.log("Role of inverse volatility token granted");
+  console.log("Registered VolmexProtocol!");
 
   console.log("\n Transaction successful");
 };
